@@ -1,0 +1,14 @@
+// FCTimer / Timer
+//
+
+// provided interface(s)
+import ITimer.dzn;
+
+namespace Facilities {
+
+component Timer
+{
+    provides ITimer api;
+
+} // foreign component
+} // end namespace Facilities

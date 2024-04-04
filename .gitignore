@@ -1,0 +1,8 @@
+.idea
+*.pyc
+*.cc
+*.hh
+tmp
+dzn
+mylog
+generated

@@ -1,0 +1,16 @@
+// Types
+//
+
+enum Result { Ok, Fail, Error };
+extern MilliSeconds $size_t$;
+subint SmallInt {1..5};
+extern string $std::string$;
+
+namespace My { namespace Project {
+
+extern MyType $Sub::MyLongNamedType$;
+extern PResultInfo $PResultInfo$;
+subint MediumInt {0..1023};
+enum CountingUp {One, Two, Three};
+
+}} // end namespace My::Project

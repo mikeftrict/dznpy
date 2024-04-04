@@ -1,0 +1,67 @@
+// TwoToasters
+//
+// Description: example Dezyne file containing two systems intentionally
+//              with a varying namespace.
+//
+
+// Contained component(s)
+import Toaster.dzn;
+
+// Facilities
+import FCTimer.dzn;
+
+
+// Global namespace:
+component ToasterOne
+{
+provides My.Project.IToaster api;
+requires Some.Vendor.IHeaterElement heaterElement;
+requires My.Project.Hal.IPowerCord cord;
+requires My.ILed led;
+
+system
+{
+    // Connect the ports on the public boundary
+    api <=> sut.api;
+    heaterElement <=> sut.heater;
+    cord <=> sut.cord;
+    led <=> sut.led;
+
+    // Connect the private/internal ports
+    sut.timer <=> t1.api;
+
+    // Build instances of internal components
+    My.Project.Toaster sut;
+    Facilities.Timer t1;
+
+} // system
+} // end component
+
+
+namespace My { namespace Project {
+
+    component ToasterTwo
+    {
+    provides IToaster api;
+    requires Some.Vendor.IHeaterElement heaterElement;
+    requires Hal.IPowerCord cord;
+    requires ILed led;
+
+    system
+    {
+        // Connect the ports on the public boundary
+        api <=> sut.api;
+        heaterElement <=> sut.heater;
+        cord <=> sut.cord;
+        led <=> sut.led;
+
+        // Connect the private/internal ports
+        sut.timer <=> t1.api;
+
+        // Build instances of internal components
+        Toaster sut;
+        Facilities.Timer t1;
+
+    } // system
+    } // end component
+}} // end namespace My::Project

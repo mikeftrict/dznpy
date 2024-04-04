@@ -1,0 +1,43 @@
+// IHeaterElement
+//
+
+namespace Some { namespace Vendor {
+
+interface IHeaterElement
+{
+// Lifecycle operations
+in void Initialize();
+in void Uninitialize();
+
+// Heater operations
+in void On();
+in void Off();
+
+subint ExampleInt {0..9};
+
+behaviour
+{
+    enum State { Uninitialized, Off, Heating };
+    State s = State.Uninitialized; // initial state
+
+    // Event-based handling:
+    on Uninitialize: s = State.Uninitialized;
+
+    // State-based handling:
+    [s.Uninitialized]
+    {
+        on Initialize: s = State.Off;
+    }
+
+    [s.Off]
+    {
+        on On: s = State.Heating;
+    }
+
+    [s.Heating]
+    {
+        on Off: s = State.Off;
+    }
+} // behaviour
+} // interface
+}} // end namespace Some::Vendor

@@ -1,0 +1,43 @@
+// ITimer
+//
+// Description:
+// - Timing service
+// - Stateful interface
+// - Exclusive resource, each client must create his own instance
+// - Makes use of the Timing facility in Dezyne Pump, therefore cancelling
+//   a pending timer is possible without a sentinel event.
+//
+// IMPORTANT: A single instance of this model must _not_ be shared amongst other
+//            components. Do not inject into the Dezyne locator.
+//
+
+import Types.dzn;
+
+interface ITimer
+{
+
+in void Create(MilliSeconds waitingTimeMs);
+in void Cancel();
+out void Timeout();
+
+behaviour
+{
+bool pending = false;
+
+[!pending]
+{
+    on Create: pending = true;
+    on Cancel: {}
+}
+
+[pending]
+{
+    on Cancel: pending = false;
+    on inevitable:
+    {
+        Timeout; pending = false;
+    }
+}
+
+} // behaviour
+} // interface

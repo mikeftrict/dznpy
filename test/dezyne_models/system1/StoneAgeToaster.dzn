@@ -1,0 +1,75 @@
+// StoneAgeToaster
+//
+// Description:
+// - this component implements minimalistic flow asynchronous Toast behaviour (durative action)
+// - the Toast transaction can be interrupted by the Cancel() request
+//
+
+// Provided interface
+import IToaster.dzn;
+
+// Used interfaces/components
+import IHeaterElement.dzn;
+
+// Facilities
+import ITimer.dzn;
+
+component StoneAgeToaster
+{
+provides My.Project.IToaster api;
+requires Some.Vendor.IHeaterElement heater;
+requires ITimer timer;
+
+behavior
+{
+    enum State { Uninitialized, Idle, Toasting, Error };
+
+    // State variable(s)
+    State s = State.Uninitialized; // initial state
+
+    // Data variable(s)
+    MilliSeconds m_toastingTime;
+
+    // State-based handling:
+    [s.Uninitialized] on api.Initialize(): { heater.Initialize(); s = State.Idle; }
+
+    [s.Idle]
+    {
+        on api.Uninitialize():
+        {
+            heater.Uninitialize();
+            s = State.Uninitialized;
+        }
+
+        on api.GetTime(toastingTime): toastingTime = m_toastingTime;
+        on api.SetTime(toastingTime): m_toastingTime = toastingTime;
+
+        on api.Toast(_motd, _info):
+        {
+            timer.Create(m_toastingTime);
+            heater.On();
+            api.reply(Result.Ok);
+            s = State.Toasting;
+        }
+    }
+
+    [s.Toasting]
+    {
+        on api.Cancel():
+        {
+            timer.Cancel();
+            heater.Off();
+            s = State.Idle;
+        }
+
+        on timer.Timeout():
+        {
+            timer.Cancel();
+            heater.Off();
+            api.Ok();
+            s = State.Idle;
+        }
+    }
+
+} // behavior
+} // component

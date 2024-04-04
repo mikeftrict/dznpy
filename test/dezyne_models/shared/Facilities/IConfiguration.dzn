@@ -1,0 +1,14 @@
+// IConfiguration
+//
+
+import Types.dzn;
+
+interface IConfiguration
+{
+in void GetToastingTime(out MilliSeconds toastingTime);
+
+behavior
+{
+    on GetToastingTime: {}
+} // behavior
+} // interface

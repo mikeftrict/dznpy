@@ -1,0 +1,41 @@
+// IPowerCord
+//
+import Types.dzn;
+
+namespace My { namespace Project { namespace Hal {
+
+interface IPowerCord
+{
+// Lifecycle operations
+in void Initialize();
+in void Uninitialize();
+
+// PowerCord operations
+in bool IsConnectedToOutlet();
+out void Connected();
+out void Disconnected(MyType exampleParameter);
+
+behavior
+{
+    enum State { Uninitialized, ObservingPowercord };
+    State s = State.Uninitialized; // initial state
+
+    on Uninitialize: s = State.Uninitialized;
+
+    [s.Uninitialized]
+    {
+        on Initialize: s = State.ObservingPowercord;
+    }
+
+    [s.ObservingPowercord]
+    {
+        on IsConnectedToOutlet: reply(true);
+        on IsConnectedToOutlet: reply(false);
+
+        on optional: Connected;
+        on optional: Disconnected;
+    }
+
+} // behavior
+} // interface
+}}} // end namespace My::Project::Hal

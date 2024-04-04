@@ -1,0 +1,23 @@
+// ILed
+//
+// This compact interface is intentionally placed 'one level higher' than My.Project
+//
+import Types.dzn;
+
+namespace My {
+
+interface ILed
+{
+// Lifecycle operations
+in void Initialize();
+in void Uninitialize();
+out void GlitchOccurred();
+
+behaviour
+{
+    on Initialize, Uninitialize: {}
+
+    on optional: GlitchOccurred;
+} // behaviour
+} // interface
+} // end namespace My

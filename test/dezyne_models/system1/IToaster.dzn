@@ -1,0 +1,72 @@
+// IToaster
+//
+
+import Types.dzn;
+
+namespace My { namespace Project {
+
+interface IToaster
+{
+// Lifecycle operations
+in void Initialize();
+in void Uninitialize();
+
+// Set and get time duration
+in void SetTime(in MilliSeconds toastingTime);
+in void GetTime(inout MilliSeconds toastingTime);
+
+// Toast process itself
+in Result Toast(in string motd, out PResultInfo info);
+in void Cancel();
+
+// Error recovery
+in Result Recover();
+
+// Asynchronous responses
+out void Ok();
+out void Fail(in PResultInfo info);
+out void Error(in PResultInfo info);
+
+enum State { Uninitialized, Idle, Toasting, Error };
+
+behaviour
+{
+    State s = State.Uninitialized; // initial state
+
+    [s.Uninitialized]
+    {
+        on Initialize: s = State.Idle;
+    }
+
+    [s.Idle]
+    {
+        on Uninitialize: s = State.Uninitialized;
+
+        on GetTime: {}
+        on SetTime: {}
+
+        on Toast: { reply(Result.Ok); s = State.Toasting; }
+        on Toast: { reply(Result.Fail); }
+        on Toast: { reply(Result.Error); s = State.Error; }
+    }
+
+    [s.Toasting]
+    {
+        on Cancel: s = State.Idle;
+
+        on optional:   { Ok; s = State.Idle; }
+        on inevitable: { Fail; s = State.Idle; }
+        on inevitable: { Error; s = State.Error; }
+    }
+
+    [s.Error]
+    {
+        on Uninitialize: s = State.Uninitialized;
+
+        on Recover: { reply(Result.Ok); s = State.Idle; }
+        on Recover: { reply(Result.Fail); }
+    }
+
+} // behaviour
+} // interface
+}} // end namespace My::Project

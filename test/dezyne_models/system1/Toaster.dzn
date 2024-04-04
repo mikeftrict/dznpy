@@ -1,0 +1,138 @@
+// Toaster
+//
+// Description:
+// - this component implements an asynchronous Toast behaviour (durative action)
+// - the Toast transaction can be interrupted by the Cancel() request
+// - HeaterElement interface is now stateful to force correct usage (On -> Off -> etc)
+// - usage of a PowerCord, to precondition check; but also to notice a sudden disconnect during toasting
+//
+
+// Provided interface
+import IToaster.dzn;
+
+// Used interfaces/components
+import IHeaterElement.dzn;
+import IPowerCord.dzn;
+import ILed.dzn;
+
+// Facilities
+import ITimer.dzn;
+import IConfiguration.dzn;
+
+namespace My { namespace Project {
+
+component Toaster
+{
+provides IToaster api;
+requires Some.Vendor.IHeaterElement heater;
+requires Hal.IPowerCord cord;
+requires ILed led;
+requires ITimer timer;
+requires injected IConfiguration cfg;
+
+behavior
+{
+    enum State { Uninitialized, Idle, Toasting, Error };
+
+    // State variable(s)
+    State s = State.Uninitialized; // initial state
+
+    // Data variable(s)
+    MilliSeconds m_toastingTime; // alternative is to hardcode with $30 * 1000$; // default: 30 seconds
+    MyType m_storeSomething;
+
+    // Event-based handling:
+    on led.GlitchOccurred(): {} // consume because it is not interesting
+
+    // State-based handling:
+    [s.Uninitialized]
+    {
+        on api.Initialize(): Initialize();
+    }
+
+    [s.Idle]
+    {
+        on api.Uninitialize(): Uninitialize();
+
+        on api.GetTime(toastingTime): toastingTime = m_toastingTime;
+        on api.SetTime(toastingTime): m_toastingTime = toastingTime;
+
+        on api.Toast(_motd, _info):
+        {
+            if (cord.IsConnectedToOutlet())
+            {
+                timer.Create(m_toastingTime);
+                heater.On();
+                api.reply(Result.Ok);
+                s = State.Toasting;
+            }
+            else
+            {
+                api.reply(Result.Fail);
+            }
+        }
+
+        // autonomous events:
+        on cord.Connected(), cord.Disconnected(_): {} // consume because it is not interesting
+    }
+
+    [s.Toasting]
+    {
+        on api.Cancel():
+        {
+            timer.Cancel();
+            heater.Off();
+            s = State.Idle;
+        }
+
+        on timer.Timeout():
+        {
+            timer.Cancel();
+            heater.Off();
+            api.Ok();
+            s = State.Idle;
+        }
+
+        on cord.Disconnected(exampleParameter):
+        {
+            m_storeSomething = exampleParameter;
+            timer.Cancel();
+            heater.Off();
+            api.Error(${}$);
+            s = State.Error;
+        }
+
+        // autonomous events:
+        on cord.Connected(): {} // consume because it is not interesting
+    }
+
+    [s.Error]
+    {
+        on api.Uninitialize(): Uninitialize();
+
+        on api.Recover(): api.reply(Result.Fail);
+
+        // autonomous events:
+        on cord.Connected(), cord.Disconnected(_): {} // consume because we are already in the error state and waiting for recovery
+    }
+
+    // Helper functions
+
+    void Initialize()
+    {
+        heater.Initialize();
+        cord.Initialize();
+        cfg.GetToastingTime(m_toastingTime);
+        s = State.Idle;
+    }
+
+    void Uninitialize()
+    {
+        heater.Uninitialize();
+        cord.Uninitialize();
+        s = State.Uninitialized;
+    }
+
+} // behavior
+} // component
+}} // end namespace My::Project
