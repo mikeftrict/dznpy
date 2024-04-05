@@ -1,18 +1,19 @@
 """
-Testsuite covering the json_ast python module - version 0.1.240108
+Testsuite covering the json_ast python module - version 0.2.240304
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License.
 Refer to https://opensource.org/license/mit/ for exact MIT license details.
 """
 
-# system imports
+# system modules
+import os
 from unittest import TestCase
 import pytest
 from orjson import JSONDecodeError
 from typing import List
 
-# cots modules
+# dznpy modules
 from dznpy.misc_utils import NamespaceTrail
 
 # system-under-test
@@ -21,6 +22,21 @@ from dznpy.json_ast import DznJsonAst, DznJsonError
 
 # Test data
 from testdata_json_ast import *
+
+
+# test helpers
+
+def resolve(fn: str) -> str:
+    """Get the absolute path of Dezyne test files relative to this file to be independent
+    of how and from where py.test is run."""
+    return os.path.abspath(f'{__file__}/../../dezyne_models/{fn}')
+
+
+# test constants
+
+DZNJSON_FILE = resolve(TOASTER_SYSTEM_JSON_FILE)
+CPP_FILE = resolve(TOASTER_SYSTEM_CPP_FILE)
+SOME_JSON_FILE = resolve(VSCODE_WORKSPACE_FILE)
 
 
 class DznTestCase(TestCase):
@@ -848,7 +864,7 @@ class LoadFileTest(DznTestCase):
 
     @staticmethod
     def test_open_dezyne_json_ok():
-        sut = DznJsonAst().load_file(DEZYNE_FILE)
+        sut = DznJsonAst().load_file(DZNJSON_FILE)
         assert sut._ast is not None
 
     @staticmethod
@@ -865,7 +881,7 @@ class LoadFileTest(DznTestCase):
 
     @staticmethod
     def test_process_entire_dezyne_file():
-        sut = DznJsonAst(verbose=True).load_file(DEZYNE_FILE)
+        sut = DznJsonAst(verbose=True).load_file(DZNJSON_FILE)
         sut.process()
         fc = sut.file_contents
         print(f'\n{fc}')  # uncomment me to inspect the contents visually
@@ -882,7 +898,9 @@ class LoadFileTest(DznTestCase):
 
         expected_filenames = ['./Toaster.dzn', '../shared/Facilities/FCTimer.dzn',
                               '../shared/Facilities/ITimer.dzn', './IToaster.dzn',
-                              './IHeaterElement.dzn', './IPowerCord.dzn', './ILed.dzn',
+                              './Hardware/Interfaces/IHeaterElement.dzn',
+                              './Hardware/Interfaces/IPowerCord.dzn',
+                              './Hardware/Interfaces/ILed.dzn',
                               '../shared/Facilities/IConfiguration.dzn',
                               '../shared/Facilities/Types.dzn', 'ToasterSystem.dzn']
         assert_items_name_on_str(fc.filenames, expected_filenames)
@@ -890,7 +908,8 @@ class LoadFileTest(DznTestCase):
         expected_foreign_fqns = ['Facilities.Timer']
         assert_items_name_on_fqn(fc.foreigns, expected_foreign_fqns)
 
-        expected_imports = ['IToaster.dzn', 'IHeaterElement.dzn', 'ILed.dzn', 'IPowerCord.dzn',
+        expected_imports = ['IToaster.dzn', 'Hardware/Interfaces/IHeaterElement.dzn',
+                            'Hardware/Interfaces/ILed.dzn', 'Hardware/Interfaces/IPowerCord.dzn',
                             'ITimer.dzn', 'IConfiguration.dzn', 'ITimer.dzn', 'Types.dzn',
                             'Types.dzn', 'Types.dzn', 'Types.dzn', 'Types.dzn', 'Toaster.dzn',
                             'FCTimer.dzn']

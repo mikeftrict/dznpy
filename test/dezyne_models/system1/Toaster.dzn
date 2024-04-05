@@ -11,9 +11,9 @@
 import IToaster.dzn;
 
 // Used interfaces/components
-import IHeaterElement.dzn;
-import IPowerCord.dzn;
-import ILed.dzn;
+import Hardware/Interfaces/IHeaterElement.dzn;
+import Hardware/Interfaces/IPowerCord.dzn;
+import Hardware/Interfaces/ILed.dzn;
 
 // Facilities
 import ITimer.dzn;

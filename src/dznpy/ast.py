@@ -1,5 +1,5 @@
 """
-ast - version 0.1.240108
+dznpy/ast - version 0.2.240304
 
 Python module representing the Abstract Syntax Tree (AST) and Elements of a Dezyne model
 
@@ -12,6 +12,8 @@ Refer to https://opensource.org/license/mit/ for exact MIT license details.
 from dataclasses import dataclass, field
 import enum
 from typing import Any, List
+
+# dznpy modules
 from .misc_utils import TextBlock, NameSpaceIds, NamespaceTrail, flatten_to_strlist
 
 

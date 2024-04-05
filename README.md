@@ -15,10 +15,9 @@ By default, the tests and data preparation scripts have been configured to an in
 
     C:\SB\dezyne-2.17.8\dzn.cmd
 
-Of course this installation path can be suited to your situation. Edit and correct the following scripts:
+Of course this installation path can be suited to your situation. Edit and correct the following script(s):
 
-    - tests\GenerateDezyneArtifacts.cmd
-    - tests\pytest.ini
+    - test\GenerateDezyneArtifacts.cmd
 
 Then, install the required Python packages `dznpy` relies on. PyCharm will automatically recognise and process the requirements.txt file.
 In other cases, install the dependencies manually by typing 

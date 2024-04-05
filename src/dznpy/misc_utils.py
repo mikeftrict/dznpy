@@ -1,5 +1,5 @@
 """
-misc_utils - version 0.1.240108
+dznpy/misc_utils - version 0.2.240304
 
 Python module providing miscellaneous utility functions.
 
@@ -7,11 +7,14 @@ Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License.
 Refer to https://opensource.org/license/mit/ for exact MIT license details.
 """
+
+# system modules
 import enum
 import os
 from typing import Any, List, Optional
 from typing_extensions import Self
 
+# constants
 EOL = '\n'
 SPACE = ' '
 
@@ -81,6 +84,28 @@ def scope_resolution_order(searchable: NameSpaceIds,
         result.append(current_scope + searchable)
 
     return result
+
+
+def plural(singular_noun: str, ref_collection: Any) -> str:
+    """Generate a plural form of a single noun when the referenced collection contains more
+    than 1 item. The collection type can not be a string."""
+
+    # check preconditions
+    if not singular_noun:
+        raise TypeError('Argument single_noun can not be empty')
+    if not isinstance(singular_noun, str):
+        raise TypeError('Argument single_noun must be a string type')
+    if not hasattr(ref_collection, "__iter__") or isinstance(ref_collection, str):
+        raise TypeError('Argument collection must be a collection type (str excluded)')
+
+    # process
+    if len(ref_collection) > 1:
+        addition = 's'
+        if singular_noun[-1] in ['s', 'x', 'z'] or singular_noun[-2::] in ['ss', 'sh', 'ch']:
+            addition = 'es'
+        return f'{singular_noun}{addition}'
+    else:
+        return singular_noun
 
 
 class NamespaceTrail:

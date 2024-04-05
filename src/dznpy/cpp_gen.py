@@ -1,5 +1,5 @@
 """
-cpp_gen - version 0.1.240108
+dznpy/cpp_gen - version 0.2.240304
 
 Python module providing helpers for generating c++ source and header files
 
@@ -14,9 +14,9 @@ import enum
 from typing import List, Dict, Any, Optional
 from typing_extensions import Self
 
-# other cots modules
-from .misc_utils import is_strlist_instance, is_namespaceids_instance, NameSpaceIds, TextBlock, \
-    EOL, SPACE
+# dznpy modules
+from .misc_utils import is_strlist_instance, is_namespaceids_instance, plural, NameSpaceIds, \
+    TextBlock, EOL, SPACE
 
 
 class CppGenError(Exception):
@@ -161,8 +161,8 @@ class ProjectIncludes:
     includes: List[str]
 
     def __str__(self) -> str:
-        """Return the contents of this dataclass as textblock."""
-        return str(TextBlock([f'#include "{x}"' for x in self.includes]))
+        return str(TextBlock([Comment(f'Project {plural("include", self.includes)}'),
+                              [f'#include "{x}"' for x in self.includes]]))
 
 
 @dataclass(frozen=True)
@@ -172,7 +172,8 @@ class SystemIncludes:
 
     def __str__(self) -> str:
         """Return the contents of this dataclass as textblock."""
-        return str(TextBlock([f'#include <{x}>' for x in self.includes]))
+        return str(TextBlock([Comment(f'System {plural("include", self.includes)}'),
+                              [f'#include <{x}>' for x in self.includes]]))
 
 
 @dataclass
@@ -262,7 +263,7 @@ class Constructor:
     def as_def(self) -> str:
         """Return the constructor definition textblock."""
         if self.initialization:
-            return ''  # no definition is generated when declarated with initialization
+            return ''  # no definition is generated when declared with initialization
 
         params = ', '.join([p.as_def for p in self.params])
         mil = TextBlock([': ' + '\n, '.join([mv for mv in self.member_initlist])]).indent() \
@@ -307,7 +308,7 @@ class Destructor:
     def as_def(self) -> str:
         """Return the constructor definition textblock."""
         if self.initialization:
-            return ''  # no definition is generated when declarated with initialization
+            return ''  # no definition is generated when declared with initialization
 
         full_signature = f'{self.scope.name}::~{self.scope.name}()'
 
@@ -365,7 +366,7 @@ class Function:
     def as_def(self) -> str:
         """Create the function definition textblock."""
         if self.initialization:
-            return ''  # no definition is generated when declarated with initialization
+            return ''  # no definition is generated when declared with initialization
 
         return_type = f'{self.return_type} ' if self.return_type else ''
         scope = f'{self.scope.name}::' if self.scope is not None else ''

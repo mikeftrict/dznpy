@@ -1,5 +1,5 @@
 """
-ast_view - version 0.1.240108
+dznpy/ast_view - version 0.2.240304
 
 Python module providing functionality to access and search in a Dezyne AST.
 
@@ -12,7 +12,7 @@ Refer to https://opensource.org/license/mit/ for exact MIT license details.
 from dataclasses import dataclass
 from typing import Any, Optional, Set
 
-# own modules
+# dznpy modules
 from .ast import FileContents, PortDirection, Ports
 from .misc_utils import NameSpaceIds, scope_resolution_order
 

@@ -3,7 +3,7 @@ REM Configuration by dznpy/developer
 SET dzncmd=C:\SB\dezyne-2.17.8\dzn.cmd
 
 REM Predefined configuration
-SET includes=-I . -I Hardware -I Hardware\Interfaces -I ..\shared -I ..\shared\Facilities
+SET includes=-I . -I ..\shared\Facilities
 SET scriptroot=%~dp0%
 SET modelsroot=%~dp0%dezyne_models\system1
 SET genfolder=%~dp0%dezyne_models\generated
@@ -25,9 +25,9 @@ ECHO Starting processing
 CD %modelsroot%
 DEL /Q %genfolder%\* >nul 2> nul
 
-CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ IPowerCord.dzn
-CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ IHeaterElement.dzn
-CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ ILed.dzn
+CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IPowerCord.dzn
+CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IHeaterElement.dzn
+CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\ILed.dzn
 CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ IToaster.dzn
 CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ StoneAgeToaster.dzn
 CALL %dzncmd% -v -p code %includes% -o %genfolder% -l c++ Toaster.dzn

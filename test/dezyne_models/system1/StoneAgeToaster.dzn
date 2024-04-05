@@ -9,16 +9,18 @@
 import IToaster.dzn;
 
 // Used interfaces/components
-import IHeaterElement.dzn;
+import Hardware/Interfaces/IHeaterElement.dzn;
 
 // Facilities
 import ITimer.dzn;
+import IConfiguration.dzn;
 
 component StoneAgeToaster
 {
 provides My.Project.IToaster api;
 requires Some.Vendor.IHeaterElement heater;
 requires ITimer timer;
+requires injected IConfiguration cfg;
 
 behavior
 {

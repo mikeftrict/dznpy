@@ -1,12 +1,12 @@
 """
-Testsuite covering the cpp_gen python module - version 0.1.240108
+Testsuite covering the cpp_gen python module - version 0.2.240304
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License.
 Refer to https://opensource.org/license/mit/ for exact MIT license details.
 """
 
-# system imports
+# system modules
 import pytest
 from unittest import TestCase
 
@@ -157,7 +157,7 @@ def test_access_specified_section():
         AccessSpecifiedSection(AccessSpecifier.ANONYMOUS, CONTENTS_MULTI_LINE))
 
 
-def test_param_with_default():
+def test_param_with_default1():
     type_desc = TypeDesc(Fqn(['int']), default_value='123')
     sut = Param(type_desc=type_desc, name='number')
     assert sut.name == 'number'
@@ -165,12 +165,21 @@ def test_param_with_default():
     assert sut.as_def == 'int number'
 
 
-def test_param_without_default():
-    type_desc = TypeDesc(fqn=Fqn(['std', 'string']), postfix=TypePostfix.REFERENCE, const=True)
+def test_param_with_default2():
+    type_desc = TypeDesc(fqn=Fqn(['std', 'string']), postfix=TypePostfix.REFERENCE,
+                         const=True, default_value='""')
     sut = Param(type_desc=type_desc, name='message')
     assert str(sut.type_desc) == 'const std::string&'
-    assert sut.as_decl == 'const std::string& message'
+    assert sut.as_decl == 'const std::string& message = ""'
     assert sut.as_def == 'const std::string& message'
+
+
+def test_param_without_default():
+    type_desc = TypeDesc(fqn=Fqn(['MyType']), postfix=TypePostfix.POINTER, const=False)
+    sut = Param(type_desc=type_desc, name='example')
+    assert str(sut.type_desc) == 'MyType*'
+    assert sut.as_decl == 'MyType* example'
+    assert sut.as_def == 'MyType* example'
 
 
 def test_param_str_fail():

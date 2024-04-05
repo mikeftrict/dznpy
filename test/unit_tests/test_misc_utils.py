@@ -1,12 +1,12 @@
 """
-Testsuite covering the misc_utils python module - version 0.1.240108
+Testsuite covering the misc_utils python module - version 0.2.240304
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License.
 Refer to https://opensource.org/license/mit/ for exact MIT license details.
 """
 
-# system imports
+# system modules
 import pytest
 from unittest import TestCase
 
@@ -98,6 +98,52 @@ def test_scope_resolution_order_fail():
     with pytest.raises(TypeError) as exc:
         scope_resolution_order(searchable=123, calling_scope=namespaceids_t(['NS']))
     assert str(exc.value) == 'The argument is not a NameSpaceIds type'
+
+
+def test_plural_ok():
+    """Validate the good weather scenarios of the plural function that makes a plural string
+    from a singular noun when a provided collection contains more than one element."""
+    no_elements = []
+    single_element = [1]
+    multiple_elements = [1, 2]
+    single_noun = 'include'
+    plural_noun = 'includes'
+    assert plural(single_noun, multiple_elements) == plural_noun
+    assert plural(single_noun, single_element) == single_noun
+    assert plural(single_noun, no_elements) == single_noun, 'empty collection leads to single noun'
+
+    # special postfix cases
+    assert plural('bonus', multiple_elements) == 'bonuses'
+    assert plural('inbox', multiple_elements) == 'inboxes'
+    assert plural('buzz', multiple_elements) == 'buzzes'
+    assert plural('class', multiple_elements) == 'classes'
+    assert plural('bush', multiple_elements) == 'bushes'
+    assert plural('approach', multiple_elements) == 'approaches'
+
+
+def test_plural_fail():
+    """Validate the bad weather scenarios of the plural function."""
+    multiple_elements = [1, 2]
+
+    with pytest.raises(TypeError) as exc:
+        plural('', multiple_elements)
+    assert str(exc.value) == 'Argument single_noun can not be empty'
+
+    with pytest.raises(TypeError) as exc:
+        plural(123, multiple_elements)
+    assert str(exc.value) == 'Argument single_noun must be a string type'
+
+    with pytest.raises(TypeError) as exc:
+        plural('Python', 'string_not_allowed_as_collection')
+    assert str(exc.value) == 'Argument collection must be a collection type (str excluded)'
+
+    with pytest.raises(TypeError) as exc:
+        plural('Python', 123)
+    assert str(exc.value) == 'Argument collection must be a collection type (str excluded)'
+
+    with pytest.raises(TypeError) as exc:
+        plural('Python', None)
+    assert str(exc.value) == 'Argument collection must be a collection type (str excluded)'
 
 
 class TextBlockTests(TestCase):

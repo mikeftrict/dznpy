@@ -1,5 +1,5 @@
 """
-Data for testing generated c++ code - version 0.1.240108
+Data for testing generated c++ code - version 0.2.240304
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License.
@@ -29,19 +29,23 @@ COMMENT_BLOCK = '''\
 '''
 
 SYSTEM_INCLUDE = '''\
+// System include
 #include <string>
 '''
 
 SYSTEM_INCLUDES = '''\
+// System includes
 #include <string>
 #include <dzn/pump.hh>
 '''
 
 PROJECT_INCLUDE = '''\
+// Project include
 #include "IToaster.h"
 '''
 
 PROJECT_INCLUDES = '''\
+// Project includes
 #include "IHeater.h"
 #include "ProjectB/Lunchbox.h"
 '''

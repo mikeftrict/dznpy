@@ -1,14 +1,14 @@
 """
-Data for testing Dezyne JSON AST output - version 0.1.240108
+Data for testing Dezyne JSON AST output - version 0.2.240304
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License.
 Refer to https://opensource.org/license/mit/ for exact MIT license details.
 """
 
-DEZYNE_FILE = 'dezyne_models/generated/ToasterSystem.json'
-SOME_JSON_FILE = 'dezyne_models/System1.code-workspace'
-CPP_FILE = 'dezyne_models/generated/ToasterSystem.cc'
+TOASTER_SYSTEM_JSON_FILE = 'generated/ToasterSystem.json'
+VSCODE_WORKSPACE_FILE = 'System1.code-workspace'
+TOASTER_SYSTEM_CPP_FILE = 'generated/ToasterSystem.cc'
 
 BOGUS_CLASS = '''{"<class>": "bogus" }'''
 

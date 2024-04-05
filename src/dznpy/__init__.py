@@ -1,4 +1,6 @@
 """
+dznpy
+
 Package grouping various Python modules providing free software / open-source helpers for:
  - parsing Dezyne files
  - generate c++ source and header files

@@ -1,5 +1,5 @@
 """
-json_ast - version 0.1.240108
+dznpy/json_ast - version 0.2.240304
 
 Python module providing functionality to parse a Dezyne JSON-formatted AST.
 
@@ -10,6 +10,8 @@ Refer to https://opensource.org/license/mit/ for exact MIT license details.
 
 # system modules
 import orjson
+
+# dznpy modules
 from .ast import Binding, Bindings, Comment, Component, Data, EventDirection, EndPoint, Enum, \
     Event, Events, Extern, Fields, FileContents, Filename, Foreign, Formal, Formals, \
     FormalDirection, Import, Injected, Instance, Instances, Interface, Namespace, Port, \

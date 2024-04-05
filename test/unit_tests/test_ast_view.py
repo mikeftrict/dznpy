@@ -1,16 +1,16 @@
 """
-Testsuite covering the ast_view python module - version 0.1.240108
+Testsuite covering the ast_view python module - version 0.2.240304
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License.
 Refer to https://opensource.org/license/mit/ for exact MIT license details.
 """
 
-# system imports
+# system modules
 import pytest
 from unittest import TestCase
 
-# cots modules
+# own modules
 from dznpy import ast, json_ast
 
 # system-under-test
