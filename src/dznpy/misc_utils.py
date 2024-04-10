@@ -1,11 +1,8 @@
 """
-dznpy/misc_utils - version 0.2.240304
-
-Python module providing miscellaneous utility functions.
+Module providing miscellaneous utility functions.
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
-This is free software, released under the MIT License.
-Refer to https://opensource.org/license/mit/ for exact MIT license details.
+This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules

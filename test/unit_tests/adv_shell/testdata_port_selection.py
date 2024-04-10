@@ -1,9 +1,8 @@
 """
-Data for testing the adv_shell/core/port_selection module - version 0.2.240304
+Test data for validating the generated output by the advanced shell port_selection module.
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
-This is free software, released under the MIT License.
-Refer to https://opensource.org/license/mit/ for exact MIT license details.
+This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 PORTCFG_STR_ALL_MTS = 'provides/requires: All MTS'

@@ -1,6 +1,6 @@
 // ILed
 //
-// This compact interface is intentionally placed 'one level higher' than My.Project
+// Note: This compact interface is intentionally placed 'one level higher' than My.Project
 //
 import Types.dzn;
 

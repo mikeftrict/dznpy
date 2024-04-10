@@ -1,7 +1,5 @@
 """
-dznpy/adv_shell - version 0.2.240304
-
-Python subpackage providing functionality to generate a c++ shell around a Dezyne component with
+Package providing functionality to generate a c++ shell around a Dezyne component with
 the ability to specify a runtime semantics per port: Single-threaded (STS) or Multi-threaded (MTS).
 When MTS is specified for a port, adv_shell generates c++ code that inserts an port that will
 redirect inbound events via the dispatcher (dzn::pump).
@@ -22,8 +20,7 @@ Example configurations:
 - All provides and requires ports MTS (like dzn code --shell)
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
-This is free software, released under the MIT License.
-Refer to https://opensource.org/license/mit/ for exact MIT license details.
+This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules

@@ -1,6 +1,3 @@
-// IToaster
-//
-
 import Types.dzn;
 
 namespace My { namespace Project {

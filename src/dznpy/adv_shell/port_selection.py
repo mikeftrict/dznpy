@@ -1,11 +1,8 @@
 """
-dznpy/adv_shell/port_selection - version 0.2.240304
-
-Python module containing classes for selecting ports and their runtime semantics of Dezyne systems and components.
+Module containing classes for selecting ports and their runtime semantics of Dezyne systems and components.
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
-This is free software, released under the MIT License.
-Refer to https://opensource.org/license/mit/ for exact MIT license details.
+This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules

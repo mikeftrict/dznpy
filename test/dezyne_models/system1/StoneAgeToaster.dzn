@@ -1,7 +1,7 @@
 // StoneAgeToaster
 //
 // Description:
-// - this component implements minimalistic flow asynchronous Toast behaviour (durative action)
+// - this component implements minimalistic asynchronous Toast behaviour (durative action)
 // - the Toast transaction can be interrupted by the Cancel() request
 //
 

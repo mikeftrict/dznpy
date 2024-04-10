@@ -1,9 +1,8 @@
 """
-Data for testing the builder of the adv_shell module - version 0.2.240304
+Test data for validating the generated output by the adv_shell module.
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
-This is free software, released under the MIT License.
-Refer to https://opensource.org/license/mit/ for exact MIT license details.
+This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 TOASTER_SYSTEM_JSON_FILE = 'generated/ToasterSystem.json'
@@ -86,7 +85,7 @@ private:
     ::My::ILed m_rpLed;
 };
 } // namespace My::Project
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 CC_ALL_STS_ALL_MTS = '''\
@@ -183,7 +182,7 @@ void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
 }
 
 } // namespace My::Project
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 HH_ALL_MTS_ALL_STS = '''\
@@ -253,7 +252,7 @@ private:
     // <none>
 };
 } // namespace My::Project
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 CC_ALL_MTS_ALL_STS = '''\
@@ -362,7 +361,7 @@ dzn::locator& ToasterSystemAdvShell::Locator()
 }
 
 } // namespace My::Project
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 HH_ALL_MTS_MIXED_TS = '''\
@@ -435,7 +434,7 @@ private:
     ::My::Project::Hal::IPowerCord m_rpCord;
 };
 } // namespace My::Project
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 CC_ALL_MTS_MIXED_TS = '''\
@@ -554,7 +553,7 @@ dzn::locator& ToasterSystemAdvShell::Locator()
 }
 
 } // namespace My::Project
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 HH_ALL_STS_MIXED_TS = '''\
@@ -626,7 +625,7 @@ private:
     ::Some::Vendor::IHeaterElement m_rpHeater;
 };
 } // namespace
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 CC_ALL_STS_MIXED_TS = '''\
@@ -709,7 +708,7 @@ dzn::locator& StoneAgeToasterImplComp::Locator()
 }
 
 } // namespace
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 HH_ALL_MTS = '''\
@@ -781,7 +780,7 @@ private:
     ::My::ILed m_rpLed;
 };
 } // namespace My::Project
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
 
 CC_ALL_MTS = '''\
@@ -906,5 +905,5 @@ dzn::locator& ToasterSystemAdvShell::Locator()
 }
 
 } // namespace My::Project
-// Version: dznpy/adv_shell v0.2.240304
+// Version: dznpy/adv_shell v0.3.DEV
 '''
