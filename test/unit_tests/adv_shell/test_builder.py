@@ -6,7 +6,6 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
-import os
 import pytest
 
 # system-under-test
@@ -18,29 +17,22 @@ from dznpy.adv_shell.types import AdvShellError
 from dznpy.misc_utils import namespaceids_t
 from dznpy.json_ast import DznJsonAst
 
-# Test data
+# test helpers
+import helpers
 from testdata_builder import *
 from testdata_support_files import HH_DEFAULT_DZN_STRICT_PORT, HH_OTHERPROJECT_STRICT_PORT
 
+# test constants
+DZN_FILE1 = helpers.resolve(__file__, TOASTER_SYSTEM_JSON_FILE, '../')
+DZN_FILE2 = helpers.resolve(__file__, STONE_AGE_TOASTER_FILE, '../')
 
-# test helpers
 
-def resolve(fn: str) -> str:
-    """Get the absolute path of Dezyne test files relative to this file to be independent
-    of how and from where py.test is run."""
-    return os.path.abspath(f'{__file__}/../../../dezyne_models/{fn}')
-
+# local test helpers
 
 def get_fc(dezyne_filename) -> ast.FileContents:
     """Helper to load the JSON AST tree of a Dezyne file and proces it into FileContents data."""
     dzn_json = DznJsonAst(verbose=True).load_file(dezyne_filename)
     return dzn_json.process()
-
-
-# test constants
-
-DZN_FILE1 = resolve(TOASTER_SYSTEM_JSON_FILE)
-DZN_FILE2 = resolve(STONE_AGE_TOASTER_FILE)
 
 
 # unit tests

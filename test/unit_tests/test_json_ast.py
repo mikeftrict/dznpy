@@ -6,7 +6,6 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
-import os
 from unittest import TestCase
 import pytest
 from orjson import JSONDecodeError
@@ -19,23 +18,15 @@ from dznpy.misc_utils import NamespaceTrail
 from dznpy import ast, json_ast
 from dznpy.json_ast import DznJsonAst, DznJsonError
 
-# Test data
-from testdata_json_ast import *
-
-
 # test helpers
-
-def resolve(fn: str) -> str:
-    """Get the absolute path of Dezyne test files relative to this file to be independent
-    of how and from where py.test is run."""
-    return os.path.abspath(f'{__file__}/../../dezyne_models/{fn}')
-
+import helpers
+from testdata_json_ast import *
 
 # test constants
 
-DZNJSON_FILE = resolve(TOASTER_SYSTEM_JSON_FILE)
-CPP_FILE = resolve(TOASTER_SYSTEM_CPP_FILE)
-SOME_JSON_FILE = resolve(VSCODE_WORKSPACE_FILE)
+DZNJSON_FILE = helpers.resolve(__file__, TOASTER_SYSTEM_JSON_FILE)
+CPP_FILE = helpers.resolve(__file__, TOASTER_SYSTEM_CPP_FILE)
+SOME_JSON_FILE = helpers.resolve(__file__, VSCODE_WORKSPACE_FILE)
 
 
 class DznTestCase(TestCase):

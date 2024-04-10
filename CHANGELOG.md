@@ -4,6 +4,11 @@
 
 ### Processed tickets
 
+- [DZNPY-0004](https://github.com/mikeftrict/dznpy/issues/4): Until now,
+  `unit_tests/adv_shell/test_builder.py` and `unit_tests/test_json_ast.py` had their local resolve()
+  helper to determine the absolute filepath of their required Dezyne test files; reasoned from _
+  _file__. This logic shall be generalized with extra checks and reporting on the presence of the
+  test data folder and subsequently the requested 'dezyne test model filename'.
 - [DZNPY-0003](https://github.com/mikeftrict/dznpy/issues/3): Until now, each python artifact had
   the current version of dznpy mentioned in the file header. This is considered redundant. The
   single place where the version number is defined, resides in `dznpy/dznpy_version.py`.
