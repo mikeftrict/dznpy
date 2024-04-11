@@ -19,14 +19,14 @@ from dznpy import ast, json_ast
 from dznpy.json_ast import DznJsonAst, DznJsonError
 
 # test helpers
-import helpers
+from common.helpers import resolve
 from testdata_json_ast import *
 
 # test constants
 
-DZNJSON_FILE = helpers.resolve(__file__, TOASTER_SYSTEM_JSON_FILE)
-CPP_FILE = helpers.resolve(__file__, TOASTER_SYSTEM_CPP_FILE)
-SOME_JSON_FILE = helpers.resolve(__file__, VSCODE_WORKSPACE_FILE)
+DZNJSON_FILE = resolve(__file__, TOASTER_SYSTEM_JSON_FILE)
+CPP_FILE = resolve(__file__, TOASTER_SYSTEM_CPP_FILE)
+SOME_JSON_FILE = resolve(__file__, VSCODE_WORKSPACE_FILE)
 
 
 class DznTestCase(TestCase):

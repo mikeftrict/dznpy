@@ -11,12 +11,13 @@ script:
 
 On errors, inspect the output closely and possibly correct the script for your custom location of `dzn.cmd`.
 
-After this initial step, trigger the unit tests by running **pytest** in the test folder.
-It will detect the `pytest.ini` file for the appropriate test configuration to use. Example output:
+After this initial step, trigger the unit tests by running **pytest** in the test folder. It will detect
+the `pytest.ini` file for the appropriate test configuration to use. Assuming you unpacked `dznpy` to the path `C:\SB\`,
+example output will look like:
 
-    C:\SB\dznpy\test>py.test
-    or
-    C:\SB\dznpy\test>python -m pytest
+    cd C:\SB\dznpy\test\
+
+    python -m pytest
 
     ==================== test session starts ====================
     platform win32 -- Python 3.8.1, pytest-8.1.1, pluggy-1.4.0

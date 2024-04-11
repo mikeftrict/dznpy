@@ -1,17 +1,13 @@
 """
 Test data for validating the generated output by the adv_shell module.
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
+# test data/contents from test/dezyne_models/
 TOASTER_SYSTEM_JSON_FILE = 'generated/ToasterSystem.json'
 STONE_AGE_TOASTER_FILE = 'generated/StoneAgeToaster.json'
-
-COPYRIGHT = '''\
-Copyright (c) 2023 by Company
-All rights reserved.
-'''
 
 CREATOR_INFO = '''\
 ABC
@@ -20,8 +16,8 @@ GHI
 '''
 
 HH_ALL_STS_ALL_MTS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 //
@@ -89,8 +85,8 @@ private:
 '''
 
 CC_ALL_STS_ALL_MTS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 
@@ -186,8 +182,8 @@ void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
 '''
 
 HH_ALL_MTS_ALL_STS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 //
@@ -256,8 +252,8 @@ private:
 '''
 
 CC_ALL_MTS_ALL_STS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 
@@ -365,8 +361,8 @@ dzn::locator& ToasterSystemAdvShell::Locator()
 '''
 
 HH_ALL_MTS_MIXED_TS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 //
@@ -438,8 +434,8 @@ private:
 '''
 
 CC_ALL_MTS_MIXED_TS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 
@@ -557,8 +553,8 @@ dzn::locator& ToasterSystemAdvShell::Locator()
 '''
 
 HH_ALL_STS_MIXED_TS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 //
@@ -629,8 +625,8 @@ private:
 '''
 
 CC_ALL_STS_MIXED_TS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 
@@ -712,8 +708,8 @@ dzn::locator& StoneAgeToasterImplComp::Locator()
 '''
 
 HH_ALL_MTS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 //
@@ -784,8 +780,8 @@ private:
 '''
 
 CC_ALL_MTS = '''\
-// Copyright (c) 2023 by Company
-// All rights reserved.
+// Copyright (c) Michael van de Ven <michael@ftr-ict.com>
+// This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 //
 // This is generated code. DO NOT MODIFY manually.
 

@@ -11,12 +11,13 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from ... import cpp_gen, ast, ast_view
 from ...ast import Component, System
 from ...ast_view import find_on_fqn
+from ...code_gen_common import BLANK_LINE
 from ...cpp_gen import Comment, Constructor, Function, FunctionPrefix, Fqn, MemberVariable, \
     TypeDesc, TypePostfix, const_param_ref_t, const_param_ptr_t, void_t
 from ...misc_utils import flatten_to_strlist, NameSpaceIds, TextBlock
 
 # own modules
-from ..common import BLANK_LINE, Configuration, CppPortItf, DznPortItf, \
+from ..common import Configuration, CppPortItf, DznPortItf, \
     FacilitiesOrigin, DznElements, Facilities, CppEncapsulee, CppPorts
 from ..types import AdvShellError, RuntimeSemantics
 

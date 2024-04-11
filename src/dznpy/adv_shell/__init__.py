@@ -30,18 +30,18 @@ from typing import Optional
 from ..dznpy_version import VERSION
 from .. import cpp_gen
 from ..ast_view import find_on_fqn
+from ..code_gen_common import BLANK_LINE, CodeGenResult, GeneratedContent, TEXT_GEN_DO_NOT_MODIFY
 from ..cpp_gen import AccessSpecifier, Comment
 from ..misc_utils import TextBlock, namespaceids_t, get_basename
+from ..support_files import strict_port
 
 # own modules
-from .common import CodeGenResult, FacilitiesOrigin, GeneratedContent, BLANK_LINE, \
-    TEXT_GEN_DO_NOT_MODIFY, Configuration, Recipe, CppPorts, create_encapsulee, \
+from .common import FacilitiesOrigin, Configuration, Recipe, CppPorts, create_encapsulee, \
     CppElements, DznElements
 from .types import AdvShellError
 from .port_selection import PortCfg, PortsSemanticsCfg, PortSelect, PortWildcard
 from .core.processing import create_dzn_elements, create_cpp_portitf, create_facilities, \
     create_constructor, create_final_construct_fn, create_facilities_check_fn
-from .core.support_files import create_strict_ports_headerfile
 
 
 # helper functions to create a prefined PortCfg
@@ -122,8 +122,7 @@ class Builder:
         struct = cpp_gen.Struct(name=custom_shell_name)
 
         encapsulee = create_encapsulee(dzn_elements)
-        sf_strict_port_hh = create_strict_ports_headerfile(cfg.copyright,
-                                                           cfg.support_files_ns_prefix)
+        sf_strict_port_hh = strict_port.create_header(cfg.copyright, cfg.support_files_ns_prefix)
         support_files_ns = sf_strict_port_hh.namespace
         pp = CppPorts([create_cpp_portitf(p, struct, support_files_ns, encapsulee) for p in
                        dzn_elements.provides_ports])

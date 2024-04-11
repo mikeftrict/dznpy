@@ -1,23 +1,28 @@
 """
-Module providing generation of support files that are required for compiling
-the generated advanced shell c++ code.
+Module providing a C++ code generation of the syooirt file "Strict Port".
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
+# system modules
+
 # dznpy modules
-from ...dznpy_version import VERSION
-from ...cpp_gen import Comment, CommentBlock, Namespace
-from ...misc_utils import TextBlock, NameSpaceIds, is_namespaceids_instance
+from ..dznpy_version import VERSION
+from ..cpp_gen import Comment, CommentBlock, Namespace
+from ..misc_utils import TextBlock, NameSpaceIds, is_namespaceids_instance
 
 # own modules
-from ..common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
+from ..code_gen_common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
 
-# constants
+# dznpy modules
 
 DESCRIPTION = '''\
-Description: constructs to enforce interconnection of Dezyne ports with the correct and same runtime semantics.
+Description: helping constructs to ensure correct interconnection of Dezyne ports based
+             on their runtime semantics. Lean on the compiler to yield errors when a developer
+             (mistakenly) attempts to tie two ports that have different semantics.
+             - port enclosures to explicitly indicate the implied runtime semantics.
+             - port interconnect functions that require correct argument types.
 '''
 
 BODY_DECL = '''\
@@ -39,29 +44,23 @@ struct Mts
 template <typename P>
 void ConnectPorts(Sts<P> provided, Sts<P> required)
 {
-    provided.port.out = required.port.out;
-    required.port.in = provided.port.in;
-    provided.port.meta.require = required.port.meta.require;
-    required.port.meta.provide = provided.port.meta.provide;
+    connect(provided, required);
 }
 
 template <typename P>
 void ConnectPorts(Mts<P> provided, Mts<P> required)
 {
-    provided.port.out = required.port.out;
-    required.port.in = provided.port.in;
-    provided.port.meta.require = required.port.meta.require;
-    required.port.meta.provide = provided.port.meta.provide;
+    connect(provided, required);
 }
 
 '''
 
 
-def create_strict_ports_headerfile(copyright_header: str,
-                                   namespace_prefix: NameSpaceIds = None) -> GeneratedContent:
-    """Create the support headerfile that facilitates strict port typing."""
+def create_header(copyright_header: str,
+                  namespace_prefix: NameSpaceIds = None) -> GeneratedContent:
+    """Create the c++ header file contents that facilitates strict port typing."""
 
-    # Namespace prefix argument checking.
+    # Precondition checking
     if namespace_prefix is None:
         ns = ['Dzn']
     elif is_namespaceids_instance(namespace_prefix):
@@ -69,7 +68,7 @@ def create_strict_ports_headerfile(copyright_header: str,
     else:
         raise TypeError('namespace_prefix is of incorrect type')
 
-    # Create the body of the C++ header file
+    # Create the C++ body
     header = CommentBlock([copyright_header,
                            BLANK_LINE,
                            DESCRIPTION,

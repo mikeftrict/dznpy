@@ -12,31 +12,14 @@ from typing import List, Optional
 
 # dznpy modules
 from .. import cpp_gen, ast
+from ..code_gen_common import BLANK_LINE, GeneratedContent
 from ..cpp_gen import Comment, Constructor, Function, MemberVariable, Fqn, Namespace, Struct, \
     TypeDesc
-from ..misc_utils import EOL, NameSpaceIds, TextBlock
+from ..misc_utils import NameSpaceIds, TextBlock
 
 # own modules
 from .types import RuntimeSemantics
 from .port_selection import PortCfg
-
-# constants
-BLANK_LINE = EOL
-TEXT_GEN_DO_NOT_MODIFY = 'This is generated code. DO NOT MODIFY manually.'
-
-
-@dataclass(frozen=True)
-class GeneratedContent:
-    """Data class to store file contents and its filename."""
-    filename: str
-    contents: str
-    namespace: Optional[NameSpaceIds] = field(default=None)
-
-
-@dataclass(frozen=True)
-class CodeGenResult:
-    """Data class containing artifact(s) as a result of code generation."""
-    files: List[GeneratedContent]
 
 
 @dataclass(frozen=True)

@@ -18,13 +18,15 @@ from dznpy.misc_utils import namespaceids_t
 from dznpy.json_ast import DznJsonAst
 
 # test helpers
-import helpers
+from common.helpers import resolve
+from common.testdata import COPYRIGHT
 from testdata_builder import *
-from testdata_support_files import HH_DEFAULT_DZN_STRICT_PORT, HH_OTHERPROJECT_STRICT_PORT
+from unit_tests.support_files.testdata_support_files import HH_DEFAULT_DZN_STRICT_PORT, \
+    HH_OTHERPROJECT_STRICT_PORT
 
 # test constants
-DZN_FILE1 = helpers.resolve(__file__, TOASTER_SYSTEM_JSON_FILE, '../')
-DZN_FILE2 = helpers.resolve(__file__, STONE_AGE_TOASTER_FILE, '../')
+DZN_FILE1 = resolve(__file__, TOASTER_SYSTEM_JSON_FILE, '../')
+DZN_FILE2 = resolve(__file__, STONE_AGE_TOASTER_FILE, '../')
 
 
 # local test helpers

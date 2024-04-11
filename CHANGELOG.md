@@ -4,6 +4,13 @@
 
 ### Processed tickets
 
+- [DZNPY-0007](https://github.com/mikeftrict/dznpy/issues/7): Move support files to an own (sub)package. This ticket
+  will move the code generation of `Dzn_StrictPort.hh` to a dedicated package `support_files/strict_port.py`. More
+  support files will be introduced in next tickets that will all be placed in this same location.
+
+- [DZNPY-0006](https://github.com/mikeftrict/dznpy/issues/6): Robust GenerateDezyneArtifacts.cmd to relative dzn.cmd
+  paths.
+
 - [DZNPY-0005](https://github.com/mikeftrict/dznpy/issues/5): When using PyCharm as IDE, one has
   to (manually) Mark Directory `src` as Sources Root and `test` as Test Sources Root. These settings
   are actually stored in `.idea/dznpy.iml`. This change request adds this project file (and a few
