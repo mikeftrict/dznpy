@@ -6,6 +6,6 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 COPYRIGHT = '''\
-Copyright (c) Michael van de Ven <michael@ftr-ict.com>
-This is free software, released under the MIT License. Refer to dznpy/LICENSE.
+Copyright Example Line 1
+Copyright Example Line 2
 '''

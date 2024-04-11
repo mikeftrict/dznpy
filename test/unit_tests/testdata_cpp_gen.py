@@ -69,6 +69,15 @@ SomeContents
 } // namespace My::Project::XY
 '''
 
+GLOBAL_NAMESPACE_TEXTBLOCK = '''\
+namespace {
+
+
+SomeContents
+
+} // namespace
+'''
+
 STRUCT_DECL_ENPTY = '''\
 struct MyStruct
 {

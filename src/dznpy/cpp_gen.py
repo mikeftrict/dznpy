@@ -177,7 +177,7 @@ class SystemIncludes:
 class Namespace:
     """Namespace"""
     ns_ids: NameSpaceIds
-    contents: str = ''
+    contents: str or TextBlock = field(default='')
 
     def __str__(self):
         """Return the contents of this dataclass as textblock."""

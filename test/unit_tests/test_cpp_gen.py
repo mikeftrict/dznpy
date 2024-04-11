@@ -66,6 +66,11 @@ def test_fqn_namespace():
     assert str(Namespace(fqn_ns_ids, CONTENTS_SINGLE_LINE)) == FQN_NAMESPACE_CONTENTS
 
 
+def test_namespace_with_textblock():
+    tb = TextBlock([EOL, EOL, CONTENTS_SINGLE_LINE, EOL])
+    assert str(Namespace(ns_ids=[], contents=tb)) == GLOBAL_NAMESPACE_TEXTBLOCK
+
+
 def test_fqn_ok():
     # default:
     sut = Fqn(ns_ids=['My', 'Data'])

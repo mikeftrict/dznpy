@@ -14,6 +14,7 @@ from dznpy.adv_shell import PortSelect, PortWildcard, all_sts_all_mts, all_mts_a
     all_mts_mixed_ts, all_sts_mixed_ts, all_mts, Configuration, Builder, \
     FacilitiesOrigin, GeneratedContent as GC
 from dznpy.adv_shell.types import AdvShellError
+from dznpy.support_files import strict_port
 from dznpy.misc_utils import namespaceids_t
 from dznpy.json_ast import DznJsonAst
 
@@ -21,12 +22,14 @@ from dznpy.json_ast import DznJsonAst
 from common.helpers import resolve
 from common.testdata import COPYRIGHT
 from testdata_builder import *
-from unit_tests.support_files.testdata_support_files import HH_DEFAULT_DZN_STRICT_PORT, \
-    HH_OTHERPROJECT_STRICT_PORT
 
 # test constants
 DZN_FILE1 = resolve(__file__, TOASTER_SYSTEM_JSON_FILE, '../')
 DZN_FILE2 = resolve(__file__, STONE_AGE_TOASTER_FILE, '../')
+
+# test data
+GC_DEFAULT_DZN_STRICT_PORT_HH = strict_port.create_header()
+GC_OTHERPROJECT_DZN_STRICT_PORT_HH = strict_port.create_header(['Other', 'Project'])
 
 
 # local test helpers
@@ -66,7 +69,7 @@ def test_generate_all_sts_all_mts():
     result = Builder().build(cfg)
     assert result.files == [GC('ToasterSystemAdvShell.hh', HH_ALL_STS_ALL_MTS),
                             GC('ToasterSystemAdvShell.cc', CC_ALL_STS_ALL_MTS),
-                            GC('Dzn_StrictPort.hh', HH_DEFAULT_DZN_STRICT_PORT, ['Dzn'])]
+                            GC_DEFAULT_DZN_STRICT_PORT_HH]
 
 
 def test_generate_all_mts_all_sts():
@@ -82,8 +85,7 @@ def test_generate_all_mts_all_sts():
     result = Builder().build(cfg)
     assert result.files == [GC('ToasterSystemAdvShell.hh', HH_ALL_MTS_ALL_STS),
                             GC('ToasterSystemAdvShell.cc', CC_ALL_MTS_ALL_STS),
-                            GC('Other_Project_Dzn_StrictPort.hh', HH_OTHERPROJECT_STRICT_PORT,
-                               ['Other', 'Project', 'Dzn'])]
+                            GC_OTHERPROJECT_DZN_STRICT_PORT_HH]
 
 
 def test_generate_all_mts_mixed_ts():
@@ -100,7 +102,7 @@ def test_generate_all_mts_mixed_ts():
     result = Builder().build(cfg)
     assert result.files == [GC('ToasterSystemAdvShell.hh', HH_ALL_MTS_MIXED_TS),
                             GC('ToasterSystemAdvShell.cc', CC_ALL_MTS_MIXED_TS),
-                            GC('Dzn_StrictPort.hh', HH_DEFAULT_DZN_STRICT_PORT, ['Dzn'])]
+                            GC_DEFAULT_DZN_STRICT_PORT_HH]
 
 
 def test_generate_all_sts_mixed_ts():
@@ -117,7 +119,7 @@ def test_generate_all_sts_mixed_ts():
     result = Builder().build(cfg)
     assert result.files == [GC('StoneAgeToasterImplComp.hh', HH_ALL_STS_MIXED_TS),
                             GC('StoneAgeToasterImplComp.cc', CC_ALL_STS_MIXED_TS),
-                            GC('Dzn_StrictPort.hh', HH_DEFAULT_DZN_STRICT_PORT, ['Dzn'])]
+                            GC_DEFAULT_DZN_STRICT_PORT_HH]
 
 
 def test_generate_all_mts():
@@ -132,4 +134,4 @@ def test_generate_all_mts():
     result = Builder().build(cfg)
     assert result.files == [GC('ToasterSystemAdvShell.hh', HH_ALL_MTS),
                             GC('ToasterSystemAdvShell.cc', CC_ALL_MTS),
-                            GC('Dzn_StrictPort.hh', HH_DEFAULT_DZN_STRICT_PORT, ['Dzn'])]
+                            GC_DEFAULT_DZN_STRICT_PORT_HH]
