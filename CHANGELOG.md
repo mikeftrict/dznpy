@@ -8,7 +8,10 @@
 
 ### All processed tickets
 
-- [DZNPY-0009](https://github.com/mikeftrict/dznpy/issues/9): DZNPY-0008: Introduce new C++ support
+- [DZNPY-0010](https://github.com/mikeftrict/dznpy/issues/10): Extend GeneratedContent dataclass
+  with contents hash. Useful for caching situations.
+
+- [DZNPY-0009](https://github.com/mikeftrict/dznpy/issues/9): Introduce new C++ support
   files `ILog.hh` and `MiscUtils.hh`. The upcoming Multi-Client Exclusive Resource feature requires
   these support files. Since they are so generic they can obviously be reused for other types of
   software development activities (Dezyne and vanilla C++ software).
@@ -38,7 +41,12 @@
 
 ## Changes in 0.2 (240304) since 0.1
 
-### Major changes/additions
+### Breaking changes
+
+- As of now, the generated output of Advanced Shell uses the new strict port typing addition. User
+  code has to be adapted to this new situation
+
+### Major additions
 
 - **Strict port typing**: The return type of the accessors in an advanced shell indicate
   `Sts<PortType>` or `Mts<PortType>` to enforce correct bindings to

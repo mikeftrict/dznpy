@@ -6,6 +6,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
+import hashlib
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -17,13 +18,21 @@ BLANK_LINE = EOL
 TEXT_GEN_DO_NOT_MODIFY = 'This is generated code. DO NOT MODIFY manually.'
 
 
-@dataclass(frozen=True)
+@dataclass()
 class GeneratedContent:
-    """Data class containing generated content along with a designated filename and
+    """Data class containing generated content, its md5 hash, a designated filename and
     an optional namespace indication."""
     filename: str
     contents: str
     namespace: Optional[NameSpaceIds] = field(default=None)
+
+    def __post_init__(self):
+        self._contents_hash = hashlib.md5(self.contents.encode('utf-8')).hexdigest().lower()
+
+    @property
+    def contents_hash(self):
+        """Get the md5 hash of the contents."""
+        return self._contents_hash
 
 
 @dataclass(frozen=True)

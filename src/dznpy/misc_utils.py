@@ -50,7 +50,8 @@ def is_strset_instance(value: Any) -> bool:
 
 
 def namespaceids_t(value: Any) -> NameSpaceIds:
-    """Create a NameSpaceIds from an argument"""
+    """Create a NameSpaceIds from an argument such as a dot delimited string or a list
+    of strings where each string is an identifier of the namespace trail."""
     if is_namespaceids_instance(value):
         return value
     if isinstance(value, str):
