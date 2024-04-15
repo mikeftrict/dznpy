@@ -1,6 +1,6 @@
 # Changelog
 
-## Changes in 0.3 (WIP) since 0.2
+## Changes in 0.3 (240415) since 0.2
 
 ### Other changes/additions
 

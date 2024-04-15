@@ -96,7 +96,7 @@ def test_create_default_namespaced():
     assert result.namespace == ['Dzn']
     assert result.filename == 'Dzn_MutexWrapped.hh'
     assert result.contents == DEFAULT_DZN_NS_HH
-    assert result.contents_hash == '89427af31ed0b60636e25c82109be64b'
+    assert result.contents_hash == '9212c72dd96ab761359921e43df44ba2'
     assert 'namespace Dzn {' in result.contents
 
 

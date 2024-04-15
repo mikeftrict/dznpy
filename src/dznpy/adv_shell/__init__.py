@@ -33,7 +33,8 @@ from ..ast_view import find_on_fqn
 from ..code_gen_common import BLANK_LINE, CodeGenResult, GeneratedContent, TEXT_GEN_DO_NOT_MODIFY
 from ..cpp_gen import AccessSpecifier, Comment
 from ..misc_utils import TextBlock, namespaceids_t, get_basename
-from ..support_files import strict_port
+from ..support_files import strict_port, ilog, misc_utils, meta_helpers, multi_client_selector, \
+    mutex_wrapped
 
 # own modules
 from .common import FacilitiesOrigin, Configuration, Recipe, CppPorts, create_encapsulee, \
@@ -122,7 +123,15 @@ class Builder:
         struct = cpp_gen.Struct(name=custom_shell_name)
 
         encapsulee = create_encapsulee(dzn_elements)
-        sf_strict_port_hh = strict_port.create_header(cfg.support_files_ns_prefix)
+
+        sf_ns_prefix = cfg.support_files_ns_prefix
+        sf_strict_port_hh = strict_port.create_header(sf_ns_prefix)
+        sf_ilog_hh = ilog.create_header(sf_ns_prefix)
+        sf_misc_utils_hh = misc_utils.create_header(sf_ns_prefix)
+        sf_meta_helpers_hh = meta_helpers.create_header(sf_ns_prefix)
+        sf_multi_client_selector_hh = multi_client_selector.create_header(sf_ns_prefix)
+        sf_mutex_wrapped_hh = mutex_wrapped.create_header(sf_ns_prefix)
+
         support_files_ns = sf_strict_port_hh.namespace
         pp = CppPorts([create_cpp_portitf(p, struct, support_files_ns, encapsulee) for p in
                        dzn_elements.provides_ports])
@@ -144,7 +153,9 @@ class Builder:
         # generate c++ code
         return CodeGenResult(files=[self._create_headerfile(),
                                     self._create_sourcefile(),
-                                    sf_strict_port_hh])
+                                    sf_strict_port_hh, sf_ilog_hh, sf_misc_utils_hh,
+                                    sf_meta_helpers_hh, sf_multi_client_selector_hh,
+                                    sf_mutex_wrapped_hh])
 
     def _create_headerfile(self) -> GeneratedContent:
         """Generate a c++ headerfile according to the current recipe."""

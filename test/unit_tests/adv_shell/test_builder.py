@@ -7,6 +7,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import pytest
+from typing import List
 
 # system-under-test
 from dznpy import ast
@@ -14,7 +15,9 @@ from dznpy.adv_shell import PortSelect, PortWildcard, all_sts_all_mts, all_mts_a
     all_mts_mixed_ts, all_sts_mixed_ts, all_mts, Configuration, Builder, \
     FacilitiesOrigin, GeneratedContent as GC
 from dznpy.adv_shell.types import AdvShellError
-from dznpy.support_files import strict_port
+from dznpy.code_gen_common import GeneratedContent
+from dznpy.support_files import strict_port, ilog, misc_utils, meta_helpers, \
+    multi_client_selector, mutex_wrapped
 from dznpy.misc_utils import namespaceids_t
 from dznpy.json_ast import DznJsonAst
 
@@ -42,6 +45,17 @@ def get_fc(dezyne_filename) -> ast.FileContents:
 
 # unit tests
 
+def assert_all_default_support_files(files: List[GeneratedContent]):
+    """Assert all known support files with default namespace Dzn to be present in the
+    provided CodeGenResult argument."""
+    assert ilog.create_header() in files
+    assert meta_helpers.create_header() in files
+    assert misc_utils.create_header() in files
+    assert multi_client_selector.create_header() in files
+    assert mutex_wrapped.create_header() in files
+    assert strict_port.create_header() in files
+
+
 def test_system_component_not_found():
     """Test the scenario that the user specifies an unknown component name."""
 
@@ -67,9 +81,9 @@ def test_generate_all_sts_all_mts():
                         copyright=COPYRIGHT, verbose=True)
 
     result = Builder().build(cfg)
-    assert result.files == [GC('ToasterSystemAdvShell.hh', HH_ALL_STS_ALL_MTS),
-                            GC('ToasterSystemAdvShell.cc', CC_ALL_STS_ALL_MTS),
-                            GC_DEFAULT_DZN_STRICT_PORT_HH]
+    assert GC('ToasterSystemAdvShell.hh', HH_ALL_STS_ALL_MTS) in result.files
+    assert GC('ToasterSystemAdvShell.cc', CC_ALL_STS_ALL_MTS) in result.files
+    assert_all_default_support_files(result.files)
 
 
 def test_generate_all_mts_all_sts():
@@ -83,9 +97,14 @@ def test_generate_all_mts_all_sts():
                         verbose=True)
 
     result = Builder().build(cfg)
-    assert result.files == [GC('ToasterSystemAdvShell.hh', HH_ALL_MTS_ALL_STS),
-                            GC('ToasterSystemAdvShell.cc', CC_ALL_MTS_ALL_STS),
-                            GC_OTHERPROJECT_DZN_STRICT_PORT_HH]
+    assert GC('ToasterSystemAdvShell.hh', HH_ALL_MTS_ALL_STS) in result.files
+    assert GC('ToasterSystemAdvShell.cc', CC_ALL_MTS_ALL_STS) in result.files
+    assert ilog.create_header(['Other', 'Project']) in result.files
+    assert meta_helpers.create_header(['Other', 'Project']) in result.files
+    assert misc_utils.create_header(['Other', 'Project']) in result.files
+    assert multi_client_selector.create_header(['Other', 'Project']) in result.files
+    assert mutex_wrapped.create_header(['Other', 'Project']) in result.files
+    assert strict_port.create_header(['Other', 'Project']) in result.files
 
 
 def test_generate_all_mts_mixed_ts():
@@ -100,9 +119,9 @@ def test_generate_all_mts_mixed_ts():
                         copyright=COPYRIGHT, verbose=True)
 
     result = Builder().build(cfg)
-    assert result.files == [GC('ToasterSystemAdvShell.hh', HH_ALL_MTS_MIXED_TS),
-                            GC('ToasterSystemAdvShell.cc', CC_ALL_MTS_MIXED_TS),
-                            GC_DEFAULT_DZN_STRICT_PORT_HH]
+    assert GC('ToasterSystemAdvShell.hh', HH_ALL_MTS_MIXED_TS) in result.files
+    assert GC('ToasterSystemAdvShell.cc', CC_ALL_MTS_MIXED_TS) in result.files
+    assert_all_default_support_files(result.files)
 
 
 def test_generate_all_sts_mixed_ts():
@@ -117,9 +136,9 @@ def test_generate_all_sts_mixed_ts():
                         copyright=COPYRIGHT, creator_info=CREATOR_INFO, verbose=True)
 
     result = Builder().build(cfg)
-    assert result.files == [GC('StoneAgeToasterImplComp.hh', HH_ALL_STS_MIXED_TS),
-                            GC('StoneAgeToasterImplComp.cc', CC_ALL_STS_MIXED_TS),
-                            GC_DEFAULT_DZN_STRICT_PORT_HH]
+    assert GC('StoneAgeToasterImplComp.hh', HH_ALL_STS_MIXED_TS) in result.files
+    assert GC('StoneAgeToasterImplComp.cc', CC_ALL_STS_MIXED_TS) in result.files
+    assert_all_default_support_files(result.files)
 
 
 def test_generate_all_mts():
@@ -132,6 +151,6 @@ def test_generate_all_mts():
                         copyright=COPYRIGHT, verbose=True)
 
     result = Builder().build(cfg)
-    assert result.files == [GC('ToasterSystemAdvShell.hh', HH_ALL_MTS),
-                            GC('ToasterSystemAdvShell.cc', CC_ALL_MTS),
-                            GC_DEFAULT_DZN_STRICT_PORT_HH]
+    assert GC('ToasterSystemAdvShell.hh', HH_ALL_MTS) in result.files
+    assert GC('ToasterSystemAdvShell.cc', CC_ALL_MTS) in result.files
+    assert_all_default_support_files(result.files)

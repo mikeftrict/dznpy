@@ -196,7 +196,7 @@ def test_create_default_namespaced():
     assert result.namespace == ['Dzn']
     assert result.filename == 'Dzn_MultiClientSelector.hh'
     assert result.contents == DEFAULT_DZN_NS_HH
-    assert result.contents_hash == 'b7f4708a2069d4eb38c96eba794888ed'
+    assert result.contents_hash == 'cc3df53c673a44e881a3a61c97170c7d'
     assert 'namespace Dzn {' in result.contents
 
 
