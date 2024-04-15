@@ -14,17 +14,18 @@ from ..dznpy_version import VERSION
 from ..misc_utils import NameSpaceIds, is_namespaceids_instance
 
 
-def initialize_ns(namespace_prefix: NameSpaceIds) -> Tuple[NameSpaceIds, str]:
+def initialize_ns(namespace_prefix: NameSpaceIds) -> Tuple[NameSpaceIds, str, str]:
     """Initialize a namespace id that ends with Dzn and optionally prefixed
     with a user specified NamespaceIds. Return the result as a combo of this new
-    NamespaceIds and its respective string of the C++ variant."""
+    NamespaceIds, its respective string of the C++ variant and a string suitable
+    to preclude in a filename."""
     fixed_ns = ['Dzn']
 
     if namespace_prefix is None:
-        return fixed_ns, gen_fqn(fixed_ns)
+        return fixed_ns, gen_fqn(fixed_ns), "_".join(fixed_ns)
     elif is_namespaceids_instance(namespace_prefix):
         prefixed_ns = namespace_prefix + fixed_ns
-        return prefixed_ns, gen_fqn(prefixed_ns)
+        return prefixed_ns, gen_fqn(prefixed_ns), "_".join(prefixed_ns)
     else:
         raise TypeError('namespace_prefix is of incorrect type')
 

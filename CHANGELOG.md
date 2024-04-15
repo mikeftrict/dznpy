@@ -5,14 +5,25 @@
 ### Other changes/additions
 
 - `dznpy` now comes with PyCharm IDE project files.
+- Five new generate-able C++ support files are introduced with provision: ILog, MiscUtils,
+  MetaHelpers, MutexWrapped and MultiClientSelector. They will be used by the Advanced Shell
+  Multi-Client feature in the next release 0.4 of dznpy. Most of these support files can also serve
+  usefulness for Dezyne (or even just C++) software development in general.
 
 ### All processed tickets
+
+- [DZNPY-0012](https://github.com/mikeftrict/dznpy/issues/12): Introduce new C++ support file
+  `MultiClientSelector.hh` that will closely collaborate with the upcoming Advanced Shell
+  Multi-Client feature.
+
+- [DZNPY-0011](https://github.com/mikeftrict/dznpy/issues/11): Introduce new C++ support files
+  `MetaHelpers.hh` and `MutexWrapped.hh` for the upcoming Advanced Shell Multi-Client feature.
 
 - [DZNPY-0010](https://github.com/mikeftrict/dznpy/issues/10): Extend GeneratedContent dataclass
   with contents hash. Useful for caching situations.
 
 - [DZNPY-0009](https://github.com/mikeftrict/dznpy/issues/9): Introduce new C++ support
-  files `ILog.hh` and `MiscUtils.hh`. The upcoming Multi-Client Exclusive Resource feature requires
+  files `ILog.hh` and `MiscUtils.hh`. The upcoming Advanced Shell Multi-Client feature requires
   these support files. Since they are so generic they can obviously be reused for other types of
   software development activities (Dezyne and vanilla C++ software).
 

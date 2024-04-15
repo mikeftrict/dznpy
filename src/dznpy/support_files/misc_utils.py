@@ -68,7 +68,7 @@ template <typename STR_TYPE>
 def create_header(namespace_prefix: NameSpaceIds = None) -> GeneratedContent:
     """Create the c++ header file contents that provides miscellaneous utilities."""
 
-    ns, cpp_ns = initialize_ns(namespace_prefix)
+    ns, cpp_ns, file_ns = initialize_ns(namespace_prefix)
     header = CommentBlock([header_hh(),
                            BLANK_LINE,
                            TEXT_GEN_DO_NOT_MODIFY,
@@ -78,7 +78,7 @@ def create_header(namespace_prefix: NameSpaceIds = None) -> GeneratedContent:
     includes = SystemIncludes(['algorithm', 'cctype', 'cwctype', 'regex', 'string'])
     body = Namespace(ns, contents=TextBlock([BLANK_LINE, body_hh(), BLANK_LINE]))
 
-    return GeneratedContent(filename=f'{"_".join(ns)}_MiscUtils.hh',
+    return GeneratedContent(filename=f'{file_ns}_MiscUtils.hh',
                             contents=str(TextBlock([header,
                                                     BLANK_LINE,
                                                     includes,

@@ -64,7 +64,7 @@ DZN_PORT CreatePort(const std::string& provideName, const std::string& requireNa
 def create_header(namespace_prefix: NameSpaceIds = None) -> GeneratedContent:
     """Create the c++ header file contents that provides miscellaneous utilities."""
 
-    ns, cpp_ns = initialize_ns(namespace_prefix)
+    ns, cpp_ns, file_ns = initialize_ns(namespace_prefix)
     header = CommentBlock([header_hh_template(cpp_ns),
                            BLANK_LINE,
                            TEXT_GEN_DO_NOT_MODIFY,
@@ -74,7 +74,7 @@ def create_header(namespace_prefix: NameSpaceIds = None) -> GeneratedContent:
     includes = SystemIncludes(['string', 'dzn/meta.hh'])
     body = Namespace(ns, contents=TextBlock([BLANK_LINE, body_hh(), BLANK_LINE]))
 
-    return GeneratedContent(filename=f'{"_".join(ns)}_MetaHelpers.hh',
+    return GeneratedContent(filename=f'{file_ns}_MetaHelpers.hh',
                             contents=str(TextBlock([header,
                                                     BLANK_LINE,
                                                     includes,
