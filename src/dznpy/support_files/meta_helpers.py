@@ -1,5 +1,5 @@
 """
-Module providing C++ code generation of the support file "Dezyne Misc Utils".
+Module providing C++ code generation of the support file "Dezyne Meta Helpers".
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
@@ -17,50 +17,46 @@ from ..misc_utils import TextBlock, NameSpaceIds
 from . import initialize_ns, create_footer
 
 
-def header_hh() -> str:
+def header_hh_template(cpp_ns: str) -> str:
     return """\
-Miscellaneous utilities
+Dezyne Meta helpers
 
-Description: miscellaneous utilities for generic usage.
+Description: helper functions for creating Dezyne Port meta
 
 Contents:
-- capitalize the first character of a std::string or std::wstring.
+- functions to create a Dezyne port where the name (provided, required, or both) are filled in,
 
-Examples of CapitalizeFirstChar:
+Examples:
 
-   std::string mystr{"hello"};
-   auto result = CapitalizeFirstChar(mystr); // result == std::string("Hello")
+given a Dezyne port IMyService:
 
-   std::wstring mywstr{L"world"};
-   auto result = CapitalizeFirstChar(mywstr); // result == std::wstring(L"World")
-   
-   auto result = CapitalizeFirstChar(std::string("")); // result = std::string("")
+    IMyService port = """ f'{cpp_ns}' """::CreateProvidedPort<IMyService>("api");
+
+    IMyService port = """ f'{cpp_ns}' """::CreateRequiredPort<IMyService>("hal");
+
+    IMyService port = """ f'{cpp_ns}' """::CreatePort<IMyService>("api", "hal");
 
 """
 
 
 def body_hh() -> str:
     return """\
-template <typename STR_TYPE>
-[[nodiscard]] STR_TYPE CapitalizeFirstChar(const STR_TYPE& str)
+template <typename DZN_PORT>
+DZN_PORT CreateProvidedPort(const std::string& name)
 {
-    if (str.empty()) return str;
+    return DZN_PORT{{{name, nullptr, nullptr, nullptr}, {"", nullptr, nullptr, nullptr}}};
+}
 
-    STR_TYPE result(str);
+template <typename DZN_PORT>
+DZN_PORT CreateRequiredPort(const std::string& name)
+{
+    return DZN_PORT{{{"", nullptr, nullptr, nullptr}, {name, nullptr, nullptr, nullptr}}};
+}
 
-    if constexpr (std::is_same_v<STR_TYPE, std::string>)
-    {
-        std::transform(result.cbegin(), result.cbegin() + 1, result.begin(), 
-                       [](auto c) { return static_cast<char>(std::toupper(c)); });
-    }
-
-    if constexpr (std::is_same_v<STR_TYPE, std::wstring>)
-    {
-        std::transform(result.cbegin(), result.cbegin() + 1, result.begin(),
-                       [](auto c) { return static_cast<wchar_t>(std::towupper(c)); });
-    }
-
-    return result;
+template <typename DZN_PORT>
+DZN_PORT CreatePort(const std::string& provideName, const std::string& requireName)
+{
+    return DZN_PORT{{{provideName, nullptr, nullptr, nullptr}, {requireName, nullptr, nullptr, nullptr}}};
 }
 """
 
@@ -69,16 +65,16 @@ def create_header(namespace_prefix: NameSpaceIds = None) -> GeneratedContent:
     """Create the c++ header file contents that provides miscellaneous utilities."""
 
     ns, cpp_ns = initialize_ns(namespace_prefix)
-    header = CommentBlock([header_hh(),
+    header = CommentBlock([header_hh_template(cpp_ns),
                            BLANK_LINE,
                            TEXT_GEN_DO_NOT_MODIFY,
                            BLANK_LINE,
                            COPYRIGHT
                            ])
-    includes = SystemIncludes(['algorithm', 'cctype', 'cwctype', 'regex', 'string'])
+    includes = SystemIncludes(['string', 'dzn/meta.hh'])
     body = Namespace(ns, contents=TextBlock([BLANK_LINE, body_hh(), BLANK_LINE]))
 
-    return GeneratedContent(filename=f'{"_".join(ns)}_MiscUtils.hh',
+    return GeneratedContent(filename=f'{"_".join(ns)}_MetaHelpers.hh',
                             contents=str(TextBlock([header,
                                                     BLANK_LINE,
                                                     includes,
