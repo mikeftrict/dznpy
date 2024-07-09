@@ -99,7 +99,7 @@ def test_create_default_namespaced():
     assert result.namespace == ['Dzn']
     assert result.filename == 'Dzn_StrictPort.hh'
     assert result.contents == DEFAULT_DZN_STRICT_PORT_HH
-    assert result.contents_hash == '77e4d58e28408ad1d6642af77caba637'
+    assert result.contents_hash == '0b772212190c6b08e34b5cc1a88320af'
     assert 'namespace Dzn {' in result.contents
 
 
