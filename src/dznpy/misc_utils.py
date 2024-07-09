@@ -131,7 +131,7 @@ class NamespaceTrail:
         return self._scope_name
 
     @property
-    def fqn(self) -> NameSpaceIds or None:
+    def fqn(self) -> Optional[NameSpaceIds]:
         """Get the fully qualified namespace identifiers/trail."""
         fqn_items = []
         if self._parent is not None:
@@ -142,7 +142,7 @@ class NamespaceTrail:
         if self._scope_name is not None:
             fqn_items.append(self._scope_name)
 
-        return fqn_items if len(fqn_items) > 0 else None
+        return fqn_items if fqn_items else None
 
     def fqn_member_name(self, member_name: NameSpaceIds) -> NameSpaceIds:
         """Create a fully qualified name for a specified member_name."""
@@ -253,4 +253,4 @@ def flatten_to_strlist(value: Any, skip_empty_strings: bool = True) -> List[str]
 
 def newlined_list_items(list_items: list) -> str:
     """Create a textblock of stringized list items each separated by a new line."""
-    return '\n'.join([str(item) for item in list_items]) if len(list_items) > 0 else '\n'
+    return '\n'.join([str(item) for item in list_items]) if list_items else '\n'

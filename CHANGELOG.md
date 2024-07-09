@@ -1,5 +1,12 @@
 # Changelog
 
+## Changes in 0.4 (DEV) since 0.3
+
+### All processed tickets
+
+- [DZNPY-0018](https://github.com/mikeftrict/dznpy/issues/18): Correct typo with regards to provides
+  vs provided. And apply the plural() function where needed.
+
 ## Changes in 0.3 (240415) since 0.2
 
 ### Other changes/additions

@@ -15,7 +15,7 @@ from dznpy.adv_shell import PortSelect, PortWildcard, all_sts_all_mts, all_mts_a
     all_mts_mixed_ts, all_sts_mixed_ts, all_mts, Configuration, Builder, \
     FacilitiesOrigin, GeneratedContent as GC
 from dznpy.adv_shell.types import AdvShellError
-from dznpy.code_gen_common import GeneratedContent
+from dznpy.code_gen_common import GeneratedContent, CodeGenResult
 from dznpy.support_files import strict_port, ilog, misc_utils, meta_helpers, \
     multi_client_selector, mutex_wrapped
 from dznpy.misc_utils import namespaceids_t
@@ -41,6 +41,15 @@ def get_fc(dezyne_filename) -> ast.FileContents:
     """Helper to load the JSON AST tree of a Dezyne file and proces it into FileContents data."""
     dzn_json = DznJsonAst(verbose=True).load_file(dezyne_filename)
     return dzn_json.process()
+
+
+def get_filecontents(filename: str, result: CodeGenResult) -> str:
+    """Helper to get the contents of the specified filename in the provided CodeGenResult.
+    Raise an exception when the filename is absent."""
+    for gc in result.files:
+        if filename == gc.filename:
+            return gc.contents
+    raise RuntimeError(f'filename "{filename}" not found in CodeGenResult')
 
 
 # unit tests
@@ -81,8 +90,8 @@ def test_generate_all_sts_all_mts():
                         copyright=COPYRIGHT, verbose=True)
 
     result = Builder().build(cfg)
-    assert GC('ToasterSystemAdvShell.hh', HH_ALL_STS_ALL_MTS) in result.files
-    assert GC('ToasterSystemAdvShell.cc', CC_ALL_STS_ALL_MTS) in result.files
+    assert get_filecontents('ToasterSystemAdvShell.hh', result) == HH_ALL_STS_ALL_MTS
+    assert get_filecontents('ToasterSystemAdvShell.cc', result) == CC_ALL_STS_ALL_MTS
     assert_all_default_support_files(result.files)
 
 
@@ -97,8 +106,8 @@ def test_generate_all_mts_all_sts():
                         verbose=True)
 
     result = Builder().build(cfg)
-    assert GC('ToasterSystemAdvShell.hh', HH_ALL_MTS_ALL_STS) in result.files
-    assert GC('ToasterSystemAdvShell.cc', CC_ALL_MTS_ALL_STS) in result.files
+    assert get_filecontents('ToasterSystemAdvShell.hh', result) == HH_ALL_MTS_ALL_STS
+    assert get_filecontents('ToasterSystemAdvShell.cc', result) == CC_ALL_MTS_ALL_STS
     assert ilog.create_header(['Other', 'Project']) in result.files
     assert meta_helpers.create_header(['Other', 'Project']) in result.files
     assert misc_utils.create_header(['Other', 'Project']) in result.files
@@ -119,8 +128,8 @@ def test_generate_all_mts_mixed_ts():
                         copyright=COPYRIGHT, verbose=True)
 
     result = Builder().build(cfg)
-    assert GC('ToasterSystemAdvShell.hh', HH_ALL_MTS_MIXED_TS) in result.files
-    assert GC('ToasterSystemAdvShell.cc', CC_ALL_MTS_MIXED_TS) in result.files
+    assert get_filecontents('ToasterSystemAdvShell.hh', result) == HH_ALL_MTS_MIXED_TS
+    assert get_filecontents('ToasterSystemAdvShell.cc', result) == CC_ALL_MTS_MIXED_TS
     assert_all_default_support_files(result.files)
 
 
@@ -136,8 +145,8 @@ def test_generate_all_sts_mixed_ts():
                         copyright=COPYRIGHT, creator_info=CREATOR_INFO, verbose=True)
 
     result = Builder().build(cfg)
-    assert GC('StoneAgeToasterImplComp.hh', HH_ALL_STS_MIXED_TS) in result.files
-    assert GC('StoneAgeToasterImplComp.cc', CC_ALL_STS_MIXED_TS) in result.files
+    assert get_filecontents('StoneAgeToasterImplComp.hh', result) == HH_ALL_STS_MIXED_TS
+    assert get_filecontents('StoneAgeToasterImplComp.cc', result) == CC_ALL_STS_MIXED_TS
     assert_all_default_support_files(result.files)
 
 
@@ -151,6 +160,6 @@ def test_generate_all_mts():
                         copyright=COPYRIGHT, verbose=True)
 
     result = Builder().build(cfg)
-    assert GC('ToasterSystemAdvShell.hh', HH_ALL_MTS) in result.files
-    assert GC('ToasterSystemAdvShell.cc', CC_ALL_MTS) in result.files
+    assert get_filecontents('ToasterSystemAdvShell.hh', result) == HH_ALL_MTS
+    assert get_filecontents('ToasterSystemAdvShell.cc', result) == CC_ALL_MTS
     assert_all_default_support_files(result.files)

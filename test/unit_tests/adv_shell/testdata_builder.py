@@ -28,7 +28,7 @@ HH_ALL_STS_ALL_MTS = '''\
 // - Encapsulee FQN: My.Project.ToasterSystem
 // - Source file basename: ToasterSystem
 // - Target file basename: ToasterSystemAdvShell
-// - Dezyne facilities: Import facilities (by reference) from the user provides dzn::locator argument
+// - Dezyne facilities: Import facilities (by reference) from the user provided dzn::locator argument
 // - Port semantics: provides ports: All STS, requires ports: All MTS
 //
 // Provides ports (Single-threaded):
@@ -102,7 +102,7 @@ namespace My::Project {
 
 const dzn::locator& ToasterSystemAdvShell::FacilitiesCheck(const dzn::locator& locator)
 {
-    // This class imports the requires facilities that must be provided by the user via the locator argument.
+    // This class imports the required facilities that must be provided by the user via the locator argument.
 
     if (locator.try_get<dzn::pump>() == nullptr) throw std::runtime_error("ToasterSystemAdvShell: Dispatcher missing (dzn::pump)");
     if (locator.try_get<dzn::runtime>() == nullptr) throw std::runtime_error("ToasterSystemAdvShell: Dezyne runtime missing (dzn::runtime)");
