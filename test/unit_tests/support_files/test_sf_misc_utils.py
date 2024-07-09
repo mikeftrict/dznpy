@@ -88,7 +88,7 @@ def test_create_default_namespaced():
     assert result.namespace == ['Dzn']
     assert result.filename == 'Dzn_MiscUtils.hh'
     assert result.contents == DEFAULT_DZN_MISC_UTILS_HH
-    assert result.contents_hash == 'f36c48299c17273f7bc82385b9480e90'
+    assert result.contents_hash == '766833274b151ab71240fbb9e4e6ab39'
     assert 'namespace Dzn {' in result.contents
 
 
