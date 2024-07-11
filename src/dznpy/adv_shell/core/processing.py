@@ -282,7 +282,7 @@ def create_facilities_check_fn(scope: cpp_gen.Struct,
         ])
     elif facilities_origin == FacilitiesOrigin.IMPORT:
         fn.contents = TextBlock([
-            Comment('This class imports the requires facilities that must be provided by the user '
+            Comment('This class imports the required facilities that must be provided by the user '
                     'via the locator argument.'),
             BLANK_LINE,
             'if (locator.try_get<dzn::pump>() == nullptr) throw std::runtime_error('

@@ -15,7 +15,7 @@ from .. import cpp_gen, ast
 from ..code_gen_common import BLANK_LINE, GeneratedContent
 from ..cpp_gen import Comment, Constructor, Function, MemberVariable, Fqn, Namespace, Struct, \
     TypeDesc
-from ..misc_utils import NameSpaceIds, TextBlock
+from ..misc_utils import NameSpaceIds, TextBlock, plural
 
 # own modules
 from .types import RuntimeSemantics
@@ -61,7 +61,7 @@ class CppPortItf:
 
 class FacilitiesOrigin(enum.Enum):
     """Enum to indicate the origin of the facilities."""
-    IMPORT = 'Import facilities (by reference) from the user provides dzn::locator argument'
+    IMPORT = 'Import facilities (by reference) from the user provided dzn::locator argument'
     CREATE = 'Create all facilities (dispatcher, runtime and locator)'
 
 
@@ -105,13 +105,12 @@ class CppPorts:
 
     @property
     def accessors_decl(self) -> TextBlock:
-        nr_ports = len(self.ports)
-        acc_str = 'accessors' if nr_ports > 1 else 'accessor'
-        comment = f'{self.direction} port {acc_str}' if nr_ports else None
+        """Generate C++ port accessor declarations for all ports"""
+        comment = Comment(f'{self.direction} port {plural("accessor", self.ports)}')
         accessors = [port.accessor_as_decl for port in
-                     self.ports] if nr_ports > 0 else Comment('<none>')
+                     self.ports] if self.ports else Comment('<none>')
 
-        return TextBlock([Comment(comment), accessors])
+        return TextBlock([comment, accessors])
 
     @property
     def accessors_def(self) -> TextBlock:
@@ -119,13 +118,13 @@ class CppPorts:
 
     @property
     def member_variables(self) -> TextBlock:
-        nr_ports = len([x for x in self.ports if x.member_var is not None])
-        port_str = 'ports' if nr_ports > 1 else 'port'
-        comment = f'Boundary {self.direction.lower()}-{port_str} (MTS) to reroute inwards events'
-        member_vars = [str(p.member_var) for p in self.ports if p.member_var is not None]
+        """Generate C++ member variable (mv) declarations for ports that require rerouting."""
+        ports_with_mv = [p for p in self.ports if p.member_var is not None]
+        comment = Comment(f'Boundary {self.direction.lower()}-{plural("port", ports_with_mv)}'
+                          ' (MTS) to reroute inwards events')
+        member_vars = [str(p.member_var) for p in ports_with_mv]
 
-        return TextBlock([Comment(comment),
-                          member_vars if member_vars else Comment('<none>')])
+        return TextBlock([comment, member_vars if member_vars else Comment('<none>')])
 
 
 @dataclass(frozen=True)
@@ -142,11 +141,10 @@ class Facilities:
     def accessors_decl(self) -> TextBlock:
         """Create a C++ textblock with the declaration of the accessors."""
         accessor_fns = [fn for fn in [self.locator_accessor_fn] if fn is not None]
-        acc_str = 'accessors' if len(accessor_fns) > 1 else 'accessor'
         accessors = [fn.as_decl for fn in
                      accessor_fns] if accessor_fns else Comment('<none>')
 
-        return TextBlock([Comment(f'Facility {acc_str}'), accessors])
+        return TextBlock([Comment(f'Facility {plural("accessor", accessor_fns)}'), accessors])
 
     @property
     def accessors_def(self) -> TextBlock:
