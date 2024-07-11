@@ -11,7 +11,8 @@ import enum
 from typing import Any, List
 
 # dznpy modules
-from .misc_utils import TextBlock, NameSpaceIds, NamespaceTrail, flatten_to_strlist
+from .misc_utils import TextBlock, flatten_to_strlist
+from .scoping import NameSpaceIds, NamespaceTrail
 
 
 @dataclass(frozen=True)

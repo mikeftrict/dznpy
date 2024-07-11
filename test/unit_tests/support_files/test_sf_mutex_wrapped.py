@@ -9,7 +9,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 import pytest
 
 # dznpy modules
-from dznpy.misc_utils import namespaceids_t
+from dznpy.scoping import namespaceids_t
 
 # systems-under-test
 from dznpy.support_files import mutex_wrapped as sut

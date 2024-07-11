@@ -6,7 +6,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # dznpy modules
-from dznpy.misc_utils import namespaceids_t
+from dznpy.scoping import namespaceids_t
 
 # system-under-test
 from dznpy.code_gen_common import GeneratedContent

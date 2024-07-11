@@ -11,7 +11,7 @@ from typing import Any, Optional, Set
 
 # dznpy modules
 from .ast import FileContents, PortDirection, Ports
-from .misc_utils import NameSpaceIds, scope_resolution_order
+from .scoping import NameSpaceIds, scope_resolution_order
 
 
 @dataclass(frozen=True)

@@ -14,7 +14,8 @@ from ...ast_view import find_on_fqn
 from ...code_gen_common import BLANK_LINE
 from ...cpp_gen import Comment, Constructor, Function, FunctionPrefix, Fqn, MemberVariable, \
     TypeDesc, TypePostfix, const_param_ref_t, const_param_ptr_t, void_t
-from ...misc_utils import flatten_to_strlist, NameSpaceIds, TextBlock
+from ...misc_utils import flatten_to_strlist, TextBlock
+from ...scoping import NameSpaceIds
 
 # own modules
 from ..common import Configuration, CppPortItf, DznPortItf, \

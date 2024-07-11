@@ -11,7 +11,7 @@ from typing import Tuple
 # dznpy modules
 from ..cpp_gen import Comment, gen_fqn
 from ..dznpy_version import VERSION
-from ..misc_utils import NameSpaceIds, is_namespaceids_instance
+from ..scoping import NameSpaceIds, is_namespaceids_instance
 
 
 def initialize_ns(namespace_prefix: NameSpaceIds) -> Tuple[NameSpaceIds, str, str]:

@@ -12,8 +12,8 @@ from typing import List, Dict, Any, Optional
 from typing_extensions import Self
 
 # dznpy modules
-from .misc_utils import is_strlist_instance, is_namespaceids_instance, plural, NameSpaceIds, \
-    TextBlock, EOL, SPACE
+from .misc_utils import is_strlist_instance, plural, TextBlock, EOL, SPACE
+from .scoping import NameSpaceIds, is_namespaceids_instance
 
 
 class CppGenError(Exception):

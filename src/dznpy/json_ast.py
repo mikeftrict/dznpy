@@ -13,7 +13,7 @@ from .ast import Binding, Bindings, Comment, Component, Data, EventDirection, En
     Event, Events, Extern, Fields, FileContents, Filename, Foreign, Formal, Formals, \
     FormalDirection, Import, Injected, Instance, Instances, Interface, Namespace, Port, \
     PortDirection, Ports, Range, Root, ScopeName, Signature, SubInt, System, Types
-from .misc_utils import NamespaceTrail
+from .scoping import NamespaceTrail
 
 
 class DznJsonError(Exception):

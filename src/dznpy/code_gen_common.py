@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 # dznpy modules
-from .misc_utils import EOL, NameSpaceIds
+from .misc_utils import EOL
+from .scoping import NameSpaceIds
 
 # constants
 BLANK_LINE = EOL

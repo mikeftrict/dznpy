@@ -11,7 +11,8 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from ..dznpy_version import COPYRIGHT
 from ..code_gen_common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
 from ..cpp_gen import CommentBlock, SystemIncludes, Namespace
-from ..misc_utils import TextBlock, NameSpaceIds
+from ..misc_utils import TextBlock
+from ..scoping import NameSpaceIds
 
 # own modules
 from . import initialize_ns, create_footer

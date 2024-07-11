@@ -4,6 +4,13 @@
 
 ### All processed tickets
 
+DZNPY-0020: Move namespace related types and functions to new module 'scoping'
+
+- [DZNPY-0020](https://github.com/mikeftrict/dznpy/issues/20): Restructure dznpy modules:
+    - Add (graphical) documentation of dznpy's structure. Version 0.3 and projected 0.4.
+    - Move namespace related types and functions to new module `scoping`
+
+
 - [DZNPY-0018](https://github.com/mikeftrict/dznpy/issues/18): Correct typo with regards to provides
   vs provided. And apply the plural() function where needed.
 

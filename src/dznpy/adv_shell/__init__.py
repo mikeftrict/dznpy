@@ -32,9 +32,10 @@ from .. import cpp_gen
 from ..ast_view import find_on_fqn
 from ..code_gen_common import BLANK_LINE, CodeGenResult, GeneratedContent, TEXT_GEN_DO_NOT_MODIFY
 from ..cpp_gen import AccessSpecifier, Comment
-from ..misc_utils import TextBlock, namespaceids_t, get_basename
+from ..misc_utils import TextBlock, get_basename
 from ..support_files import strict_port, ilog, misc_utils, meta_helpers, multi_client_selector, \
     mutex_wrapped
+from ..scoping import namespaceids_t
 
 # own modules
 from .common import FacilitiesOrigin, Configuration, Recipe, CppPorts, create_encapsulee, \

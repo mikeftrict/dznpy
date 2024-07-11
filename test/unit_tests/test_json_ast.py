@@ -12,7 +12,7 @@ from orjson import JSONDecodeError
 from typing import List
 
 # dznpy modules
-from dznpy.misc_utils import NamespaceTrail
+from dznpy.scoping import NamespaceTrail
 
 # system-under-test
 from dznpy import ast, json_ast

@@ -18,7 +18,7 @@ from dznpy.adv_shell.types import AdvShellError
 from dznpy.code_gen_common import GeneratedContent, CodeGenResult
 from dznpy.support_files import strict_port, ilog, misc_utils, meta_helpers, \
     multi_client_selector, mutex_wrapped
-from dznpy.misc_utils import namespaceids_t
+from dznpy.scoping import namespaceids_t
 from dznpy.json_ast import DznJsonAst
 
 # test helpers
