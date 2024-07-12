@@ -29,13 +29,13 @@ from typing import Optional
 # dznpy modules
 from ..dznpy_version import VERSION
 from .. import cpp_gen
-from ..ast_view import find_on_fqn
+from ..ast_view import find_fqn
 from ..code_gen_common import BLANK_LINE, CodeGenResult, GeneratedContent, TEXT_GEN_DO_NOT_MODIFY
 from ..cpp_gen import AccessSpecifier, Comment
 from ..misc_utils import TextBlock, get_basename
 from ..support_files import strict_port, ilog, misc_utils, meta_helpers, multi_client_selector, \
     mutex_wrapped
-from ..scoping import namespaceids_t
+from ..scoping import ns_ids_t
 
 # own modules
 from .common import FacilitiesOrigin, Configuration, Recipe, CppPorts, create_encapsulee, \
@@ -108,9 +108,10 @@ class Builder:
         # ---------- Prepare Dezyne Elements ----------
 
         # lookup encapsulee and check its type
-        dzn_encapsulee = find_on_fqn(fc, namespaceids_t(cfg.fqn_encapsulee_name), [])
-        if dzn_encapsulee is None:
-            raise AdvShellError(f'Encapsulee {cfg.fqn_encapsulee_name} not found')
+        r = find_fqn(fc, ns_ids_t(cfg.fqn_encapsulee_name))
+        if not r.items:
+            raise AdvShellError(f'Encapsulee "{cfg.fqn_encapsulee_name}" not found')
+        dzn_encapsulee = r.get_single_instance()
 
         dzn_elements = create_dzn_elements(cfg, fc, dzn_encapsulee)
         scope_fqn = dzn_elements.scope_fqn.ns_ids
@@ -279,7 +280,7 @@ class Builder:
 
         return str(TextBlock([
             'Configuration:',
-            f'- Encapsulee FQN: {".".join(cfg.fqn_encapsulee_name)}',
+            f'- Encapsulee FQN: {cfg.fqn_encapsulee_name}',
             f'- Source file basename: {cpp.orig_file_basename}',
             f'- Target file basename: {cpp.target_file_basename}',
             f'- Dezyne facilities: {cfg.facilities_origin.value}',

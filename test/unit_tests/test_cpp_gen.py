@@ -11,8 +11,10 @@ from unittest import TestCase
 
 # system-under-test
 from dznpy.cpp_gen import *
+from dznpy.scoping import NamespaceIds, NamespaceIdsTypeError, ns_ids_t, namespaceids_t
 
 # test data
+from common.testdata import *
 from testdata_cpp_gen import *
 
 
@@ -56,68 +58,80 @@ def test_system_includes():
 
 
 def test_global_namespace():
-    assert str(Namespace(ns_ids=[], contents='')) == GLOBAL_NAMESPACE_EMPTY
-    assert str(Namespace(ns_ids=[], contents=CONTENTS_SINGLE_LINE)) == GLOBAL_NAMESPACE_CONTENTS
+    assert str(Namespace(ns_ids_t([]), contents='')) == GLOBAL_NAMESPACE_EMPTY
+    assert str(Namespace(ns_ids_t(''), contents=CONTENTS_SINGLE_LINE)) == GLOBAL_NAMESPACE_CONTENTS
 
 
 def test_fqn_namespace():
-    fqn_ns_ids = ['My', 'Project', 'XY']
-    assert str(Namespace(fqn_ns_ids, contents='')) == FQN_NAMESPACE_EMPTY
-    assert str(Namespace(fqn_ns_ids, CONTENTS_SINGLE_LINE)) == FQN_NAMESPACE_CONTENTS
+    assert str(Namespace(ns_ids_t('My.Project.XY'), contents='')) == FQN_NAMESPACE_EMPTY
+    assert str(Namespace(ns_ids_t('My.Project.XY'), CONTENTS_SINGLE_LINE)) == FQN_NAMESPACE_CONTENTS
 
 
 def test_namespace_with_textblock():
     tb = TextBlock([EOL, EOL, CONTENTS_SINGLE_LINE, EOL])
-    assert str(Namespace(ns_ids=[], contents=tb)) == GLOBAL_NAMESPACE_TEXTBLOCK
+    assert str(Namespace(ns_ids=ns_ids_t(''), contents=tb)) == GLOBAL_NAMESPACE_TEXTBLOCK
 
 
 def test_fqn_ok():
+    """Test valid examples of the Fqn class"""
     # default:
-    sut = Fqn(ns_ids=['My', 'Data'])
-    assert sut.ns_ids == ['My', 'Data']
+    sut = Fqn(ns_ids=ns_ids_t('My.Data'))
+    assert sut.ns_ids.items == ['My', 'Data']
     assert str(sut) == "My::Data"
 
     # empty ns ids leads to an empty Fqn
-    assert str(Fqn(ns_ids=[])) == ''
-    assert str(Fqn(ns_ids=[], prefix_root_ns=True)) == ''
+    assert str(Fqn(ns_ids=ns_ids_t([]))) == ''
+    assert str(Fqn(ns_ids=ns_ids_t(''), prefix_root_ns=True)) == ''
 
     # enable prefixing with the C++ root namespace:
-    assert str(Fqn(ns_ids=['My', 'Data'], prefix_root_ns=True)) == "::My::Data"
+    assert str(Fqn(ns_ids=ns_ids_t('My.Data'), prefix_root_ns=True)) == "::My::Data"
 
 
 def test_fqn_fail():
+    """Test bad weather example of the Fqn class"""
     with pytest.raises(TypeError) as exc:
         Fqn(ns_ids=123)
-    assert str(exc.value) == 'NameSpaceIds type expected'
+    assert str(exc.value) == ARGUMENT123_NOT_NAMESPACEIDS
 
 
-def test_type_default_ok():
-    sut = TypeDesc(Fqn(['My', 'Data']))
+def test_typedesc_ok():
+    """Test valid examples of the TypeDesc class"""
+    sut = TypeDesc(Fqn(ns_ids_t('My.Data')))
     assert str(sut.fqn) == 'My::Data'
     assert sut.postfix == TypePostfix.NONE
     assert sut.default_value is None
     assert str(sut) == 'My::Data'
 
+    # with default value specified
+    assert TypeDesc(fqn_t('My.Data'), default_value='123').default_value == '123'
 
-def test_type_with_default_value():
-    sut = TypeDesc(Fqn(['My', 'Data']), default_value='123')
-    assert sut.default_value == '123'
 
+def test_typedesc_ok_with_template_arg():
+    """Test valid examples of the TypeDesc class with a template argument"""
+    sut1 = TypeDesc(fqn_t('My.Data', True), template_arg=TemplateArg(fqn_t('Hal.IHeater')))
+    assert str(sut1) == '::My::Data<Hal::IHeater>'
+
+    sut2 = TypeDesc(fqn_t('My.Project'), TemplateArg(fqn_t('Toaster', True)))
+    assert str(sut2) == 'My::Project<::Toaster>'
+
+
+def test_typedesc_fail_with_default_value():
+    """Test incorrect examples of the TypeDesc class"""
     with pytest.raises(CppGenError) as exc:
-        TypeDesc(Fqn(['My', 'Data']), default_value=123.456)
+        TypeDesc(Fqn(ns_ids_t('My.Data')), default_value=123.456)
     assert str(exc.value) == 'default_value must be a string type'
 
 
-def test_type_const():
-    sut = TypeDesc(fqn=Fqn(['My', 'Data']), const=True)
+def test_typedesc_const():
+    sut = TypeDesc(fqn=fqn_t('My.Data'), const=True)
     assert str(sut) == 'const My::Data'
 
 
-def test_type_other_postfices():
-    assert str(TypeDesc(Fqn(['My', 'Data']), postfix=TypePostfix.REFERENCE)) == 'My::Data&'
-    assert str(TypeDesc(Fqn(['My', 'Data']), postfix=TypePostfix.POINTER)) == 'My::Data*'
-    assert str(TypeDesc(Fqn(['My', 'Data'], prefix_root_ns=True))) == '::My::Data'
-    assert str(TypeDesc(Fqn(['Number'], prefix_root_ns=True), const=True)) == 'const ::Number'
+def test_typedesc_other_postfices():
+    assert str(TypeDesc(fqn_t('My.Data'), postfix=TypePostfix.REFERENCE)) == 'My::Data&'
+    assert str(TypeDesc(fqn_t('My_Data_'), postfix=TypePostfix.POINTER)) == 'My_Data_*'
+    assert str(TypeDesc(fqn_t('My::Data', prefix_root_ns=True))) == '::My::Data'
+    assert str(TypeDesc(fqn_t('Number', True), const=True)) == 'const ::Number'
 
 
 def test_struct_decl_fail():
@@ -162,7 +176,7 @@ def test_access_specified_section():
 
 
 def test_param_with_default1():
-    type_desc = TypeDesc(Fqn(['int']), default_value='123')
+    type_desc = TypeDesc(fqn_t('int'), default_value='123')
     sut = Param(type_desc=type_desc, name='number')
     assert sut.name == 'number'
     assert sut.as_decl == 'int number = 123'
@@ -170,7 +184,7 @@ def test_param_with_default1():
 
 
 def test_param_with_default2():
-    type_desc = TypeDesc(fqn=Fqn(['std', 'string']), postfix=TypePostfix.REFERENCE,
+    type_desc = TypeDesc(fqn=fqn_t(['std', 'string']), postfix=TypePostfix.REFERENCE,
                          const=True, default_value='""')
     sut = Param(type_desc=type_desc, name='message')
     assert str(sut.type_desc) == 'const std::string&'
@@ -179,7 +193,7 @@ def test_param_with_default2():
 
 
 def test_param_without_default():
-    type_desc = TypeDesc(fqn=Fqn(['MyType']), postfix=TypePostfix.POINTER, const=False)
+    type_desc = TypeDesc(fqn=fqn_t('MyType'), postfix=TypePostfix.POINTER, const=False)
     sut = Param(type_desc=type_desc, name='example')
     assert str(sut.type_desc) == 'MyType*'
     assert sut.as_decl == 'MyType* example'
@@ -188,7 +202,7 @@ def test_param_without_default():
 
 def test_param_str_fail():
     with pytest.raises(CppGenError) as exc:
-        str(Param(type_desc=TypeDesc(Fqn(['int'])), name='number'))
+        str(Param(type_desc=TypeDesc(fqn_t('int')), name='number'))
     assert str(exc.value) == 'instead of str(), access the properties as_decl or as_def'
 
 
@@ -223,8 +237,8 @@ def test_constructor_ok():
 
 
 def test_constructor_params_and_content_ok():
-    param1 = param_t(['int'], 'x')
-    param2 = param_t(['size_t'], 'y', '123u')
+    param1 = param_t(ns_ids_t('int'), 'x')
+    param2 = param_t(ns_ids_t('size_t'), 'y', '123u')
     sut = Constructor(scope=Class('MyToaster'), params=[param1, param2],
                       contents=CONTENTS_MULTI_LINE)
     assert sut.as_decl == CONSTRUCTOR_PARAMS_DECL
@@ -232,8 +246,8 @@ def test_constructor_params_and_content_ok():
 
 
 def test_explicit_constructor_ok():
-    param1 = param_t(['int'], 'x')
-    param2 = param_t(['size_t'], 'y', '123u')
+    param1 = param_t(ns_ids_t('int'), 'x')
+    param2 = param_t(ns_ids_t('size_t'), 'y', '123u')
     sut = Constructor(scope=Class('MyToaster'), explicit=True, params=[param1, param2],
                       contents=CONTENTS_MULTI_LINE)
     assert sut.as_decl == CONSTRUCTOR_EXPLICIT_DECL
@@ -331,8 +345,8 @@ def test_class_member_function_minimal():
 
 
 def test_function_params():
-    param1 = param_t(['int'], 'x')
-    param2 = param_t(['size_t'], 'y', '123u')
+    param1 = param_t(ns_ids_t('int'), 'x')
+    param2 = param_t(ns_ids_t('size_t'), 'y', '123u')
     sut = Function(return_type=void_t(), name='Calculate', params=[param1, param2],
                    contents=CONTENTS_MULTI_LINE)
     assert sut.as_decl == FUNCTION_PARAMS_DECL
@@ -341,14 +355,14 @@ def test_function_params():
 
 def test_static_function():
     sut = Function(prefix=FunctionPrefix.STATIC, return_type=int_t(), name='Process',
-                   params=[param_t(['int'], 'x')])
+                   params=[param_t(ns_ids_t('int'), 'x')])
     assert sut.as_decl == STATIC_FUNCTION_DECL
     assert sut.as_def == STATIC_FUNCTION_DEF
 
 
 def test_static_member_function():
     sut = Function(prefix=FunctionPrefix.STATIC, return_type=int_t(), name='Process',
-                   params=[param_t(['int'], 'x')], scope=Struct('MyStruct'))
+                   params=[param_t(ns_ids_t('int'), 'x')], scope=Struct('MyStruct'))
     assert sut.as_decl == STATIC_FUNCTION_DECL
     assert sut.as_def == STATIC_MEMBER_FUNCTION_DEF
 
@@ -361,7 +375,7 @@ def test_virtual_member_function_fail():
 
 def test_virtual_member_function():
     sut = Function(prefix=FunctionPrefix.VIRTUAL, return_type=float_t(),
-                   name='Calc', params=[param_t(['float'], 'y')],
+                   name='Calc', params=[param_t(ns_ids_t('float'), 'y')],
                    scope=Class('MyClass'))
     assert sut.as_decl == VIRTUAL_MEMBER_FUNCTION_DECL
     assert sut.as_def == VIRTUAL_MEMBER_FUNCTION_DEF
@@ -408,7 +422,7 @@ def test_member_function_override():
 def test_member_variable():
     assert str(MemberVariable(type=float_t(), name='MyNumber')) == 'float MyNumber;'
     assert str(
-        MemberVariable(type=TypeDesc(Fqn(['My', 'ILedControl']), postfix=TypePostfix.REFERENCE),
+        MemberVariable(type=TypeDesc(Fqn(ns_ids_t('My.ILedControl')), postfix=TypePostfix.REFERENCE),
                        name='MyPort')) == 'My::ILedControl& MyPort;'
 
 
@@ -426,86 +440,108 @@ def test_member_variable_fail():
     assert str(exc.value) == 'name must be a non-empty string'
 
 
-# test the helper functions
-
-def test_gen_fqn_ok():
-    """"Test the generate fqn function, good weather"""
-    assert gen_fqn(['My', 'Data']) == 'My::Data'
-    assert gen_fqn([]) == ''
-    assert gen_fqn(None) == ''
-    assert gen_fqn(ns_ids=['My', 'Data'], prefix_root_ns=True) == '::My::Data'
-    assert gen_fqn(ns_ids=[], prefix_root_ns=True) == ''
-    assert gen_fqn(None, True) == ''
+###############################################################################
+# Test the type creation functions
+#
 
 
-def test_gen_fqn_fail():
-    """"Test the generate fqn function, bad weather"""
-    with pytest.raises(TypeError) as exc:
-        gen_fqn(123)
-    assert str(exc.value) == 'NameSpaceIds type expected'
+@pytest.mark.parametrize('param,exp_str',
+                         [(NamespaceIds(['My', 'Data']), 'My::Data'),
+                          (NamespaceIds([]), ''),
+                          (namespaceids_t('My::Data'), 'My::Data'),
+                          (ns_ids_t('My.Data'), 'My::Data'),
+                          (None, ''),
+                          ])
+def test_fqn_t_ok_default(param, exp_str):
+    """Test valid examples of the Fqn type creation function specifying only the mandatory argument."""
+    sut = fqn_t(ns_ids=param)
+    assert isinstance(sut, Fqn)
+    assert str(sut) == exp_str
 
 
-def test_type_helpers():
-    assert void_t() == TypeDesc(fqn=Fqn(['void']))
-    assert int_t() == TypeDesc(fqn=Fqn(['int']))
-    assert float_t() == TypeDesc(fqn=Fqn(['float']))
-    assert double_t() == TypeDesc(fqn=Fqn(['double']))
+@pytest.mark.parametrize('param,opt_param,exp_str',
+                         [(ns_ids_t('My.Data'), False, 'My::Data'),
+                          (ns_ids_t('My.Data'), True, '::My::Data'),
+                          (ns_ids_t([]), False, ''),
+                          (ns_ids_t([]), True, ''),
+                          (None, False, ''),
+                          (None, True, ''),
+                          ])
+def test_fqn_t_ok_optionals(param, opt_param, exp_str):
+    """Test valid examples of the Fqn type creation function with using the optional argument."""
+    sut = fqn_t(ns_ids=param, prefix_root_ns=opt_param)
+    assert isinstance(sut, Fqn)
+    assert str(sut) == exp_str
 
 
-def test_decl_var_t_helper():
-    sut = decl_var_t(Fqn(['My', 'Type']), 'm_data')
+def test_fqn_t_fail():
+    """Test failing examples of the Fqn type creation function."""
+    with pytest.raises(NamespaceIdsTypeError) as exc:
+        fqn_t(123)
+    assert str(exc.value) == 'Can not create NamespaceIds from argument "123"'
+
+
+def test_typedesc_creator_functions():
+    assert void_t() == TypeDesc(fqn=Fqn(ns_ids_t('void')))
+    assert int_t() == TypeDesc(fqn=Fqn(ns_ids_t('int')))
+    assert float_t() == TypeDesc(fqn=Fqn(ns_ids_t('float')))
+    assert double_t() == TypeDesc(fqn=Fqn(ns_ids_t('double')))
+
+
+def test_decl_var_t_ok():
+    sut = decl_var_t(fqn_t('My.Type'), 'm_data')
     assert isinstance(sut, MemberVariable)
     assert str(sut) == 'My::Type m_data;'
 
 
-def test_decl_var_ref_t_helper():
-    sut = decl_var_ref_t(Fqn(['My', 'Type']), 'm_data')
+def test_decl_var_ref_t_ok():
+    sut = decl_var_ref_t(fqn_t(['My', 'Type']), 'm_data')
     assert isinstance(sut, MemberVariable)
     assert str(sut) == 'My::Type& m_data;'
 
 
-def test_decl_var_ptr_t_helper():
-    sut = decl_var_ptr_t(Fqn(['My', 'Type']), 'm_data')
+def test_decl_var_ptr_t_ok():
+    sut = decl_var_ptr_t(fqn_t('My::Type'), 'm_data')
     assert isinstance(sut, MemberVariable)
     assert str(sut) == 'My::Type* m_data;'
 
 
-def test_param_t_helper():
-    sut = param_t(['std', 'string'], 'message')
+def test_param_t_ok():
+    sut = param_t(ns_ids_t('std.string'), 'message')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'std::string message'
     assert sut.as_def == 'std::string message'
 
 
-def test_param_t_helper_with_default():
-    sut = param_t(['std', 'string'], 'message', '"MyDefault"')
+def test_param_t_ok_with_default():
+    sut = param_t(ns_ids_t('std::string'), 'message', '"MyDefault"')
     assert sut.as_decl == 'std::string message = "MyDefault"'
     assert sut.as_def == 'std::string message'
 
 
-def test_const_param_ref_t_helper():
-    sut = const_param_ref_t(['IBigStruct'], 'data')
+def test_const_param_ref_t_ok():
+    sut = const_param_ref_t(ns_ids_t('IBigStruct'), 'data')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'const IBigStruct& data'
     assert sut.as_def == 'const IBigStruct& data'
 
 
-def test_const_param_ref_t_helper_with_default():
-    sut = const_param_ref_t(['IBigStruct'], 'data', 'nullptr')
+def test_const_param_ref_t_ok_with_default():
+    sut = const_param_ref_t(namespaceids_t('IBigStruct'), 'data', 'nullptr')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'const IBigStruct& data = nullptr'
     assert sut.as_def == 'const IBigStruct& data'
 
 
-def test_const_param_ptr_t_helper():
-    sut = const_param_ptr_t(['IBigStruct'], 'data')
+def test_const_param_ptr_t_ok():
+    sut = const_param_ptr_t(NamespaceIds(['IBigStruct']), 'data')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'const IBigStruct* data'
     assert sut.as_def == 'const IBigStruct* data'
 
 
-def test_const_param_ptr_t_helper_with_default():
-    sut = const_param_ptr_t(['IBigStruct'], 'data', 'nullptr')
+def test_const_param_ptr_t_ok_with_default():
+    sut = const_param_ptr_t(ns_ids_t(['IBigStruct']), 'data', 'nullptr')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'const IBigStruct* data = nullptr'
     assert sut.as_def == 'const IBigStruct* data'
@@ -526,7 +562,7 @@ class ContainerTestCase(TestCase):
 
     def test_add_one_param(self):
         param_name = 'message'
-        param = param_t(['std', 'string'], param_name)
+        param = param_t(ns_ids_t('std.string'), param_name)
         assert isinstance(self.sut.add_unique(param), Container), 'self is returned (Fluent Itf)'
         assert len(self.sut.params) == 1
         assert param_name in self.sut.params
@@ -536,8 +572,8 @@ class ContainerTestCase(TestCase):
         assert str(exc.value) == 'Param "message" already present'
 
     def test_add_list_of_params_ok(self):
-        param1 = param_t(['std', 'string'], 'message')
-        param2 = const_param_ref_t(['IBigStruct'], 'data', 'nullptr')
+        param1 = param_t(ns_ids_t('std.string'), 'message')
+        param2 = const_param_ref_t(ns_ids_t('std.IBigStruct'), 'data', 'nullptr')
         self.sut.add_unique([param1, param2])
         assert len(self.sut.params) == 2
         assert 'message' in self.sut.params

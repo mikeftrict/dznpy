@@ -9,12 +9,13 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 import pytest
 
 # dznpy modules
-from dznpy.scoping import namespaceids_t
+from dznpy.scoping import ns_ids_t, NamespaceIds, NamespaceIdsTypeError
 
 # systems-under-test
 from dznpy.support_files import strict_port as sut
 
 # Test data
+from common.testdata import *
 from dznpy.dznpy_version import VERSION
 
 
@@ -96,7 +97,7 @@ MYNAMESPACE_DZN_STRICT_PORT_HH = template_hh('My::Name::Space::')
 
 def test_create_default_namespaced():
     result = sut.create_header()
-    assert result.namespace == ['Dzn']
+    assert result.namespace == ns_ids_t('Dzn')
     assert result.filename == 'Dzn_StrictPort.hh'
     assert result.contents == DEFAULT_DZN_STRICT_PORT_HH
     assert result.contents_hash == '0b772212190c6b08e34b5cc1a88320af'
@@ -104,8 +105,8 @@ def test_create_default_namespaced():
 
 
 def test_create_with_prefixing_namespace():
-    result = sut.create_header(namespaceids_t('My.Name.Space'))
-    assert result.namespace == ['My', 'Name', 'Space', 'Dzn']
+    result = sut.create_header(ns_ids_t('My.Name.Space'))
+    assert result.namespace == NamespaceIds(['My', 'Name', 'Space', 'Dzn'])
     assert result.filename == 'My_Name_Space_Dzn_StrictPort.hh'
     assert result.contents == MYNAMESPACE_DZN_STRICT_PORT_HH
     assert 'namespace My::Name::Space::Dzn {' in result.contents
@@ -114,4 +115,4 @@ def test_create_with_prefixing_namespace():
 def test_create_fail():
     with pytest.raises(TypeError) as exc:
         sut.create_header(123)
-    assert str(exc.value) == 'namespace_prefix is of incorrect type'
+    assert str(exc.value) == ARGUMENT123_NOT_NAMESPACEIDS

@@ -179,12 +179,12 @@ PORT_INJECTED_INDICATION_ABSENT = '''{"<class>": "port"}'''
 PORT_INJECTED_INDICATION_INVALID = '''{"<class>": "port", "injected?": "bogus"}'''
 
 # the following snippet contains an example interface, foreign and an enum in 'global' scope
-# while various others dezyne element with fqn identifiers reside in the 'My' scope:
+# while various others dezyne element with fqn identifiers reside in the 'Project' scope:
 DZNFILE_EXAMPLE = '''
 {"<class>": "root",
  "elements": [''' f'{INTERFACE_EMPTY}, {FOREIGN}, {ENUM}, ' '''
               {"<class>": "namespace",
-                "name": {"<class>": "scope_name", "ids": ["My"]},
+                "name": {"<class>": "scope_name", "ids": ["Project"]},
                 "elements": [''' f'{INTERFACE_TWO_ITEMS}, {COMPONENT}, ' \
                   f'{SYSTEM}, {EXTERN}, {SUBINT}' ''']}
              ],

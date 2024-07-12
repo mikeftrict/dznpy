@@ -9,3 +9,5 @@ COPYRIGHT = '''\
 Copyright Example Line 1
 Copyright Example Line 2
 '''
+
+ARGUMENT123_NOT_NAMESPACEIDS = """Value argument "123" is not equal to the expected type: <class 'dznpy.scoping.NamespaceIds'>, actual type found: <class 'int'>."""

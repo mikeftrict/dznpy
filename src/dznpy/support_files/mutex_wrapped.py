@@ -6,13 +6,14 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
+from typing import Optional
 
 # dznpy modules
 from ..dznpy_version import COPYRIGHT
 from ..code_gen_common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
 from ..cpp_gen import CommentBlock, SystemIncludes, Namespace
 from ..misc_utils import TextBlock
-from ..scoping import NameSpaceIds
+from ..scoping import NamespaceIds
 
 # own modules
 from . import initialize_ns, create_footer
@@ -77,7 +78,7 @@ private:
 """
 
 
-def create_header(namespace_prefix: NameSpaceIds = None) -> GeneratedContent:
+def create_header(namespace_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
     """Create the c++ header file contents that facilitates strict port typing."""
 
     ns, cpp_ns, file_ns = initialize_ns(namespace_prefix)
