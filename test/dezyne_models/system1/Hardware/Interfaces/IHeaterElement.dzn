@@ -1,9 +1,12 @@
-// IHeaterElement
+// Three times an IHeaterElement interface.
+//
+// For testing purposes (e.g. look up by FQN/scope name) this file intentionally contains three
+// interface models, plus, these interfaces have the same name but reside in a different namespaces.
 //
 
 namespace Some { namespace Vendor {
 
-interface IHeaterElement
+interface IHeaterElement // #1
 {
 // Lifecycle operations
 in void Initialize();
@@ -41,3 +44,33 @@ behaviour
 } // behaviour
 } // interface
 }} // end namespace Some::Vendor
+
+
+
+namespace My { namespace Project {
+
+interface IHeaterElement // #2
+{
+in void Second();
+
+behaviour
+{
+    on Second: {}
+
+} // behaviour
+} // interface
+}} // end namespace My::Project
+
+
+
+
+interface IHeaterElement // #3 in global namespaceø
+{
+in void Third();
+
+behaviour
+{
+    on Third: {}
+
+} // behaviour
+} // interface

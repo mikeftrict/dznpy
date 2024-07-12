@@ -9,12 +9,13 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 import pytest
 
 # dznpy modules
-from dznpy.scoping import namespaceids_t
+from dznpy.scoping import ns_ids_t, NamespaceIds
 
 # systems-under-test
 from dznpy.support_files import misc_utils as sut
 
 # Test data
+from common.testdata import *
 from dznpy.dznpy_version import VERSION
 
 
@@ -85,7 +86,7 @@ PROJECT_DZN_MISC_UTILS_HH = template_hh('Project::')
 
 def test_create_default_namespaced():
     result = sut.create_header()
-    assert result.namespace == ['Dzn']
+    assert result.namespace == ns_ids_t('Dzn')
     assert result.filename == 'Dzn_MiscUtils.hh'
     assert result.contents == DEFAULT_DZN_MISC_UTILS_HH
     assert result.contents_hash == '766833274b151ab71240fbb9e4e6ab39'
@@ -93,8 +94,8 @@ def test_create_default_namespaced():
 
 
 def test_create_with_prefixing_namespace():
-    result = sut.create_header(namespaceids_t('Project'))
-    assert result.namespace == ['Project', 'Dzn']
+    result = sut.create_header(ns_ids_t('Project'))
+    assert result.namespace == NamespaceIds(['Project', 'Dzn'])
     assert result.filename == 'Project_Dzn_MiscUtils.hh'
     assert result.contents == PROJECT_DZN_MISC_UTILS_HH
     assert 'namespace Project::Dzn {' in result.contents
@@ -103,4 +104,4 @@ def test_create_with_prefixing_namespace():
 def test_create_fail():
     with pytest.raises(TypeError) as exc:
         sut.create_header(123)
-    assert str(exc.value) == 'namespace_prefix is of incorrect type'
+    assert str(exc.value) == ARGUMENT123_NOT_NAMESPACEIDS

@@ -12,8 +12,8 @@ from typing import List, Dict, Any, Optional
 from typing_extensions import Self
 
 # dznpy modules
-from .misc_utils import is_strlist_instance, plural, TextBlock, EOL, SPACE
-from .scoping import NameSpaceIds, is_namespaceids_instance
+from .misc_utils import assert_t, is_strlist_instance, plural, TextBlock, EOL
+from .scoping import NamespaceIds, ns_ids_t
 
 
 class CppGenError(Exception):
@@ -50,15 +50,19 @@ class TypePostfix(enum.Enum):
 
 @dataclass
 class Fqn:
-    """A C++ fully-qualified name"""
-    ns_ids: NameSpaceIds
+    """Dataclass representing a C++ fully-qualified name by wrapping the NamespaceIds type and
+    additionally providing the option to prefix stringification with the C++ root namespace."""
+    ns_ids: NamespaceIds
     prefix_root_ns: bool = False
 
     def __post_init__(self):
-        self._str_value = gen_fqn(ns_ids=self.ns_ids, prefix_root_ns=self.prefix_root_ns)
+        assert_t(self.ns_ids, NamespaceIds)
 
     def __str__(self):
-        return self._str_value
+        if not self.ns_ids.items:
+            return ''
+        all_ids = self.ns_ids.items
+        return f'::{"::".join(all_ids)}' if self.prefix_root_ns else '::'.join(all_ids)
 
 
 @dataclass(frozen=True)
@@ -73,9 +77,19 @@ class AccessSpecifiedSection:
 
 
 @dataclass(frozen=True)
+class TemplateArg:
+    """TemplateArg"""
+    fqn: Fqn
+
+    def __str__(self):
+        return f'<{self.fqn}>'
+
+
+@dataclass(frozen=True)
 class TypeDesc:
     """TypeDesc"""
     fqn: Fqn
+    template_arg: Optional[TemplateArg] = None
     postfix: TypePostfix = TypePostfix.NONE
     const: bool = False
     default_value: str = None
@@ -85,7 +99,8 @@ class TypeDesc:
             raise CppGenError('default_value must be a string type')
 
     def __str__(self):
-        mandatory = f'{self.fqn}{self.postfix.value}'
+        tpl_arg = f'{self.template_arg}' if self.template_arg else ''
+        mandatory = f'{self.fqn}{tpl_arg}{self.postfix.value}'
         return f'const {mandatory}' if self.const else mandatory
 
 
@@ -176,12 +191,15 @@ class SystemIncludes:
 @dataclass
 class Namespace:
     """Namespace"""
-    ns_ids: NameSpaceIds
+    ns_ids: NamespaceIds
     contents: str or TextBlock = field(default='')
+
+    def __post_init__(self):
+        assert_t(self.ns_ids, NamespaceIds)
 
     def __str__(self):
         """Return the contents of this dataclass as textblock."""
-        ns_ids_str = SPACE + gen_fqn(self.ns_ids) if self.ns_ids else ''
+        ns_ids_str = f' {fqn_t(self.ns_ids)}' if self.ns_ids.items else ''
         head = f'namespace{ns_ids_str} {{'
         fqn_tail = f'}} // namespace{ns_ids_str}'
 
@@ -397,38 +415,41 @@ class MemberVariable:
         return f'{self.type} {self.name};'
 
 
-# helper functions
+###############################################################################
+# Type creation functions
+#
 
-def gen_fqn(ns_ids: Optional[NameSpaceIds], prefix_root_ns: bool = False) -> str:
-    """"Create a fully qualified c++ (namespace) trail from a dezyne JSON NameSpaceIds type.
-    Without (=default) or with the root namespace prefixed. An empty ns_ids will lead to
-    an empty string response."""
+def fqn_t(ns_ids: Optional[Any], prefix_root_ns: bool = False) -> Fqn:
+    """Create a Fqn type from argument 'ns_ids' (any type) that can be accepted or transformed
+    into the NamespaceIds type, without (=default) or with the C++ root namespace prefixed.
+    An empty 'ns_ids' argument will result into default constructed Fqn type.
+    See also: 'nested-namespace-definition'
+    Link: https://en.cppreference.com/w/cpp/language/namespace#Namespaces
+    """
     if not ns_ids:
-        return ''
-    if not is_namespaceids_instance(ns_ids):
-        raise TypeError('NameSpaceIds type expected')
+        return Fqn(ns_ids_t([]), prefix_root_ns)
 
-    return f'::{"::".join(ns_ids)}' if prefix_root_ns else '::'.join(ns_ids)
+    return Fqn(ns_ids_t(ns_ids), prefix_root_ns)
 
 
 def void_t() -> TypeDesc:
     """Shortcut helper to create a void TypeDesc"""
-    return TypeDesc(fqn=Fqn(['void']))
+    return TypeDesc(fqn=fqn_t('void'))
 
 
 def int_t() -> TypeDesc:
     """Shortcut helper to create a int TypeDesc"""
-    return TypeDesc(fqn=Fqn(['int']))
+    return TypeDesc(fqn=fqn_t('int'))
 
 
 def float_t() -> TypeDesc:
     """Shortcut helper to create a float TypeDesc"""
-    return TypeDesc(fqn=Fqn(['float']))
+    return TypeDesc(fqn=fqn_t('float'))
 
 
 def double_t() -> TypeDesc:
     """Shortcut helper to create a double TypeDesc"""
-    return TypeDesc(fqn=Fqn(['double']))
+    return TypeDesc(fqn=fqn_t('double'))
 
 
 def decl_var_t(fqn: Fqn, name: str) -> MemberVariable:
@@ -446,12 +467,12 @@ def decl_var_ptr_t(fqn: Fqn, name: str) -> MemberVariable:
     return MemberVariable(type=TypeDesc(fqn=fqn, postfix=TypePostfix.POINTER), name=name)
 
 
-def param_t(ns_ids: NameSpaceIds, name: str, default_value='') -> Param:
+def param_t(ns_ids: NamespaceIds, name: str, default_value='') -> Param:
     """Shortcut helper to create a simple parameter with an optional default value."""
     return Param(type_desc=TypeDesc(Fqn(ns_ids), default_value=default_value), name=name)
 
 
-def const_param_ref_t(ns_ids: NameSpaceIds, name: str, default_value='') -> Param:
+def const_param_ref_t(ns_ids: NamespaceIds, name: str, default_value='') -> Param:
     """Shortcut helper to create a const reference parameter with an optional default value."""
     return Param(type_desc=TypeDesc(fqn=Fqn(ns_ids),
                                     postfix=TypePostfix.REFERENCE,
@@ -459,7 +480,7 @@ def const_param_ref_t(ns_ids: NameSpaceIds, name: str, default_value='') -> Para
                                     default_value=default_value), name=name)
 
 
-def const_param_ptr_t(ns_ids: NameSpaceIds, name: str, default_value='') -> Param:
+def const_param_ptr_t(ns_ids: NamespaceIds, name: str, default_value='') -> Param:
     """Shortcut helper to create a const pointer parameter with an optional default value."""
     return Param(type_desc=TypeDesc(fqn=Fqn(ns_ids),
                                     postfix=TypePostfix.POINTER,

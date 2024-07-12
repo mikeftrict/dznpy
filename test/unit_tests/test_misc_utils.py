@@ -7,6 +7,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import pytest
+from dataclasses import dataclass, field
 from unittest import TestCase
 
 # system-under-test
@@ -201,3 +202,95 @@ class TextBlockTests(TestCase):
         assert str(
             TextBlock(['Hi\nThere\n', 'Every\n\n', 'One\n\n'])) == 'Hi\nThere\nEvery\n\nOne\n\n'
         assert str(TextBlock(['Hi\n', 'Every\n', '\n', 'One\n\n'])) == 'Hi\nEvery\n\nOne\n\n'
+
+
+###############################################################################
+# Tests for assert_t() and assert_t_optional()
+#
+# Local test data:
+@dataclass
+class Top:
+    """Example of a super class."""
+    member: str = field(default_factory=str)
+
+
+class Sub(Top):
+    """Example of a subclass."""
+    pass
+
+
+def test_assert_t_builtin_ok():
+    """Test valid scenarios of the assert_t() function."""
+    sut = float(1.23)
+    assert_t(sut, float)
+
+
+def test_assert_t_superclass_ok():
+    """Test valid scenarios of the assert_t() function."""
+    sut = Top()
+    assert_t(sut, Top)
+
+
+def test_assert_t_subclass_ok():
+    """Test valid scenarios of the assert_t() function."""
+    sut = Sub()
+    assert_t(sut, Sub)
+    assert_t(sut, Top)  # asserting on its super class is also ok
+
+
+def test_assert_t_arguments_fail():
+    """Test scenarios of invalid arguments."""
+    with pytest.raises(ValueError) as exc:
+        assert_t(None, float)
+    assert str(exc.value) == 'Value argument is None and therefore it can not be asserted.'
+
+    with pytest.raises(ValueError) as exc:
+        assert_t('Test', None)
+    assert str(exc.value) == 'Expected type argument is None and therefore assertion is impossible.'
+
+
+def test_assert_t_fails():
+    """Test scenarios of failing type assertions."""
+    with pytest.raises(TypeError) as exc:
+        assert_t('Some text', float)
+    assert str(
+        exc.value) == """Value argument "Some text" is not equal to the expected type: <class 'float'>, actual type found: <class 'str'>."""
+
+
+def test_assert_t_optional_builtin_ok():
+    """Test valid scenarios of the assert_t_optional() function."""
+    assert_t_optional(None, float)
+    sut = float(1.23)
+    assert_t_optional(sut, float)
+
+
+def test_assert_t_optional_superclass_ok():
+    """Test valid scenarios of the assert_t_optional() function."""
+    assert_t_optional(None, Top)
+    sut = Top()
+    assert_t_optional(sut, Top)
+
+
+def test_assert_t_optional_subclass_ok():
+    """Test valid scenarios of the assert_t_optional() function."""
+    assert_t_optional(None, Sub)
+    sut = Sub()
+    assert_t_optional(sut, Sub)
+    assert_t_optional(sut, Top)  # asserting on its super class is also ok
+
+
+def test_assert_t_optional_arguments_fail():
+    """Test scenarios of invalid arguments."""
+    assert_t_optional(None, float)  # intentionally confirm that None is a valid argument
+
+    with pytest.raises(ValueError) as exc:
+        assert_t_optional('Test', None)
+    assert str(exc.value) == 'Expected type argument is None and therefore assertion is impossible.'
+
+
+def test_assert_t_optional_fails():
+    """Test scenarios of failing type assertions."""
+    with pytest.raises(TypeError) as exc:
+        assert_t_optional('Some text', float)
+    assert str(
+        exc.value) == """Value argument "Some text" is not equal to the expected type: <class 'float'>, actual type found: <class 'str'>."""

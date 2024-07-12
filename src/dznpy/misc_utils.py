@@ -60,8 +60,6 @@ def plural(singular_noun: str, ref_collection: Any) -> str:
         return f'{singular_noun}{addition}'
     else:
         return singular_noun
-    def fqn(self) -> NameSpaceIds or None:
-        return fqn_items if len(fqn_items) > 0 else None
 
 
 class Indentor(enum.Enum):
@@ -164,3 +162,28 @@ def flatten_to_strlist(value: Any, skip_empty_strings: bool = True) -> List[str]
 def newlined_list_items(list_items: list) -> str:
     """Create a textblock of stringized list items each separated by a new line."""
     return '\n'.join([str(item) for item in list_items]) if list_items else '\n'
+
+
+def assert_t(value: Any, expected_type: Any):
+    """Assert the user specified value has a type that equals (or is a subclass of) the specified
+    expected_type argument. Otherwise, a TypeError exception is raised.
+    ValueError exceptions are raised when the function arguments are invalid."""
+    if value is None:
+        raise ValueError('Value argument is None and therefore it can not be asserted.')
+
+    if expected_type is None:
+        raise ValueError('Expected type argument is None and therefore assertion is impossible.')
+
+    if not isinstance(value, expected_type):
+        raise TypeError(f'Value argument "{value}" is not equal to the expected type: '
+                        f'{expected_type}, actual type found: {type(value)}.')
+
+
+def assert_t_optional(value: Any, expected_type: Any):
+    """Assert the user specified value has a type that equals (or is a subclass of) the specified
+    expected_type argument -OR- the user specified value equals None, meaning it is optional.
+    On inequality a TypeError exception is raised.
+    ValueError exceptions are raised when the function arguments are invalid."""
+    if value is None:
+        return
+    assert_t(value, expected_type)

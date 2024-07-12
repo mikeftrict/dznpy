@@ -15,8 +15,8 @@ from .. import cpp_gen, ast
 from ..code_gen_common import BLANK_LINE, GeneratedContent
 from ..cpp_gen import Comment, Constructor, Function, MemberVariable, Fqn, Namespace, Struct, \
     TypeDesc
-from ..misc_utils import NameSpaceIds, TextBlock
-from ..scoping import NameSpaceIds
+from ..misc_utils import TextBlock, plural
+from ..scoping import NamespaceIds
 
 # own modules
 from .types import RuntimeSemantics
@@ -72,11 +72,11 @@ class Configuration:
     dezyne_filename: str
     ast_fc: ast.FileContents
     output_basename_suffix: str
-    fqn_encapsulee_name: NameSpaceIds
+    fqn_encapsulee_name: NamespaceIds
     port_cfg: PortCfg
     facilities_origin: FacilitiesOrigin
     copyright: str
-    support_files_ns_prefix: Optional[NameSpaceIds] = field(default=None)
+    support_files_ns_prefix: Optional[NamespaceIds] = field(default=None)
     creator_info: Optional[str] = field(default=None)
     verbose: bool = field(default=False)
 
