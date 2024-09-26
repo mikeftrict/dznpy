@@ -13,7 +13,7 @@ from .ast import Binding, Bindings, Comment, Component, Data, EventDirection, En
     Event, Events, Extern, Fields, FileContents, Filename, Foreign, Formal, Formals, \
     FormalDirection, Import, Injected, Instance, Instances, Interface, Namespace, Port, \
     PortDirection, Ports, Range, Root, ScopeName, Signature, SubInt, System, Types
-from .misc_utils import NamespaceTrail
+from .scoping import NamespaceTree, ns_ids_t
 
 
 class DznJsonError(Exception):
@@ -126,7 +126,7 @@ def parse_comment(element: dict) -> Comment:
     return Comment(elt.get_str_value('string'))
 
 
-def parse_component(element: dict, parent_ns: NamespaceTrail) -> Component:
+def parse_component(element: dict, parent_ns: NamespaceTree) -> Component:
     """Parse a 'component' <class> element."""
     elt = ElementHelper(element, 'parse_component')
     elt.assert_class('component')
@@ -160,7 +160,7 @@ def parse_endpoint(element: dict) -> EndPoint:
                     instance_name=elt.tryget_str_value('instance_name'))
 
 
-def parse_enum(element: dict, parent_ns: NamespaceTrail) -> Enum:
+def parse_enum(element: dict, parent_ns: NamespaceTree) -> Enum:
     """Parse a 'enum' <class> element."""
     elt = ElementHelper(element, 'parse_enum')
     elt.assert_class('enum')
@@ -169,7 +169,7 @@ def parse_enum(element: dict, parent_ns: NamespaceTrail) -> Enum:
                 name=name, fields=parse_fields(elt.get_dict_value('fields')))
 
 
-def parse_extern(element: dict, parent_ns: NamespaceTrail) -> Extern:
+def parse_extern(element: dict, parent_ns: NamespaceTree) -> Extern:
     """Parse a 'extern' <class> element."""
     elt = ElementHelper(element, 'parse_extern')
     elt.assert_class('extern')
@@ -208,7 +208,7 @@ def parse_filename(element: dict) -> Filename:
     return Filename(elt.get_str_value('name'))
 
 
-def parse_foreign(element: dict, parent_ns: NamespaceTrail) -> Foreign:
+def parse_foreign(element: dict, parent_ns: NamespaceTree) -> Foreign:
     """Parse a 'foreign' <class> element."""
     elt = ElementHelper(element, 'parse_foreign')
     elt.assert_class('foreign')
@@ -269,12 +269,12 @@ def parse_instances(element: dict) -> Instances:
     return Instances(elements=[parse_instance(x) for x in elt.get_list_value('elements')])
 
 
-def parse_interface(element: dict, parent_ns: NamespaceTrail) -> Interface:
+def parse_interface(element: dict, parent_ns: NamespaceTree) -> Interface:
     """Parse a 'interface' <class> element."""
     elt = ElementHelper(element, 'parse_interface')
     elt.assert_class('interface')
     name = parse_scope_name(elt.get_dict_value('name'))
-    ns_trail = NamespaceTrail(parent_ns, str(name))
+    ns_trail = NamespaceTree(parent_ns, name.value)
     return Interface(fqn=parent_ns.fqn_member_name(name.value), parent_ns=parent_ns,
                      ns_trail=ns_trail, name=name,
                      types=parse_types(elt.get_dict_value('types'), ns_trail),
@@ -337,7 +337,7 @@ def parse_range(element: dict) -> Range:
     return Range(from_int=elt.get_int_value('from'), to_int=elt.get_int_value('to'))
 
 
-def parse_subint(element: dict, parent_ns: NamespaceTrail) -> SubInt:
+def parse_subint(element: dict, parent_ns: NamespaceTree) -> SubInt:
     """Parse a 'subint' <class> element."""
     elt = ElementHelper(element, 'parse_subint')
     elt.assert_class('subint')
@@ -361,9 +361,9 @@ def parse_scope_name(element: dict) -> ScopeName:
     elt = ElementHelper(element, 'parse_scope_name')
     elt.assert_class('scope_name')
     ids = elt.get_list_value('ids')
-    if len(ids) == 0:
+    if not ids:
         raise DznJsonError('parse_scope_name: list "ids" is empty')
-    return ScopeName(value=ids)
+    return ScopeName(value=ns_ids_t(ids))
 
 
 def parse_signature(element: dict) -> Signature:
@@ -374,7 +374,7 @@ def parse_signature(element: dict) -> Signature:
                      formals=parse_formals(elt.get_dict_value('formals')))
 
 
-def parse_system(element: dict, parent_ns: NamespaceTrail) -> System:
+def parse_system(element: dict, parent_ns: NamespaceTree) -> System:
     """Parse a 'system' <class> element."""
     elt = ElementHelper(element, 'parse_system')
     elt.assert_class('system')
@@ -386,7 +386,7 @@ def parse_system(element: dict, parent_ns: NamespaceTrail) -> System:
                   bindings=parse_bindings(elt.get_dict_value('bindings')))
 
 
-def parse_types(element: dict, parent_ns: NamespaceTrail) -> Types:
+def parse_types(element: dict, parent_ns: NamespaceTree) -> Types:
     """Parse a 'types' <class> element."""
     elt = ElementHelper(element, 'parse_types')
     elt.assert_class('types')
@@ -407,14 +407,14 @@ class DznJsonAst:
 
     _ast: dict = None
     _verbose: bool
-    _ns_trail: NamespaceTrail
+    _ns_trail: NamespaceTree
     _file_contents: FileContents
 
     def __init__(self, json_contents: str = None, verbose: bool = False):
         if json_contents is not None:
             self._ast = orjson.loads(json_contents)
         self._verbose = verbose
-        self._ns_trail = NamespaceTrail()
+        self._ns_trail = NamespaceTree()
         self._file_contents = FileContents()
 
     def load_file(self, dezyne_filepath: str):
@@ -445,7 +445,7 @@ class DznJsonAst:
             self.parse_element(element, self._ns_trail)
         return self.file_contents
 
-    def parse_element(self, element, parent_ns: NamespaceTrail):
+    def parse_element(self, element, parent_ns: NamespaceTree):
         """"Parse an element and identify its type."""
         fc = self.file_contents
 
@@ -470,8 +470,8 @@ class DznJsonAst:
                 fc.subints.extend(interface.types.subints)
             elif cls == 'namespace':
                 namespace = parse_namespace(element)
-                sub_ns = NamespaceTrail(parent=parent_ns,
-                                        scope_name=str(namespace.scope_name))
+                sub_ns = NamespaceTree(parent=parent_ns,
+                                       scope_name=namespace.scope_name.value)
                 for sub_element in namespace.elements:
                     self.parse_element(sub_element, sub_ns)
             elif cls == 'system':

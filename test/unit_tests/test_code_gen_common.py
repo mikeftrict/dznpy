@@ -6,7 +6,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # dznpy modules
-from dznpy.misc_utils import namespaceids_t
+from dznpy.scoping import namespaceids_t, NamespaceIds
 
 # system-under-test
 from dznpy.code_gen_common import GeneratedContent
@@ -26,4 +26,4 @@ def test_generated_content_with_ns():
     """Test creation with the extra specification of a namespace, that is expected to be
     part in the dataclass as member."""
     sut = GeneratedContent('filename.txt', 'Hi There\n', namespace=namespaceids_t('My.Project'))
-    assert sut.namespace == ['My', 'Project']
+    assert sut.namespace == NamespaceIds(['My', 'Project'])

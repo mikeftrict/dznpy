@@ -9,12 +9,13 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 import pytest
 
 # dznpy modules
-from dznpy.misc_utils import namespaceids_t
+from dznpy.scoping import ns_ids_t, NamespaceIds
 
 # systems-under-test
 from dznpy.support_files import multi_client_selector as sut
 
 # Test data
+from common.testdata import *
 from dznpy.dznpy_version import VERSION
 
 
@@ -193,7 +194,7 @@ FORMULI_DUO_DZN_NS_HH = template_hh('Formuli::Duo::', 'Formuli_Duo_')
 
 def test_create_default_namespaced():
     result = sut.create_header()
-    assert result.namespace == ['Dzn']
+    assert result.namespace == ns_ids_t('Dzn')
     assert result.filename == 'Dzn_MultiClientSelector.hh'
     assert result.contents == DEFAULT_DZN_NS_HH
     assert result.contents_hash == 'bea46f77f814e1c8566bd2bf771b476a'
@@ -201,8 +202,8 @@ def test_create_default_namespaced():
 
 
 def test_create_with_prefixing_namespace():
-    result = sut.create_header(namespaceids_t('Formuli.Duo'))
-    assert result.namespace == ['Formuli', 'Duo', 'Dzn']
+    result = sut.create_header(ns_ids_t('Formuli.Duo'))
+    assert result.namespace == NamespaceIds(['Formuli', 'Duo', 'Dzn'])
     assert result.filename == 'Formuli_Duo_Dzn_MultiClientSelector.hh'
     assert result.contents == FORMULI_DUO_DZN_NS_HH
     assert 'namespace Formuli::Duo::Dzn {' in result.contents
@@ -211,4 +212,4 @@ def test_create_with_prefixing_namespace():
 def test_create_fail():
     with pytest.raises(TypeError) as exc:
         sut.create_header(123)
-    assert str(exc.value) == 'namespace_prefix is of incorrect type'
+    assert str(exc.value) == ARGUMENT123_NOT_NAMESPACEIDS

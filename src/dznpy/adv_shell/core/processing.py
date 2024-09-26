@@ -10,11 +10,12 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 # dznpy modules
 from ... import cpp_gen, ast, ast_view
 from ...ast import Component, System
-from ...ast_view import find_on_fqn
+from ...ast_view import find_fqn
 from ...code_gen_common import BLANK_LINE
-from ...cpp_gen import Comment, Constructor, Function, FunctionPrefix, Fqn, MemberVariable, \
-    TypeDesc, TypePostfix, const_param_ref_t, const_param_ptr_t, void_t
-from ...misc_utils import flatten_to_strlist, NameSpaceIds, TextBlock
+from ...cpp_gen import Comment, Constructor, Function, FunctionPrefix, Fqn, fqn_t, MemberVariable, \
+    TypeDesc, TypePostfix, const_param_ref_t, const_param_ptr_t, void_t, TemplateArg
+from ...misc_utils import flatten_to_strlist, TextBlock
+from ...scoping import NamespaceIds, ns_ids_t
 
 # own modules
 from ..common import Configuration, CppPortItf, DznPortItf, \
@@ -30,13 +31,14 @@ def create_dzn_elements(cfg: Configuration, file_contents: ast.FileContents,
         raise AdvShellError('Only system or implementation components can be encapsulated')
 
     scope_fqn = encapsulee.parent_ns.fqn
-    port_names = ast_view.get_port_names(encapsulee.ports)
+    port_names = ast_view.portnames_t(encapsulee.ports)
     all_ports = cfg.port_cfg.match(port_names.provides, port_names.requires)
 
     provides_ports = []
     requires_ports = []
     for port in encapsulee.ports.elements:
-        itf = find_on_fqn(file_contents, port.type_name.value, scope_fqn)
+        r = find_fqn(file_contents, port.type_name.value, scope_fqn)
+        itf = r.get_single_instance(ast.Interface)
         if port.direction == ast.PortDirection.PROVIDES:
             provides_ports.append(DznPortItf(port, itf, all_ports.value[port.name]))
         else:
@@ -49,16 +51,16 @@ def create_dzn_elements(cfg: Configuration, file_contents: ast.FileContents,
 def create_facilities(origin: FacilitiesOrigin, scope) -> Facilities:
     """create_facilities"""
     if origin == FacilitiesOrigin.IMPORT:
-        dispatcher_mv = cpp_gen.decl_var_ref_t(Fqn(['dzn', 'pump']), 'm_dispatcher')
+        dispatcher_mv = cpp_gen.decl_var_ref_t(fqn_t('dzn.pump'), 'm_dispatcher')
         return Facilities(origin, dispatcher_mv, None, None, None)
 
     if origin == FacilitiesOrigin.CREATE:
-        dispatcher_mv = cpp_gen.decl_var_t(Fqn(['dzn', 'pump']), 'm_dispatcher')
-        runtime_mv = cpp_gen.decl_var_t(Fqn(['dzn', 'runtime']), 'm_runtime')
-        locator_t = TypeDesc(Fqn(['dzn', 'locator']))
+        dispatcher_mv = cpp_gen.decl_var_t(fqn_t('dzn.pump'), 'm_dispatcher')
+        runtime_mv = cpp_gen.decl_var_t(fqn_t('dzn.runtime'), 'm_runtime')
+        locator_t = TypeDesc(fqn_t('dzn.locator'))
         locator_mv = cpp_gen.decl_var_t(locator_t.fqn, 'm_locator')
 
-        locator_accessor_fn = Function(TypeDesc(locator_t.fqn, TypePostfix.REFERENCE),
+        locator_accessor_fn = Function(TypeDesc(locator_t.fqn, postfix=TypePostfix.REFERENCE),
                                        'Locator', scope=scope,
                                        contents=f'return {locator_mv.name};')
 
@@ -67,31 +69,28 @@ def create_facilities(origin: FacilitiesOrigin, scope) -> Facilities:
     raise AdvShellError(f'Invalid argument "origin: " {origin}')
 
 
-def create_cpp_portitf(dzn: DznPortItf, scope: cpp_gen.Struct, support_files_ns: NameSpaceIds,
+def create_cpp_portitf(dzn: DznPortItf, scope: cpp_gen.Struct, support_files_ns: NamespaceIds,
                        encapsulee: CppEncapsulee) -> CppPortItf:
     """create_cpp_portitf"""
-    t = TypeDesc(Fqn(dzn.interface.fqn, prefix_root_ns=True))
+    t = TypeDesc(Fqn(dzn.interface.fqn, True))
     fn_prefix = f'{dzn.port.direction.value}'
     cap_name = dzn.port.name[0].upper() + dzn.port.name[1:]
 
     if dzn.semantics == RuntimeSemantics.STS:
         # pass-through mode
+        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Sts'), True), TemplateArg(t.fqn))
         member_var = None
-        wrap_strict_sts = TypeDesc(
-            Fqn(support_files_ns + [f'Sts<{TypeDesc(t.fqn)}>'], prefix_root_ns=True))
         accessor_target = f'{encapsulee.member_var.name}.{dzn.port.name}'
-        accessor_fn = Function(wrap_strict_sts,
-                               f'{fn_prefix}{cap_name}', scope=scope,
+        accessor_fn = Function(strict_port, f'{fn_prefix}{cap_name}', scope=scope,
                                contents=f'return {{{accessor_target}}};')
+
     elif dzn.semantics == RuntimeSemantics.MTS:
         # reroute mode, requires an own instance of the port
+        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Mts'), True), TemplateArg(t.fqn))
         mv_prefix = 'm_pp' if dzn.port.direction == ast.PortDirection.PROVIDES else 'm_rp'
         member_var = MemberVariable(t, f'{mv_prefix}{cap_name}')
-        wrap_strict_sts = TypeDesc(
-            Fqn(support_files_ns + [f'Mts<{TypeDesc(t.fqn)}>'], prefix_root_ns=True))
         accessor_target = f'{member_var.name}'
-        accessor_fn = Function(wrap_strict_sts,
-                               f'{fn_prefix}{cap_name}', scope=scope,
+        accessor_fn = Function(strict_port, f'{fn_prefix}{cap_name}', scope=scope,
                                contents=f'return {{{accessor_target}}};')
     else:
         raise ValueError('unknown runtime semantics')
@@ -109,10 +108,8 @@ def reroute_in_events(port: CppPortItf, facilities: Facilities, encapsulee: CppE
 
         args = []
         for i in event.signature.formals.elements:
-            ext_type = find_on_fqn(fc, i.type_name.value, port.dzn_port_itf.interface.fqn)
-            if not isinstance(ext_type, ast.Extern):
-                raise AdvShellError(f'Extern type {i.type_name} not found')
-
+            r = find_fqn(fc, i.type_name.value, port.dzn_port_itf.interface.fqn)
+            ext_type = r.get_single_instance()
             opt_ref = '&' if i.direction != ast.FormalDirection.IN else ''
             args.append(f'{ext_type.value.value}{opt_ref} {i.name}')
 
@@ -145,10 +142,8 @@ def reroute_out_events(port: CppPortItf, facilities: Facilities, encapsulee: Cpp
 
         args = []
         for i in event.signature.formals.elements:
-            ext_type = find_on_fqn(fc, i.type_name.value, port.dzn_port_itf.interface.fqn)
-            if not isinstance(ext_type, ast.Extern):
-                raise AdvShellError(f'Extern type {i.type_name} not found')
-
+            r = find_fqn(fc, i.type_name.value, port.dzn_port_itf.interface.fqn)
+            ext_type = r.get_single_instance()
             args.append(f'{ext_type.value.value} {i.name}')
 
         captures_by_value = ''.join(f', {x.name}' for x in in_formals)
@@ -176,19 +171,19 @@ def create_constructor(scope, facilities: Facilities, encapsulee: CppEncapsulee,
 
     # construct or import the required dezyne facilities, construct the encapsulee
     if facilities.origin == FacilitiesOrigin.CREATE:
-        p_locator = const_param_ref_t(['dzn', 'locator'], 'prototypeLocator')
+        p_locator = const_param_ref_t(ns_ids_t('dzn.locator'), 'prototypeLocator')
         mil = [f'{facilities.locator.name}(std::move(FacilitiesCheck({p_locator.name}).clone()'
                f'.set({facilities.runtime.name})'
                f'.set({facilities.dispatcher.name})))',
                f'{encapsulee.member_var.name}({facilities.locator.name})']
     elif facilities.origin == FacilitiesOrigin.IMPORT:
-        p_locator = const_param_ref_t(['dzn', 'locator'], 'locator')
+        p_locator = const_param_ref_t(ns_ids_t('dzn.locator'), 'locator')
         mil = [f'{facilities.dispatcher.name}(FacilitiesCheck({p_locator.name}).get<dzn::pump>())',
                f'{encapsulee.member_var.name}({p_locator.name})']
     else:
         raise AdvShellError(f'Invalid argument "origin: " {facilities.origin}')
 
-    p_shell_name = const_param_ref_t(['std', 'string'], 'encapsuleeInstanceName', '""')
+    p_shell_name = const_param_ref_t(ns_ids_t('std.string'), 'encapsuleeInstanceName', '""')
 
     # construct the (MTS) boundary ports
     mts_pp, mts_rp = (provides_ports.mts_ports, requires_ports.mts_ports)
@@ -224,7 +219,7 @@ def create_constructor(scope, facilities: Facilities, encapsulee: CppEncapsulee,
 def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
                               requires_ports: CppPorts, encapsulee: CppEncapsulee) -> Function:
     """Create c++ code for the FinalConstruct method."""
-    param = const_param_ptr_t(['dzn', 'meta'], 'parentComponentMeta', 'nullptr')
+    param = const_param_ptr_t(ns_ids_t('dzn.meta'), 'parentComponentMeta', 'nullptr')
     fn = Function(return_type=void_t(), name='FinalConstruct',
                   scope=scope, params=[param])
 
@@ -261,7 +256,7 @@ def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
 def create_facilities_check_fn(scope: cpp_gen.Struct,
                                facilities_origin: FacilitiesOrigin) -> Function:
     """Create c++ code for the FacilitiesCheck() method."""
-    param = const_param_ref_t(['dzn', 'locator'], 'locator')
+    param = const_param_ref_t(ns_ids_t('dzn.locator'), 'locator')
     fn = Function(return_type=param.type_desc, name='FacilitiesCheck', params=[param],
                   prefix=FunctionPrefix.STATIC, scope=scope)
 

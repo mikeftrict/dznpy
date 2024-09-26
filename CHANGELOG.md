@@ -2,10 +2,29 @@
 
 ## Changes in 0.4 (DEV) since 0.3
 
+### Other changes/additions
+
+- Because of the improved/revamped `NamespaceIds et al`  and `scoping` module, this release yields
+  breaking changes to existing client script. Please update your client script (quite easily).
+
 ### All processed tickets
 
-- [DZNPY-0018](https://github.com/mikeftrict/dznpy/issues/18): Correct typo with regards to provides
-  vs provided. And apply the plural() function where needed.
+- [DZNPY-0020](https://github.com/mikeftrict/dznpy/issues/20): Restructure dznpy modules part 1:
+    - Add (graphical) documentation of dznpy's structure. Version 0.3 and projected 0.4.
+    - Move namespace related types and functions to new module `scoping`
+
+- [DZNPY-0018](https://github.com/mikeftrict/dznpy/issues/18): Correct typo with regard to '
+  provides' vs. 'provided'. And apply the plural() function where needed.
+
+- [DZNPY-0016](https://github.com/mikeftrict/dznpy/issues/16): Add all_sts() preset function.
+
+- [DZNPY-0015](https://github.com/mikeftrict/dznpy/issues/15): Bugfix: AdvShell runtime exception
+  when having no required ports. When generating an Advanced Shell on a component (or system) that
+  has no required ports at all, the adv_shell module will prematurely end with the
+  message `NoneType' object has no attribute 'splitlines`.
+
+- [DZNPY-0009](https://github.com/mikeftrict/dznpy/issues/8): Make namespaceids_t() input argument
+  more strict. This has been addressed as part of the DZNPY-0020 restructuring.
 
 ## Changes in 0.3 (240415) since 0.2
 
@@ -29,7 +48,7 @@
 - [DZNPY-0010](https://github.com/mikeftrict/dznpy/issues/10): Extend GeneratedContent dataclass
   with contents hash. Useful for caching situations.
 
-- [DZNPY-0009](https://github.com/mikeftrict/dznpy/issues/9): Introduce new C++ support
+- [DZNPY-0008](https://github.com/mikeftrict/dznpy/issues/9): Introduce new C++ support
   files `ILog.hh` and `MiscUtils.hh`. The upcoming Advanced Shell Multi-Client feature requires
   these support files. Since they are so generic they can obviously be reused for other types of
   software development activities (Dezyne and vanilla C++ software).

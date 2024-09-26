@@ -1,5 +1,6 @@
 """
-Module providing functionality to access and search in a Dezyne AST.
+Module providing functionality to search a Dezyne abstract syntax tree for instances and
+to distillate comprised information and views.
 
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
@@ -7,51 +8,95 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 from dataclasses import dataclass
-from typing import Any, Optional, Set
+from typing import Any, Optional, Set, List
 
 # dznpy modules
-from .ast import FileContents, PortDirection, Ports
-from .misc_utils import NameSpaceIds, scope_resolution_order
+from .misc_utils import assert_t
+from .ast import FileContents, PortDirection, Ports, assert_filecontents_t, Component, Enum, \
+    Extern, Foreign, Interface, SubInt, System
+from .scoping import NamespaceIds, scope_resolution_order
+
+
+###############################################################################
+# Types
+#
+
+class FindError(Exception):
+    """An error occurred while finding a Dezyne AST instance or instances according
+    to the user specified search criteria."""
+
+
+@dataclass(frozen=True)
+class FindResult:
+    """Dataclass comprising the results of finding Dezyne AST instances. Along with helpful
+    functions to query the result."""
+    items: List[Any]
+
+    @property
+    def valid_types(self) -> List[Any]:
+        """Return the list of valid Dezyne ASD types that can be contained in the FindResult."""
+        return [Component, Enum, Extern, Foreign, Interface, SubInt, System]
+
+    def __post_init__(self):
+        """Perform a post check on the dataclass values set by the user."""
+        if not isinstance(self.items, list):
+            raise TypeError('The type of property "items" must be a list')
+
+        for item in self.items:
+            if not any(isinstance(item, valid_type) for valid_type in self.valid_types):
+                raise TypeError(f'item {item} does not match one of the valid_types')
+
+    def has_one_instance(self, ast_typehint: Optional[Any] = None) -> bool:
+        """Check whether the result contains exactly 1 instance."""
+        found = len(self.items) == 1
+        if not found:
+            return False
+
+        if ast_typehint is None:
+            return found
+
+        # assert the type of the found instance
+        if ast_typehint not in self.valid_types:
+            raise FindError('Argument ast_typehint does not match one of the valid_types')
+
+        return isinstance(self.items[0], ast_typehint)
+
+    def get_single_instance(self, ast_typehint: Optional[Any] = None) -> Any:
+        """The result is asserted to have only one instance, which is returned."""
+        if not self.items:
+            raise FindError('The result contains no instance(s) at all')
+
+        if len(self.items) > 1:
+            raise FindError('The result contains more than one instance')
+
+        if ast_typehint is None:
+            return self.items[0]
+
+        # assert the type of the found instance
+        if ast_typehint not in self.valid_types:
+            raise FindError('Argument ast_typehint does not match one of the valid_types')
+
+        if not isinstance(self.items[0], ast_typehint):
+            raise FindError(f'The found instance does not match the ast typehint {ast_typehint}')
+
+        return self.items[0]
 
 
 @dataclass(frozen=True)
 class PortNames:
+    """Dataclass comprising a set of provides port names and a set of requires port names."""
     provides: Set[str]
     requires: Set[str]
 
 
-def find_on_fqn(fc: FileContents, item_fqn: NameSpaceIds,
-                as_of_scope: Optional[NameSpaceIds]) -> Optional[Any]:
-    """Find the first item instance identified on its fully qualified name in the file
-    contents, resolution will traverse from inner to outer scope until it is found or
-    None when not found. Check the return type. Note that in Dezyne each item and its
-    fqn are unique."""
-    resolution_order = scope_resolution_order(searchable=item_fqn, calling_scope=as_of_scope)
+###############################################################################
+# Type creation functions
+#
 
-    for container in [fc.components, fc.enums, fc.externs, fc.foreigns,
-                      fc.interfaces, fc.subints, fc.systems]:
-        for lookup in resolution_order:
-            for element in container:
-                if element.fqn == lookup:
-                    return element  # return early on the first found item
-
-    return None  # item not found
-
-
-def find(fc: FileContents, model_name: str) -> list:
-    """Find the item instance(s) identified by its name (without namespacing) in the file contents.
-    Check the resulting list for found item(s) and their type."""
-    result = []
-    for container in [fc.components, fc.enums, fc.externs, fc.foreigns,
-                      fc.interfaces, fc.subints, fc.systems]:
-        for element in container:
-            if model_name == element.name.value[0]:
-                result.append(element)
-
-    return result
-
-
-def get_port_names(ports: Ports) -> PortNames:
+def portnames_t(ports: Ports) -> PortNames:
+    """Create an instance of PortNames according to the user specified Ports. The function
+    distinguishes requires from provides ports."""
+    assert_t(ports, Ports)
     provides = set()
     requires = set()
 
@@ -62,3 +107,50 @@ def get_port_names(ports: Ports) -> PortNames:
             requires.add(port.name)
 
     return PortNames(provides=provides, requires=requires)
+
+
+###############################################################################
+# Module functions
+#
+
+def find_fqn(fc: FileContents, ns_ids: NamespaceIds,
+             as_of_inner_scope: Optional[NamespaceIds] = None) -> FindResult:
+    """Find instance(s) in the Dezyne AST FileContents (but Filename and Import excluded) whose
+    Fully Qualified Name equals the specified NamespaceIds argument. The 'as_of_inner_scope'
+    argument will apply a scope resolution order to search for the instance (see also
+    https://en.cppreference.com/w/cpp/language/unqualified_lookup).
+    An example of this is the scenario when finding interfaces AST instances of a component that
+    may reside in the same parent or higher namespace.
+    A list of all found instances is returned where the first item is the first one matching."""
+    assert_filecontents_t(fc)
+    assert_t(ns_ids, NamespaceIds)
+    resolution_order = scope_resolution_order(ns_ids, as_of_inner_scope)
+    result = []
+
+    for container in [fc.components, fc.enums, fc.externs, fc.foreigns,
+                      fc.interfaces, fc.subints, fc.systems]:
+        for element in container:
+            for lookup in resolution_order:
+                if element.fqn == lookup:
+                    result.append(element)
+                    break
+
+    return FindResult(items=result)
+
+
+def find_any(fc: FileContents, endswith_ids: NamespaceIds) -> FindResult:
+    """Find all instances (but Filename and Import excluded) in the Dezyne AST FileContents whose
+    Fully Qualified Name ends with the specified NamespaceIds argument.
+    A list of all found instances is returned."""
+    assert_filecontents_t(fc)
+    assert_t(endswith_ids, NamespaceIds)
+    result = []
+    nr_ids = len(endswith_ids.items)
+
+    for container in [fc.components, fc.enums, fc.externs, fc.foreigns,
+                      fc.interfaces, fc.subints, fc.systems]:
+        for element in container:
+            if element.fqn.items[-nr_ids:] == endswith_ids.items:
+                result.append(element)
+
+    return FindResult(items=result)

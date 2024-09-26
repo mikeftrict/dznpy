@@ -7,41 +7,11 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import pytest
+from dataclasses import dataclass, field
 from unittest import TestCase
 
 # system-under-test
 from dznpy.misc_utils import *
-
-
-def test_create_namespaceids_type():
-    correct: NameSpaceIds = ['My', 'Project']
-    assert is_namespaceids_instance(namespaceids_t(correct)), 'Pass through correct type'
-    assert namespaceids_t('My.Project') == correct
-    assert namespaceids_t('MyComponent') == ['MyComponent']
-    assert is_namespaceids_instance(namespaceids_t('MyComponent')) is True
-
-
-def test_check_and_assert_namespaceids_type():
-    correct: NameSpaceIds = ['My', 'Project']
-    assert_namespaceids_instance(correct)
-    assert is_namespaceids_instance(correct) is True
-    assert is_namespaceids_instance([]) is True, 'an empty list is ok'
-
-    exc_msg = 'The argument is not a NameSpaceIds type'
-    assert is_namespaceids_instance(None) is False
-    with pytest.raises(TypeError) as exc:
-        assert_namespaceids_instance(None)
-    assert str(exc.value) == exc_msg
-
-    assert is_namespaceids_instance('My.Project') is False
-    with pytest.raises(TypeError) as exc:
-        assert_namespaceids_instance('My.Project')
-    assert str(exc.value) == exc_msg
-
-    assert is_namespaceids_instance(['One', 2, 3]) is False
-    with pytest.raises(TypeError) as exc:
-        assert_namespaceids_instance(['One', 2, 3])
-    assert str(exc.value) == exc_msg
 
 
 def test_check_is_str_set():
@@ -74,29 +44,6 @@ def test_flatten_to_strlist():
     assert flatten_to_strlist(['One', '', 'Two'], skip_empty_strings=False) == ['One', '', 'Two']
     assert flatten_to_strlist(['One', [''], 'X'], skip_empty_strings=False) == ['One', '', 'X']
     assert flatten_to_strlist([{123: '', 456: None}, ['Y']], skip_empty_strings=False) == ['', 'Y']
-
-
-def test_scope_resolution_order_ok():
-    assert scope_resolution_order(searchable=namespaceids_t('IToaster'),
-                                  calling_scope=namespaceids_t(['My', 'Project'])) == \
-           [['My', 'Project', 'IToaster'], ['My', 'IToaster'], ['IToaster']]
-
-    assert scope_resolution_order(searchable=namespaceids_t(['My', 'ILed']),
-                                  calling_scope=namespaceids_t(['My', 'Project'])) == \
-           [['My', 'Project', 'My', 'ILed'], ['My', 'My', 'ILed'], ['My', 'ILed']]
-
-    assert scope_resolution_order(searchable=namespaceids_t(['My', 'ILed']),
-                                  calling_scope=None) == [['My', 'ILed']]
-
-
-def test_scope_resolution_order_fail():
-    with pytest.raises(TypeError) as exc:
-        scope_resolution_order(searchable=None, calling_scope=namespaceids_t(['NS']))
-    assert str(exc.value) == 'The argument is not a NameSpaceIds type'
-
-    with pytest.raises(TypeError) as exc:
-        scope_resolution_order(searchable=123, calling_scope=namespaceids_t(['NS']))
-    assert str(exc.value) == 'The argument is not a NameSpaceIds type'
 
 
 def test_plural_ok():
@@ -255,3 +202,95 @@ class TextBlockTests(TestCase):
         assert str(
             TextBlock(['Hi\nThere\n', 'Every\n\n', 'One\n\n'])) == 'Hi\nThere\nEvery\n\nOne\n\n'
         assert str(TextBlock(['Hi\n', 'Every\n', '\n', 'One\n\n'])) == 'Hi\nEvery\n\nOne\n\n'
+
+
+###############################################################################
+# Tests for assert_t() and assert_t_optional()
+#
+# Local test data:
+@dataclass
+class Top:
+    """Example of a super class."""
+    member: str = field(default_factory=str)
+
+
+class Sub(Top):
+    """Example of a subclass."""
+    pass
+
+
+def test_assert_t_builtin_ok():
+    """Test valid scenarios of the assert_t() function."""
+    sut = float(1.23)
+    assert_t(sut, float)
+
+
+def test_assert_t_superclass_ok():
+    """Test valid scenarios of the assert_t() function."""
+    sut = Top()
+    assert_t(sut, Top)
+
+
+def test_assert_t_subclass_ok():
+    """Test valid scenarios of the assert_t() function."""
+    sut = Sub()
+    assert_t(sut, Sub)
+    assert_t(sut, Top)  # asserting on its super class is also ok
+
+
+def test_assert_t_arguments_fail():
+    """Test scenarios of invalid arguments."""
+    with pytest.raises(ValueError) as exc:
+        assert_t(None, float)
+    assert str(exc.value) == 'Value argument is None and therefore it can not be asserted.'
+
+    with pytest.raises(ValueError) as exc:
+        assert_t('Test', None)
+    assert str(exc.value) == 'Expected type argument is None and therefore assertion is impossible.'
+
+
+def test_assert_t_fails():
+    """Test scenarios of failing type assertions."""
+    with pytest.raises(TypeError) as exc:
+        assert_t('Some text', float)
+    assert str(
+        exc.value) == """Value argument "Some text" is not equal to the expected type: <class 'float'>, actual type found: <class 'str'>."""
+
+
+def test_assert_t_optional_builtin_ok():
+    """Test valid scenarios of the assert_t_optional() function."""
+    assert_t_optional(None, float)
+    sut = float(1.23)
+    assert_t_optional(sut, float)
+
+
+def test_assert_t_optional_superclass_ok():
+    """Test valid scenarios of the assert_t_optional() function."""
+    assert_t_optional(None, Top)
+    sut = Top()
+    assert_t_optional(sut, Top)
+
+
+def test_assert_t_optional_subclass_ok():
+    """Test valid scenarios of the assert_t_optional() function."""
+    assert_t_optional(None, Sub)
+    sut = Sub()
+    assert_t_optional(sut, Sub)
+    assert_t_optional(sut, Top)  # asserting on its super class is also ok
+
+
+def test_assert_t_optional_arguments_fail():
+    """Test scenarios of invalid arguments."""
+    assert_t_optional(None, float)  # intentionally confirm that None is a valid argument
+
+    with pytest.raises(ValueError) as exc:
+        assert_t_optional('Test', None)
+    assert str(exc.value) == 'Expected type argument is None and therefore assertion is impossible.'
+
+
+def test_assert_t_optional_fails():
+    """Test scenarios of failing type assertions."""
+    with pytest.raises(TypeError) as exc:
+        assert_t_optional('Some text', float)
+    assert str(
+        exc.value) == """Value argument "Some text" is not equal to the expected type: <class 'float'>, actual type found: <class 'str'>."""

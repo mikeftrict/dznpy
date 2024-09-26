@@ -11,17 +11,21 @@ import enum
 from typing import Any, List
 
 # dznpy modules
-from .misc_utils import TextBlock, NameSpaceIds, NamespaceTrail, flatten_to_strlist
+from .misc_utils import TextBlock, assert_t, flatten_to_strlist
+from .scoping import NamespaceIds, NamespaceTree
 
 
 @dataclass(frozen=True)
 class ScopeName:
     """ScopeName"""
-    value: NameSpaceIds
+    value: NamespaceIds
+
+    def __post_init__(self):
+        assert_t(self.value, NamespaceIds)
 
     def __str__(self):
-        """Get a dot delimited string of all scope name idenitifers."""
-        return '.'.join(self.value)
+        """Get a dot delimited string of all scope name identifiers."""
+        return '.'.join(self.value.items)
 
 
 @dataclass(frozen=True)
@@ -59,8 +63,8 @@ class Data:
 @dataclass(frozen=True)
 class Extern:
     """Extern"""
-    fqn: NameSpaceIds
-    parent_ns: NamespaceTrail
+    fqn: NamespaceIds
+    parent_ns: NamespaceTree
     name: ScopeName
     value: Data
 
@@ -87,8 +91,8 @@ class Fields:
 @dataclass(frozen=True)
 class Enum:
     """Enum"""
-    fqn: NameSpaceIds
-    parent_ns: NamespaceTrail
+    fqn: NamespaceIds
+    parent_ns: NamespaceTree
     name: ScopeName
     fields: Fields
 
@@ -185,8 +189,8 @@ class Root:
 @dataclass(frozen=True)
 class SubInt:
     """SubInt"""
-    fqn: NameSpaceIds
-    parent_ns: NamespaceTrail
+    fqn: NamespaceIds
+    parent_ns: NamespaceTree
     name: ScopeName
     range: Range
 
@@ -231,8 +235,8 @@ class Types:
 @dataclass(frozen=True)
 class Component:
     """Component"""
-    fqn: NameSpaceIds
-    parent_ns: NamespaceTrail
+    fqn: NamespaceIds
+    parent_ns: NamespaceTree
     name: ScopeName
     ports: Ports
 
@@ -240,8 +244,8 @@ class Component:
 @dataclass(frozen=True)
 class Foreign:
     """Foreign"""
-    fqn: NameSpaceIds
-    parent_ns: NamespaceTrail
+    fqn: NamespaceIds
+    parent_ns: NamespaceTree
     name: ScopeName
     ports: Ports
 
@@ -249,9 +253,9 @@ class Foreign:
 @dataclass(frozen=True)
 class Interface:
     """Interface"""
-    fqn: NameSpaceIds
-    parent_ns: NamespaceTrail
-    ns_trail: NamespaceTrail
+    fqn: NamespaceIds
+    parent_ns: NamespaceTree
+    ns_trail: NamespaceTree
     name: ScopeName
     types: Types
     events: Events
@@ -260,8 +264,8 @@ class Interface:
 @dataclass(frozen=True)
 class System:
     """System"""
-    fqn: NameSpaceIds
-    parent_ns: NamespaceTrail
+    fqn: NamespaceIds
+    parent_ns: NamespaceTree
     name: ScopeName
     ports: Ports
     instances: Instances
@@ -286,3 +290,19 @@ class FileContents:
                                                    self.filenames, self.foreigns, self.imports,
                                                    self.interfaces, self.subints, self.systems]))
         return str(tb)
+
+
+###############################################################################
+# Type helper functions
+#
+
+def assert_filecontents_t(value: Any):
+    """Assert the specified argument equals the FileContents type. Otherwise, raise a TypeError."""
+    if not isinstance(value, FileContents):
+        raise TypeError(f'Value "{value}" is not a FileContents type')
+
+
+def assert_ports_t(value: Any):
+    """Assert the specified argument equals the Ports type. Otherwise, raise a TypeError."""
+    if not isinstance(value, FileContents):
+        raise TypeError(f'Value "{value}" is not a Ports type')

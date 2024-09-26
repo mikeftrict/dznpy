@@ -9,12 +9,13 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 import pytest
 
 # dznpy modules
-from dznpy.misc_utils import namespaceids_t
+from dznpy.scoping import ns_ids_t, NamespaceIds
 
 # systems-under-test
 from dznpy.support_files import meta_helpers as sut
 
 # Test data
+from common.testdata import *
 from dznpy.dznpy_version import VERSION
 
 
@@ -78,7 +79,7 @@ MYPRODUCT_DZN_NS_HH = template_hh('My::Product::')
 
 def test_create_default_namespaced():
     result = sut.create_header()
-    assert result.namespace == ['Dzn']
+    assert result.namespace == ns_ids_t('Dzn')
     assert result.filename == 'Dzn_MetaHelpers.hh'
     assert result.contents == DEFAULT_DZN_NS_HH
     assert result.contents_hash == '15f103998473ee0aaa2c97c06509d196'
@@ -86,8 +87,8 @@ def test_create_default_namespaced():
 
 
 def test_create_with_prefixing_namespace():
-    result = sut.create_header(namespaceids_t('My.Product'))
-    assert result.namespace == ['My', 'Product', 'Dzn']
+    result = sut.create_header(ns_ids_t('My.Product'))
+    assert result.namespace == NamespaceIds(['My', 'Product', 'Dzn'])
     assert result.filename == 'My_Product_Dzn_MetaHelpers.hh'
     assert result.contents == MYPRODUCT_DZN_NS_HH
     assert 'namespace My::Product::Dzn {' in result.contents
@@ -96,4 +97,4 @@ def test_create_with_prefixing_namespace():
 def test_create_fail():
     with pytest.raises(TypeError) as exc:
         sut.create_header(123)
-    assert str(exc.value) == 'namespace_prefix is of incorrect type'
+    assert str(exc.value) == ARGUMENT123_NOT_NAMESPACEIDS

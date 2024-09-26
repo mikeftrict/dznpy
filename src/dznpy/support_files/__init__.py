@@ -6,28 +6,28 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
-from typing import Tuple
+from typing import Optional, Tuple
 
 # dznpy modules
-from ..cpp_gen import Comment, gen_fqn
+from ..cpp_gen import Comment, fqn_t
 from ..dznpy_version import VERSION
-from ..misc_utils import NameSpaceIds, is_namespaceids_instance
+from ..misc_utils import assert_t_optional
+from ..scoping import NamespaceIds, ns_ids_t
 
 
-def initialize_ns(namespace_prefix: NameSpaceIds) -> Tuple[NameSpaceIds, str, str]:
+def initialize_ns(namespace_prefix: Optional[NamespaceIds]) -> Tuple[NamespaceIds, str, str]:
     """Initialize a namespace id that ends with Dzn and optionally prefixed
     with a user specified NamespaceIds. Return the result as a combo of this new
     NamespaceIds, its respective string of the C++ variant and a string suitable
     to preclude in a filename."""
-    fixed_ns = ['Dzn']
+    assert_t_optional(namespace_prefix, NamespaceIds)
+    fixed_ns = ns_ids_t('Dzn')
 
     if namespace_prefix is None:
-        return fixed_ns, gen_fqn(fixed_ns), "_".join(fixed_ns)
-    elif is_namespaceids_instance(namespace_prefix):
-        prefixed_ns = namespace_prefix + fixed_ns
-        return prefixed_ns, gen_fqn(prefixed_ns), "_".join(prefixed_ns)
-    else:
-        raise TypeError('namespace_prefix is of incorrect type')
+        return fixed_ns, str(fqn_t(fixed_ns)), "_".join(fixed_ns.items)
+
+    prefixed_ns = namespace_prefix + fixed_ns
+    return prefixed_ns, str(fqn_t(prefixed_ns)), "_".join(prefixed_ns.items)
 
 
 def create_footer() -> str:

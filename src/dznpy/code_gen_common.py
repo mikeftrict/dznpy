@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 # dznpy modules
-from .misc_utils import EOL, NameSpaceIds
+from .misc_utils import EOL, assert_t_optional
+from .scoping import NamespaceIds
 
 # constants
 BLANK_LINE = EOL
@@ -24,10 +25,11 @@ class GeneratedContent:
     an optional namespace indication."""
     filename: str
     contents: str
-    namespace: Optional[NameSpaceIds] = field(default=None)
+    namespace: Optional[NamespaceIds] = field(default=None)
 
     def __post_init__(self):
         self._contents_hash = hashlib.md5(self.contents.encode('utf-8')).hexdigest().lower()
+        assert_t_optional(self.namespace, NamespaceIds)
 
     @property
     def contents_hash(self):

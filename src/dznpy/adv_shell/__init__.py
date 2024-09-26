@@ -18,10 +18,11 @@ Example configurations:
 - All requires ports MTS, all provides ports STS
 - All requires ports MTS, mixed provides ports MTS/STS
 - All provides and requires ports MTS (like dzn code --shell)
-
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
-This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
+
+# Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+# This is free software, released under the MIT License. Refer to dznpy/LICENSE.
+
 
 # system modules
 from typing import Optional
@@ -29,12 +30,13 @@ from typing import Optional
 # dznpy modules
 from ..dznpy_version import VERSION
 from .. import cpp_gen
-from ..ast_view import find_on_fqn
+from ..ast_view import find_fqn
 from ..code_gen_common import BLANK_LINE, CodeGenResult, GeneratedContent, TEXT_GEN_DO_NOT_MODIFY
 from ..cpp_gen import AccessSpecifier, Comment
-from ..misc_utils import TextBlock, namespaceids_t, get_basename
+from ..misc_utils import TextBlock, get_basename
 from ..support_files import strict_port, ilog, misc_utils, meta_helpers, multi_client_selector, \
     mutex_wrapped
+from ..scoping import ns_ids_t
 
 # own modules
 from .common import FacilitiesOrigin, Configuration, Recipe, CppPorts, create_encapsulee, \
@@ -46,6 +48,23 @@ from .core.processing import create_dzn_elements, create_cpp_portitf, create_fac
 
 
 # helper functions to create a prefined PortCfg
+
+def all_mts() -> PortCfg:
+    """Configure all provides and requires ports with multi-threaded runtime semantics (MTS).
+    This is equivalent to what `dzn code --shell` generates."""
+    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
+                                              mts=PortSelect(PortWildcard.ALL)),
+                   requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
+                                              mts=PortSelect(PortWildcard.ALL)))
+
+
+def all_sts() -> PortCfg:
+    """Configure all provides and requires ports with single-threaded runtime semantics (STS)."""
+    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
+                                              mts=PortSelect(PortWildcard.NONE)),
+                   requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
+                                              mts=PortSelect(PortWildcard.NONE)))
+
 
 def all_sts_all_mts() -> PortCfg:
     """Configure all provides ports with single-threaded runtime semantics (STS) and all
@@ -87,14 +106,6 @@ def all_sts_mixed_ts(sts_requires_ports: PortSelect,
                                               mts=mts_requires_ports))
 
 
-def all_mts() -> PortCfg:
-    """Configure all provides and requires ports with multi-threaded runtime semantics (MTS)."""
-    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
-                                              mts=PortSelect(PortWildcard.ALL)),
-                   requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
-                                              mts=PortSelect(PortWildcard.ALL)))
-
-
 class Builder:
     """Class to build an Advanced Shell according to a user specified configuration."""
     _recipe: Recipe
@@ -107,9 +118,10 @@ class Builder:
         # ---------- Prepare Dezyne Elements ----------
 
         # lookup encapsulee and check its type
-        dzn_encapsulee = find_on_fqn(fc, namespaceids_t(cfg.fqn_encapsulee_name), [])
-        if dzn_encapsulee is None:
-            raise AdvShellError(f'Encapsulee {cfg.fqn_encapsulee_name} not found')
+        r = find_fqn(fc, ns_ids_t(cfg.fqn_encapsulee_name))
+        if not r.items:
+            raise AdvShellError(f'Encapsulee "{cfg.fqn_encapsulee_name}" not found')
+        dzn_encapsulee = r.get_single_instance()
 
         dzn_elements = create_dzn_elements(cfg, fc, dzn_encapsulee)
         scope_fqn = dzn_elements.scope_fqn.ns_ids
@@ -278,7 +290,7 @@ class Builder:
 
         return str(TextBlock([
             'Configuration:',
-            f'- Encapsulee FQN: {".".join(cfg.fqn_encapsulee_name)}',
+            f'- Encapsulee FQN: {cfg.fqn_encapsulee_name}',
             f'- Source file basename: {cpp.orig_file_basename}',
             f'- Target file basename: {cpp.target_file_basename}',
             f'- Dezyne facilities: {cfg.facilities_origin.value}',

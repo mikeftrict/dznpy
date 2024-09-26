@@ -9,8 +9,8 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 import pytest
 
 # system-under-test
-from dznpy.adv_shell import PortSelect, PortWildcard, PortCfg, all_sts_all_mts, \
-    all_mts_all_sts, all_mts_mixed_ts, all_sts_mixed_ts, all_mts, PortsSemanticsCfg
+from dznpy.adv_shell import PortSelect, PortWildcard, PortCfg, all_sts_all_mts, all_mts, all_sts, \
+    all_mts_all_sts, all_mts_mixed_ts, all_sts_mixed_ts, PortsSemanticsCfg
 from dznpy.adv_shell.types import AdvShellError, RuntimeSemantics
 
 # Test data
@@ -95,6 +95,20 @@ def test_port_select_natch_port_name_fail():
     assert str(exc.value) == 'argument port_name must not be empty'
 
 
+def test_all_mts():
+    """Test the shorthand function to create a port configuration equivalent to `dzn code --shell`."""
+    assert_port_cfg(all_mts(),
+                    PortWildcard.NONE, PortWildcard.ALL,
+                    PortWildcard.NONE, PortWildcard.ALL)
+
+
+def test_all_sts():
+    """Test the shorthand function to create an all STS port configuration."""
+    assert_port_cfg(all_sts(),
+                    PortWildcard.ALL, PortWildcard.NONE,
+                    PortWildcard.ALL, PortWildcard.NONE)
+
+
 def test_all_sts_all_mts():
     assert_port_cfg(all_sts_all_mts(),
                     PortWildcard.ALL, PortWildcard.NONE,
@@ -144,12 +158,6 @@ def test_all_sts_mixed_ts_ok():
         all_sts_mixed_ts(sts_requires_ports=PortSelect({'api'}),
                          mts_requires_ports=PortSelect(PortWildcard.REMAINING)),
         PortWildcard.ALL, PortWildcard.NONE, {'api'}, PortWildcard.REMAINING)
-
-
-def test_all_mts():
-    assert_port_cfg(all_mts(),
-                    PortWildcard.NONE, PortWildcard.ALL,
-                    PortWildcard.NONE, PortWildcard.ALL)
 
 
 def test_all_mts_mixed_ts_fail():

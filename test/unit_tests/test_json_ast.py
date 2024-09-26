@@ -6,13 +6,13 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
-from unittest import TestCase
 import pytest
-from orjson import JSONDecodeError
+from unittest import TestCase
 from typing import List
+from orjson import JSONDecodeError
 
 # dznpy modules
-from dznpy.misc_utils import NamespaceTrail
+from dznpy.scoping import NamespaceTree, ns_ids_t, NamespaceIds
 
 # system-under-test
 from dznpy import ast, json_ast
@@ -23,21 +23,19 @@ from common.helpers import resolve
 from testdata_json_ast import *
 
 # test constants
-
 DZNJSON_FILE = resolve(__file__, TOASTER_SYSTEM_JSON_FILE)
 CPP_FILE = resolve(__file__, TOASTER_SYSTEM_CPP_FILE)
 SOME_JSON_FILE = resolve(__file__, VSCODE_WORKSPACE_FILE)
 
 
 class DznTestCase(TestCase):
-    _root_ns: NamespaceTrail
-    _nested_ns: NamespaceTrail
+    _root_ns: NamespaceTree
+    _nested_ns: NamespaceTree
 
     def setUp(self):
-        self._root_ns = NamespaceTrail()
-        self._nested_ns = \
-            NamespaceTrail(parent=NamespaceTrail(parent=NamespaceTrail(),
-                                                 scope_name='My'), scope_name='Project')
+        self._root_ns = NamespaceTree()
+        self._nested_ns = NamespaceTree(parent=NamespaceTree(parent=NamespaceTree(), scope_name=ns_ids_t('My')),
+                                        scope_name=ns_ids_t('Project'))
 
 
 class BindingTest(DznTestCase):
@@ -102,8 +100,8 @@ class ComponentTest(DznTestCase):
         dzn = DznJsonAst(json_contents=COMPONENT)
         sut = json_ast.parse_component(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.Component)
-        assert sut.fqn == ['Toaster']
-        assert sut.name.value == ['Toaster']
+        assert sut.fqn == ns_ids_t('Toaster')
+        assert sut.name.value == ns_ids_t('Toaster')
         assert str(sut.name) == 'Toaster'
         assert isinstance(sut.ports, ast.Ports)
         assert len(sut.ports.elements) == 2
@@ -112,8 +110,8 @@ class ComponentTest(DznTestCase):
         dzn = DznJsonAst(json_contents=COMPONENT)
         sut = json_ast.parse_component(dzn.ast, self._nested_ns)
         assert isinstance(sut, ast.Component)
-        assert sut.fqn == ['My', 'Project', 'Toaster']
-        assert sut.name.value == ['Toaster']
+        assert sut.fqn == ns_ids_t('My.Project.Toaster')
+        assert sut.name.value == ns_ids_t('Toaster')
         assert str(sut.name) == 'Toaster'
 
 
@@ -197,17 +195,17 @@ class EnumTest(DznTestCase):
         sut = json_ast.parse_enum(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.Enum)
         assert str(sut.name) == 'Result'
-        assert sut.name.value == ['Result']
+        assert sut.name.value == ns_ids_t('Result')
         assert sut.fields.elements == ['Ok', 'Fail', 'Error']
-        assert sut.fqn == ['Result']
+        assert sut.fqn == ns_ids_t('Result')
 
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=ENUM)
         sut = json_ast.parse_enum(dzn.ast, self._nested_ns)
         assert isinstance(sut, ast.Enum)
         assert str(sut.name) == 'Result'
-        assert sut.name.value == ['Result']
-        assert sut.fqn == ['My', 'Project', 'Result']
+        assert sut.name.value == ns_ids_t('Result')
+        assert sut.fqn == ns_ids_t('My.Project.Result')
 
 
 class EventTest(DznTestCase):
@@ -269,8 +267,8 @@ class ExternTest(DznTestCase):
         sut = json_ast.parse_extern(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.Extern)
         assert str(sut.name) == 'MilliSeconds'
-        assert sut.name.value == ['MilliSeconds']
-        assert sut.fqn == ['MilliSeconds']
+        assert sut.name.value == ns_ids_t('MilliSeconds')
+        assert sut.fqn == ns_ids_t('MilliSeconds')
         assert isinstance(sut.value, ast.Data)
         assert sut.value.value == 'size_t'
 
@@ -278,8 +276,8 @@ class ExternTest(DznTestCase):
         dzn = DznJsonAst(json_contents=EXTERN)
         sut = json_ast.parse_extern(dzn.ast, self._nested_ns)
         assert str(sut.name) == 'MilliSeconds'
-        assert sut.name.value == ['MilliSeconds']
-        assert sut.fqn == ['My', 'Project', 'MilliSeconds']
+        assert sut.name.value == ns_ids_t('MilliSeconds')
+        assert sut.fqn == ns_ids_t('My.Project.MilliSeconds')
 
 
 class FieldsTest(DznTestCase):
@@ -319,9 +317,9 @@ class ForeignTest(DznTestCase):
         dzn = DznJsonAst(json_contents=FOREIGN)
         sut = json_ast.parse_foreign(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.Foreign)
-        assert sut.fqn == ['Timer']
+        assert sut.fqn == ns_ids_t('Timer')
         assert str(sut.name) == 'Timer'
-        assert sut.name.value == ['Timer']
+        assert sut.name.value == ns_ids_t('Timer')
         assert isinstance(sut.ports, ast.Ports)
         assert len(sut.ports.elements) == 2
 
@@ -329,9 +327,9 @@ class ForeignTest(DznTestCase):
         dzn = DznJsonAst(json_contents=FOREIGN)
         sut = json_ast.parse_foreign(dzn.ast, self._nested_ns)
         assert isinstance(sut, ast.Foreign)
-        assert sut.fqn == ['My', 'Project', 'Timer']
+        assert sut.fqn == ns_ids_t('My.Project.Timer')
         assert str(sut.name) == 'Timer'
-        assert sut.name.value == ['Timer']
+        assert sut.name.value == ns_ids_t('Timer')
 
 
 class FormalTest(DznTestCase):
@@ -346,7 +344,7 @@ class FormalTest(DznTestCase):
         sut = json_ast.parse_formal(dzn.ast)
         assert isinstance(sut, ast.Formal)
         assert (sut.name, str(sut.type_name)) == ('waitingTimeMs', 'MilliSeconds')
-        assert sut.type_name.value == ['MilliSeconds']
+        assert sut.type_name.value == ns_ids_t('MilliSeconds')
         assert sut.direction == ast.FormalDirection.IN
 
     @staticmethod
@@ -442,7 +440,7 @@ class InstanceTest(DznTestCase):
         assert isinstance(sut, ast.Instance)
         assert sut.name == 'mytoaster'
         assert str(sut.type_name) == 'Toaster'
-        assert sut.type_name.value == ['Toaster']
+        assert sut.type_name.value == ns_ids_t('Toaster')
 
 
 class InstancesTest(DznTestCase):
@@ -462,10 +460,10 @@ class InstancesTest(DznTestCase):
         assert len(sut.elements) == 2
         assert sut.elements[0].name == 'mytoaster'
         assert str(sut.elements[0].type_name) == 'Toaster'
-        assert sut.elements[0].type_name.value == ['Toaster']
+        assert sut.elements[0].type_name.value == ns_ids_t('Toaster')
         assert sut.elements[1].name == 'timer1'
         assert str(sut.elements[1].type_name) == 'Facilities.Timer'
-        assert sut.elements[1].type_name.value == ['Facilities', 'Timer']
+        assert sut.elements[1].type_name.value == ns_ids_t('Facilities.Timer')
 
 
 class InterfaceTest(DznTestCase):
@@ -477,9 +475,9 @@ class InterfaceTest(DznTestCase):
         dzn = DznJsonAst(json_contents=INTERFACE_EMPTY)
         sut = json_ast.parse_interface(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.Interface)
-        assert sut.fqn == ['IToaster']
+        assert sut.fqn == ns_ids_t('IToaster')
         assert str(sut.name) == 'IToaster'
-        assert sut.name.value == ['IToaster']
+        assert sut.name.value == ns_ids_t('IToaster')
         assert isinstance(sut.types, ast.Types)
         assert len(sut.types.elements) == 0
         assert isinstance(sut.events, ast.Events)
@@ -489,13 +487,13 @@ class InterfaceTest(DznTestCase):
         dzn = DznJsonAst(json_contents=INTERFACE_TWO_ITEMS)
         sut = json_ast.parse_interface(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.Interface)
-        assert sut.fqn == ['IHeaterElement']
+        assert sut.fqn == ns_ids_t('IHeaterElement')
         assert str(sut.name) == 'IHeaterElement'
-        assert sut.name.value == ['IHeaterElement']
+        assert sut.name.value == ns_ids_t('IHeaterElement')
         assert len(sut.types.elements) == 2
         assert isinstance(sut.types.elements[0], ast.Enum)
         assert isinstance(sut.types.elements[1], ast.SubInt)
-        assert sut.types.elements[0].fqn == ['IHeaterElement', 'Result']
+        assert sut.types.elements[0].fqn == ns_ids_t('IHeaterElement.Result')
         assert str(sut.types.elements[0].name) == 'Result'
         assert len(sut.events.elements) == 2
 
@@ -503,10 +501,10 @@ class InterfaceTest(DznTestCase):
         dzn = DznJsonAst(json_contents=INTERFACE_TWO_ITEMS)
         sut = json_ast.parse_interface(dzn.ast, self._nested_ns)
         assert isinstance(sut, ast.Interface)
-        assert sut.fqn == ['My', 'Project', 'IHeaterElement']
+        assert sut.fqn == ns_ids_t('My.Project.IHeaterElement')
         assert str(sut.name) == 'IHeaterElement'
-        assert sut.name.value == ['IHeaterElement']
-        assert sut.types.elements[0].fqn == ['My', 'Project', 'IHeaterElement', 'Result']
+        assert sut.name.value == ns_ids_t('IHeaterElement')
+        assert sut.types.elements[0].fqn == NamespaceIds(['My', 'Project', 'IHeaterElement', 'Result'])
         assert str(sut.types.elements[0].name) == 'Result'
 
     def test_get_enums_from_types(self):
@@ -514,14 +512,14 @@ class InterfaceTest(DznTestCase):
         sut = json_ast.parse_interface(dzn.ast, self._nested_ns)
         enum_list = sut.types.enums
         assert len(enum_list) == 1
-        assert enum_list[0].fqn == ['My', 'Project', 'IHeaterElement', 'Result']
+        assert enum_list[0].fqn == ns_ids_t('My.Project.IHeaterElement.Result')
 
     def test_get_subints_from_types(self):
         dzn = DznJsonAst(json_contents=INTERFACE_TWO_ITEMS)
         sut = json_ast.parse_interface(dzn.ast, self._nested_ns)
         subints_list = sut.types.subints
         assert len(subints_list) == 1
-        assert subints_list[0].fqn == ['My', 'Project', 'IHeaterElement', 'SmallInt']
+        assert subints_list[0].fqn == ns_ids_t('My.Project.IHeaterElement.SmallInt')
 
 
 class NamespaceTest(DznTestCase):
@@ -536,67 +534,8 @@ class NamespaceTest(DznTestCase):
         sut = json_ast.parse_namespace(dzn.ast)
         assert isinstance(sut, ast.Namespace)
         assert str(sut.scope_name) == 'My'
-        assert sut.scope_name.value == ['My']
+        assert sut.scope_name.value == NamespaceIds(['My'])
         assert len(sut.elements) == 0
-
-
-class NamespaceTrailTest(DznTestCase):
-
-    @staticmethod
-    def test_create_default():
-        sut = NamespaceTrail()
-        assert sut.scope_name is None
-        assert sut.fqn is None
-        assert str(sut) == ''
-
-    @staticmethod
-    def test_create_fail_on_only_scope_name():
-        with pytest.raises(Exception) as exc:
-            NamespaceTrail(parent=None, scope_name='OnlyThis')
-        assert str(exc.value) == 'parent required when constructing with a scope_name'
-
-    @staticmethod
-    def test_create_fail_on_only_parent():
-        parent = NamespaceTrail()
-        with pytest.raises(Exception) as exc:
-            NamespaceTrail(parent=parent, scope_name=None)
-        assert str(exc.value) == 'scope_name required when constructing with a parent'
-
-    @staticmethod
-    def test_two_level_create():
-        parent = NamespaceTrail()
-        child = NamespaceTrail(parent=parent, scope_name='Project')
-        assert child.scope_name == 'Project'
-        assert child.fqn == ['Project']
-        assert str(child) == 'Project'
-
-    @staticmethod
-    def test_three_level_create():
-        parent = NamespaceTrail()
-        child1 = NamespaceTrail(parent=parent, scope_name='My')
-        child2 = NamespaceTrail(parent=child1, scope_name='Project')
-        assert child2.scope_name == 'Project'
-        assert child2.fqn == ['My', 'Project']
-        assert str(child2) == 'My.Project'
-
-    @staticmethod
-    def test_fqn_member_in_root_namespace():
-        parent = NamespaceTrail()
-        assert parent.fqn_member_name(['Heater']) == ['Heater']
-
-    @staticmethod
-    def test_fqn_member_in_two_level_namespace():
-        child2 = NamespaceTrail(parent=NamespaceTrail(parent=NamespaceTrail(),
-                                                      scope_name='My'), scope_name='Project')
-        assert child2.fqn == ['My', 'Project']
-        assert child2.fqn_member_name(['BigToaster']) == ['My', 'Project', 'BigToaster']
-
-    @staticmethod
-    def test_fqn_coplex_member_in_two_level_namespace():
-        child2 = NamespaceTrail(parent=NamespaceTrail(parent=NamespaceTrail(),
-                                                      scope_name='My'), scope_name='Proj')
-        assert child2.fqn == ['My', 'Proj']
-        assert child2.fqn_member_name(['Big', 'Toaster']) == ['My', 'Proj', 'Big', 'Toaster']
 
 
 class PortTest(DznTestCase):
@@ -612,7 +551,7 @@ class PortTest(DznTestCase):
         assert isinstance(sut, ast.Port)
         assert sut.name == 'api'
         assert str(sut.type_name) == 'IToaster'
-        assert sut.type_name.value == ['IToaster']
+        assert sut.type_name.value == ns_ids_t('IToaster')
         assert sut.direction == ast.PortDirection.PROVIDES
         assert len(sut.formals.elements) == 0
         assert sut.injected.value is False
@@ -624,7 +563,7 @@ class PortTest(DznTestCase):
         assert isinstance(sut, ast.Port)
         assert sut.name == 'heater'
         assert str(sut.type_name) == 'IHeaterElement'
-        assert sut.type_name.value == ['IHeaterElement']
+        assert sut.type_name.value == ns_ids_t('IHeaterElement')
         assert sut.direction == ast.PortDirection.REQUIRES
         assert len(sut.formals.elements) == 0
         assert sut.injected.value is False
@@ -636,7 +575,7 @@ class PortTest(DznTestCase):
         assert isinstance(sut, ast.Port)
         assert sut.name == 'cfg'
         assert str(sut.type_name) == 'IConfiguration'
-        assert sut.type_name.value == ['IConfiguration']
+        assert sut.type_name.value == ns_ids_t('IConfiguration')
         assert sut.direction == ast.PortDirection.REQUIRES
         assert len(sut.formals.elements) == 0
         assert sut.injected.value is True
@@ -737,7 +676,7 @@ class ScopeNameTest(DznTestCase):
         sut = json_ast.parse_scope_name(dzn.ast)
         assert isinstance(sut, ast.ScopeName)
         assert str(sut) == 'My'
-        assert sut.value == ['My']
+        assert sut.value == NamespaceIds(['My'])
 
     @staticmethod
     def test_ok_multiple_ids():
@@ -745,7 +684,7 @@ class ScopeNameTest(DznTestCase):
         sut = json_ast.parse_scope_name(dzn.ast)
         assert isinstance(sut, ast.ScopeName)
         assert str(sut) == 'My.Nice.Type'
-        assert sut.value == ['My', 'Nice', 'Type']
+        assert sut.value == NamespaceIds(['My', 'Nice', 'Type'])
 
     @staticmethod
     def test_fail():
@@ -767,7 +706,7 @@ class SignatureTest(DznTestCase):
         sut = json_ast.parse_signature(dzn.ast)
         assert isinstance(sut, ast.Signature)
         assert str(sut.type_name) == 'Result'
-        assert sut.type_name.value == ['Result']
+        assert sut.type_name.value == NamespaceIds(['Result'])
         assert isinstance(sut.formals, ast.Formals)
 
 
@@ -780,18 +719,18 @@ class SubIntTest(DznTestCase):
         dzn = DznJsonAst(json_contents=SUBINT)
         sut = json_ast.parse_subint(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.SubInt)
-        assert sut.fqn == ['SmallInt']
+        assert sut.fqn == ns_ids_t('SmallInt')
         assert str(sut.name) == 'SmallInt'
-        assert sut.name.value == ['SmallInt']
+        assert sut.name.value == ns_ids_t('SmallInt')
         assert sut.range.from_int == 2
         assert sut.range.to_int == 5
 
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=SUBINT)
         sut = json_ast.parse_subint(dzn.ast, self._nested_ns)
-        assert sut.fqn == ['My', 'Project', 'SmallInt']
+        assert sut.fqn == ns_ids_t('My.Project.SmallInt')
         assert str(sut.name) == 'SmallInt'
-        assert sut.name.value == ['SmallInt']
+        assert sut.name.value == ns_ids_t('SmallInt')
 
 
 class SystemTest(DznTestCase):
@@ -804,7 +743,7 @@ class SystemTest(DznTestCase):
         sut = json_ast.parse_system(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.System)
         assert str(sut.name) == 'ToasterSystem'
-        assert sut.name.value == ['ToasterSystem']
+        assert sut.name.value == ns_ids_t('ToasterSystem')
         assert len(sut.ports.elements) == 2
         assert len(sut.instances.elements) == 2
         assert len(sut.bindings.elements) == 1
@@ -812,9 +751,9 @@ class SystemTest(DznTestCase):
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=SYSTEM)
         sut = json_ast.parse_system(dzn.ast, self._nested_ns)
-        assert sut.fqn == ['My', 'Project', 'ToasterSystem']
+        assert sut.fqn == ns_ids_t('My.Project.ToasterSystem')
         assert str(sut.name) == 'ToasterSystem'
-        assert sut.name.value == ['ToasterSystem']
+        assert sut.name.value == ns_ids_t('ToasterSystem')
 
 
 class TypesTest(DznTestCase):
@@ -828,11 +767,11 @@ class TypesTest(DznTestCase):
         assert isinstance(sut, ast.Types)
         assert len(sut.elements) == 2
         assert isinstance(sut.elements[0], ast.Enum)
-        assert sut.elements[0].fqn == ['Result']
+        assert sut.elements[0].fqn == ns_ids_t('Result')
         assert sut.elements[0].fields.elements == ['Ok', 'Fail', 'Error']
         assert isinstance(sut.elements[1], ast.SubInt)
         assert str(sut.elements[1].name) == 'SmallInt'
-        assert sut.elements[1].name.value == ['SmallInt']
+        assert sut.elements[1].name.value == ns_ids_t('SmallInt')
         assert sut.elements[1].range.from_int == 2
         assert sut.elements[1].range.to_int == 5
 
@@ -840,9 +779,9 @@ class TypesTest(DznTestCase):
         dzn = DznJsonAst(json_contents=TYPES_TWO_ITEMS)
         sut = json_ast.parse_types(dzn.ast, self._nested_ns)
         assert isinstance(sut, ast.Types)
-        assert sut.elements[0].fqn == ['My', 'Project', 'Result']
+        assert sut.elements[0].fqn == ns_ids_t('My.Project.Result')
         assert sut.elements[0].fields.elements == ['Ok', 'Fail', 'Error']
-        assert sut.elements[1].fqn == ['My', 'Project', 'SmallInt']
+        assert sut.elements[1].fqn == ns_ids_t('My.Project.SmallInt')
 
 
 class LoadFileTest(DznTestCase):
@@ -905,7 +844,8 @@ class LoadFileTest(DznTestCase):
                             'FCTimer.dzn']
         assert_items_name_on_str(fc.imports, expected_imports)
 
-        expected_itf_fqns = ['My.Project.IToaster', 'Some.Vendor.IHeaterElement', 'My.ILed',
+        expected_itf_fqns = ['My.Project.IToaster', 'Some.Vendor.IHeaterElement', 'IHeaterElement',
+                             'My.Project.IHeaterElement', 'My.ILed',
                              'My.Project.Hal.IPowerCord', 'IConfiguration', 'ITimer']
         assert_items_name_on_fqn(fc.interfaces, expected_itf_fqns)
 
@@ -925,7 +865,7 @@ def assert_items_name_on_fqn(collection: list, expected_fqns: List[str]):
     assert len(collection) == len(expected_fqns)
     for expected_fqn in expected_fqns:
         assert any(
-            item for item in collection if item.fqn == expected_fqn.split('.')), expected_fqn
+            item for item in collection if item.fqn.items == expected_fqn.split('.')), expected_fqn
 
 
 def assert_items_name_on_str(collection: list, expected_strs: List[str]):
@@ -937,7 +877,7 @@ def assert_items_name_on_str(collection: list, expected_strs: List[str]):
 
 
 def assert_wrong_class(json_contents: str, parse_method_name: str, class_value: str,
-                       ns_trail: NamespaceTrail = None):
+                       ns_trail: NamespaceTree = None):
     dzn = DznJsonAst(json_contents=json_contents)
     with pytest.raises(DznJsonError) as exc:
         method = getattr(json_ast, parse_method_name)
