@@ -1,11 +1,11 @@
 # Changelog
 
-## Changes in 0.4 (DEV) since 0.3
+## Changes in 0.4 (20240926) since 0.3
 
 ### Other changes/additions
 
-- Because of the improved/revamped `NamespaceIds et al`  and `scoping` module, this release yields
-  breaking changes to existing client script. Please update your client script (quite easily).
+- Because of the improved/revamped `NamespaceIds et al` and `scoping` module, this release yields
+  breaking changes to existing client scripts. Please update your client script (quite easy btw).
 
 ### All processed tickets
 
