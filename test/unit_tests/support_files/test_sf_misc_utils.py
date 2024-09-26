@@ -89,7 +89,7 @@ def test_create_default_namespaced():
     assert result.namespace == ns_ids_t('Dzn')
     assert result.filename == 'Dzn_MiscUtils.hh'
     assert result.contents == DEFAULT_DZN_MISC_UTILS_HH
-    assert result.contents_hash == '766833274b151ab71240fbb9e4e6ab39'
+    assert result.contents_hash == '98e152f3b0a0c6618dd8895ced89d7b4'
     assert 'namespace Dzn {' in result.contents
 
 
