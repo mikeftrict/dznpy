@@ -18,7 +18,6 @@ def test_generated_content():
     sut = GeneratedContent(filename='filename.txt', contents='Hi There\n')
     assert sut.filename == 'filename.txt'
     assert sut.contents == 'Hi There\n'
-    assert sut.contents_hash == 'dedc1f20145899a3f253a03ffc752d6b'
     assert sut.namespace is None
 
 

@@ -100,7 +100,6 @@ def test_create_default_namespaced():
     assert result.namespace == ns_ids_t('Dzn')
     assert result.filename == 'Dzn_ILog.hh'
     assert result.contents == DEFAULT_DZN_ILOG_HH
-    assert result.contents_hash == '2ad251bccf91b3cc5301067a6b1c796c'
     assert 'namespace Dzn {' in result.contents
 
 

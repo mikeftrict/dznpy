@@ -7,4 +7,4 @@ Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 '''
 
-VERSION = '0.4.20240926'
+VERSION = '0.5.DEV'

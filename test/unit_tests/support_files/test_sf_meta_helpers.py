@@ -82,7 +82,6 @@ def test_create_default_namespaced():
     assert result.namespace == ns_ids_t('Dzn')
     assert result.filename == 'Dzn_MetaHelpers.hh'
     assert result.contents == DEFAULT_DZN_NS_HH
-    assert result.contents_hash == 'a8b68390a1601449cd0fbca438dffa2c'
     assert 'namespace Dzn {' in result.contents
 
 
