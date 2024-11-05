@@ -1,13 +1,19 @@
 # Changelog
 
+## Changes in 0.5 (DEV) since 0.4
+
+### Additions and other changes
+
+### Processed tickets
+
 ## Changes in 0.4 (20240926) since 0.3
 
-### Other changes/additions
+### Breaking changes
 
 - Because of the improved/revamped `NamespaceIds et al` and `scoping` module, this release yields
   breaking changes to existing client scripts. Please update your client script (quite easy btw).
 
-### All processed tickets
+### Processed tickets
 
 - [DZNPY-0020](https://github.com/mikeftrict/dznpy/issues/20): Restructure dznpy modules part 1:
     - Add (graphical) documentation of dznpy's structure. Version 0.3 and projected 0.4.
@@ -28,7 +34,7 @@
 
 ## Changes in 0.3 (240415) since 0.2
 
-### Other changes/additions
+### Additions and other changes
 
 - `dznpy` now comes with PyCharm IDE project files.
 - Five new generate-able C++ support files are introduced with provision: ILog, MiscUtils,
@@ -36,7 +42,7 @@
   Multi-Client feature in the next release 0.4 of dznpy. Most of these support files can also serve
   usefulness for Dezyne (or even just C++) software development in general.
 
-### All processed tickets
+### Processed tickets
 
 - [DZNPY-0012](https://github.com/mikeftrict/dznpy/issues/12): Introduce new C++ support file
   `MultiClientSelector.hh` that will closely collaborate with the upcoming Advanced Shell
@@ -95,7 +101,7 @@
   with this wrapper. The namespace (always at least 'Dzn') can be further prefixed via
   the configuration option `support_files_ns_prefix`.
 
-### Other changes/additions
+### Additions and other changes
 
 - `misc_utils.py`: addition of the function `plural(singular_noun, ref_collection)` to make
   a singular noun -> plural depending on whether the referenced collection has multiple items.
