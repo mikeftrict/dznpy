@@ -20,15 +20,16 @@ from . import initialize_ns, create_footer
 
 
 def header_hh_template(cpp_ns: str) -> str:
+    """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
     return """\
 Logging Interface
 
 Description: interfaces for logging informationals, warnings and errors. It is up to the
              implementor how the actual logging is accomplished.
-             By default, the functors are initialized by a 'muted' implementation. 
+             By default, the functors are initialized by a 'muted' implementation.
 
 Contents:
-- ILog: the primer interface/struct for logging messages, with a muted default implementation. 
+- ILog: the primer interface/struct for logging messages, with a muted default implementation.
 - ILogWithContext: a decorator variant derived from ILog that requires an existing ILog instance,
                    on which it prefixes each logged message with a context string.
 
@@ -39,7 +40,7 @@ Example 1:
         [&](auto msg) { MySofware.LogWarning(msg); },
         [&](auto msg) { MySofware.LogError(msg); }
     };
-    
+
     logger1.Info("Hi there"); // will call MySofware.LogInfo("Hi there")
 
 Example 2:
@@ -51,6 +52,7 @@ Example 2:
 
 
 def body_hh() -> str:
+    """Generate the body of a C++ headerfile with templated fields."""
     return """\
 struct ILog
 {

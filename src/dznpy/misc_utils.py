@@ -58,8 +58,8 @@ def plural(singular_noun: str, ref_collection: Any) -> str:
         if singular_noun[-1] in ['s', 'x', 'z'] or singular_noun[-2::] in ['ss', 'sh', 'ch']:
             addition = 'es'
         return f'{singular_noun}{addition}'
-    else:
-        return singular_noun
+
+    return singular_noun
 
 
 class Indentor(enum.Enum):

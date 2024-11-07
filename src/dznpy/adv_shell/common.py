@@ -46,17 +46,14 @@ class CppPortItf:
         """Get the name of the port"""
         return self.dzn_port_itf.port.name
 
-    # @property
-    # def accessor_fn_call(self) -> str:
-    #     """Get the C++ call of the accessor function."""
-    #     return f'{self.accessor_fn.name}()'
-
     @property
     def accessor_as_decl(self) -> str:
+        """Generate the C++ declaration of the port accessor"""
         return self.accessor_fn.as_decl
 
     @property
     def accessor_as_def(self) -> str:
+        """Generate the C++ definition of the port accessor"""
         return self.accessor_fn.as_def
 
 
@@ -93,20 +90,23 @@ class CppPorts:
 
     @property
     def direction(self) -> str:
+        """Determine the unisono direction of all ports, either 'Requires' or 'Provides'."""
         direction = {x.dzn_port_itf.port.direction for x in self.ports}
         return direction.pop().value if direction else '?'
 
     @property
-    def mts_ports(self):
+    def mts_ports(self) -> List:
+        """Return a list of all ports matching Multi-threaded semantics (MTS)."""
         return [p for p in self.ports if p.dzn_port_itf.semantics == RuntimeSemantics.MTS]
 
     @property
     def sts_ports(self):
+        """Return a list of all ports matching Single-threaded semantics (STS)."""
         return [p for p in self.ports if p.dzn_port_itf.semantics == RuntimeSemantics.STS]
 
     @property
     def accessors_decl(self) -> TextBlock:
-        """Generate C++ port accessor declarations for all ports"""
+        """Generate C++ port accessor declarations for all ports."""
         comment = Comment(f'{self.direction} port {plural("accessor", self.ports)}')
         accessors = [port.accessor_as_decl for port in
                      self.ports] if self.ports else Comment('<none>')
@@ -115,6 +115,7 @@ class CppPorts:
 
     @property
     def accessors_def(self) -> TextBlock:
+        """Generate C++ port accessor definitions for all ports."""
         return TextBlock(BLANK_LINE.join([port.accessor_as_def for port in self.ports]))
 
     @property

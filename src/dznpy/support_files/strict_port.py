@@ -20,6 +20,7 @@ from . import initialize_ns, create_footer
 
 
 def header_hh_template(cpp_ns: str) -> str:
+    """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
     return """\
 Dezyne Strict Port
 
@@ -50,12 +51,13 @@ return a strict 'STS' port as function return:
 interconnect two strict ports:
 
     """ f'{cpp_ns}' """::ConnectPorts( strictStsPort, GetStrictPort() ); // Ok
-    """ f'{cpp_ns}' """::ConnectPorts( strictMtsPort, GetStrictPort() ); // Error, during compilation
+    """ f'{cpp_ns}' """::ConnectPorts( strictMtsPort, GetStrictPort() ); // Error during compilation
 
 """
 
 
 def body_hh() -> str:
+    """Generate the body of a C++ headerfile with templated fields."""
     return """\
 // Enclosure for a port that conforms to Single-threaded Runtime Semantics (STS)
 template <typename P>

@@ -39,8 +39,7 @@ from ..support_files import strict_port, ilog, misc_utils, meta_helpers, multi_c
 from ..scoping import ns_ids_t
 
 # own modules
-from .common import FacilitiesOrigin, Configuration, Recipe, CppPorts, create_encapsulee, \
-    CppElements, DznElements
+from .common import Configuration, Recipe, CppPorts, create_encapsulee, CppElements
 from .types import AdvShellError
 from .port_selection import PortCfg, PortsSemanticsCfg, PortSelect, PortWildcard
 from .core.processing import create_dzn_elements, create_cpp_portitf, create_facilities, \

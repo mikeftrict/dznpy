@@ -19,7 +19,8 @@ from ..scoping import NamespaceIds
 from . import initialize_ns, create_footer
 
 
-def header_hh_template(cpp_ns: str) -> str:
+def header_hh_template() -> str:
+    """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
     return """\
 Multi Client Selector
 
@@ -33,6 +34,7 @@ Example: Refer to Advanced Shell examples with a MultiClient port configuration.
 
 
 def body_hh() -> str:
+    """Generate the body of a C++ headerfile with templated fields."""
     return """\
 // Types
 using ClientIdentifier = std::string;
@@ -51,7 +53,7 @@ struct MultiClientSelector final
         DZN_PORT dznPort;
     };
 
-    // Reference to the current selected client (holding the claim). 
+    // Reference to the current selected client (holding the claim).
     // A value of std::nullopt means no client has been selected.
     using ClientSelect = std::optional<std::reference_wrapper<ClientPort>>;
 
@@ -173,8 +175,8 @@ private:
 def create_header(namespace_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
     """Create the c++ header file contents that facilitates strict port typing."""
 
-    ns, cpp_ns, file_ns = initialize_ns(namespace_prefix)
-    header = CommentBlock([header_hh_template(cpp_ns),
+    ns, _, file_ns = initialize_ns(namespace_prefix)
+    header = CommentBlock([header_hh_template(),
                            BLANK_LINE,
                            TEXT_GEN_DO_NOT_MODIFY,
                            BLANK_LINE,

@@ -20,6 +20,7 @@ from . import initialize_ns, create_footer
 
 
 def header_hh_template(cpp_ns: str) -> str:
+    """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
     return """\
 Dezyne Meta helpers
 
@@ -42,6 +43,7 @@ given a Dezyne port IMyService:
 
 
 def body_hh() -> str:
+    """Generate the body of a C++ headerfile with templated fields."""
     return """\
 template <typename DZN_PORT>
 DZN_PORT CreateProvidedPort(const std::string& name)

@@ -59,20 +59,40 @@ FORMAL_INOUT = '''{"<class>": "formal",
 
 FORMALS_EMPTY = '''{"<class>": "formals", "elements": []}'''
 
-FORMALS_TWO_ITEMS = '''{"<class>": "formals", "elements": [''' f'{FORMAL_IN}, {FORMAL_OUT}' ''']}'''
+FORMALS_ONE_INONLY_ITEM = '''{"<class>": "formals", "elements": [''' f'{FORMAL_IN}' ''']}'''
 
-SIGNATURE = '''{"<class>": "signature",
+FORMALS_TWO_MIXED_ITEMS = '''{"<class>": "formals", "elements": [''' f'{FORMAL_IN}, {FORMAL_OUT}' ''']}'''
+
+SIGNATURE_VOID_INONLY_ITEMS = '''{"<class>": "signature",
+                "type_name": {"<class>": "scope_name", "ids": ["void"]},
+                "formals": ''' f'{FORMALS_ONE_INONLY_ITEM}' '''}'''
+
+SIGNATURE_VALUED_MIXED_ITEMS = '''{"<class>": "signature",
                 "type_name": {"<class>": "scope_name", "ids": ["Result"]},
-                "formals": ''' f'{FORMALS_TWO_ITEMS}' '''}'''
+                "formals": ''' f'{FORMALS_TWO_MIXED_ITEMS}' '''}'''
+
+SIGNATURE_VOID_MIXED_ITEMS = '''{"<class>": "signature",
+                "type_name": {"<class>": "scope_name", "ids": ["void"]},
+                "formals": ''' f'{FORMALS_TWO_MIXED_ITEMS}' '''}'''
 
 EVENT_IN = '''{"<class>": "event",
                "name": "SwitchOn",
-               "signature": ''' f'{SIGNATURE}' ''',
+               "signature": ''' f'{SIGNATURE_VALUED_MIXED_ITEMS}' ''',
                "direction": "in"}'''
 
 EVENT_OUT = '''{"<class>": "event",
                 "name": "Fail",
-                "signature": ''' f'{SIGNATURE}' ''',
+                "signature": ''' f'{SIGNATURE_VOID_INONLY_ITEMS}' ''',
+                "direction": "out"}'''
+
+EVENT_OUT_BOGUS1 = '''{"<class>": "event",
+                "name": "Fail",
+                "signature": ''' f'{SIGNATURE_VALUED_MIXED_ITEMS}' ''',
+                "direction": "out"}'''
+
+EVENT_OUT_BOGUS2 = '''{"<class>": "event",
+                "name": "Fail",
+                "signature": ''' f'{SIGNATURE_VOID_MIXED_ITEMS}' ''',
                 "direction": "out"}'''
 
 EVENTS_EMPTY = '''{"<class>": "events", "elements": []}'''

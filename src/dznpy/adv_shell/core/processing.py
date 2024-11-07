@@ -100,6 +100,7 @@ def create_cpp_portitf(dzn: DznPortItf, scope: cpp_gen.Struct, support_files_ns:
 
 def reroute_in_events(port: CppPortItf, facilities: Facilities, encapsulee: CppEncapsulee,
                       fc: ast.FileContents) -> str:
+    """Create C++ code to reroute in events via the dispatcher."""
     result = []
     for event in [e for e in port.dzn_port_itf.interface.events.elements if
                   e.direction == ast.EventDirection.IN]:
@@ -132,13 +133,11 @@ def reroute_out_events(port: CppPortItf, facilities: Facilities, encapsulee: Cpp
                        fc: ast.FileContents) -> str:
     """Create C++ code to reroute out events."""
     result = []
-    for event in [e for e in port.dzn_port_itf.interface.events.elements if
-                  e.direction == ast.EventDirection.OUT]:
-        if [f for f in event.signature.formals.elements if
-            f.direction == ast.FormalDirection.OUT]:
-            raise AdvShellError('Out events can not have out parameter argument')
-        in_formals = [f for f in event.signature.formals.elements if
-                      f.direction == ast.FormalDirection.IN]
+    for event in [event for event in port.dzn_port_itf.interface.events.elements if
+                  event.direction == ast.EventDirection.OUT]:
+
+        in_formals = [formal for formal in event.signature.formals.elements if
+                      formal.direction == ast.FormalDirection.IN]
 
         args = []
         for i in event.signature.formals.elements:

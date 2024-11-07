@@ -66,7 +66,7 @@ struct MultiClientSelector final
         DZN_PORT dznPort;
     };
 
-    // Reference to the current selected client (holding the claim). 
+    // Reference to the current selected client (holding the claim).
     // A value of std::nullopt means no client has been selected.
     using ClientSelect = std::optional<std::reference_wrapper<ClientPort>>;
 

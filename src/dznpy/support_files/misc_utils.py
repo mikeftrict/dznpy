@@ -20,6 +20,7 @@ from . import initialize_ns, create_footer
 
 
 def header_hh() -> str:
+    """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
     return """\
 Miscellaneous utilities
 
@@ -35,13 +36,14 @@ Examples of CapitalizeFirstChar:
 
    std::wstring mywstr{L"world"};
    auto result = CapitalizeFirstChar(mywstr); // result == std::wstring(L"World")
-   
+
    auto result = CapitalizeFirstChar(std::string("")); // result = std::string("")
 
 """
 
 
 def body_hh() -> str:
+    """Generate the body of a C++ headerfile with templated fields."""
     return """\
 template <typename STR_TYPE>
 [[nodiscard]] STR_TYPE CapitalizeFirstChar(const STR_TYPE& str)
@@ -52,7 +54,7 @@ template <typename STR_TYPE>
 
     if constexpr (std::is_same_v<STR_TYPE, std::string>)
     {
-        std::transform(result.cbegin(), result.cbegin() + 1, result.begin(), 
+        std::transform(result.cbegin(), result.cbegin() + 1, result.begin(),
                        [](auto c) { return static_cast<char>(std::toupper(c)); });
     }
 
@@ -70,7 +72,7 @@ template <typename STR_TYPE>
 def create_header(namespace_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
     """Create the c++ header file contents that provides miscellaneous utilities."""
 
-    ns, cpp_ns, file_ns = initialize_ns(namespace_prefix)
+    ns, _, file_ns = initialize_ns(namespace_prefix)
     header = CommentBlock([header_hh(),
                            BLANK_LINE,
                            TEXT_GEN_DO_NOT_MODIFY,

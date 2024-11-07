@@ -182,9 +182,20 @@ def parse_event(element: dict) -> Event:
     """Parse a 'event' <class> element."""
     elt = ElementHelper(element, 'parse_event')
     elt.assert_class('event')
-    return Event(name=elt.get_str_value('name'),
-                 signature=parse_signature(elt.get_dict_value('signature')),
-                 direction=parse_event_direction(elt.get_str_value('direction')))
+    evt = Event(name=elt.get_str_value('name'),
+                signature=parse_signature(elt.get_dict_value('signature')),
+                direction=parse_event_direction(elt.get_str_value('direction')))
+
+    # detect invalid content (1)
+    if evt.direction == EventDirection.OUT and evt.signature.type_name.value != ns_ids_t('void'):
+        raise DznJsonError('parse_event: Out events have a -void- return value type')
+
+    # detect invalid content (2)
+    if evt.direction == EventDirection.OUT:
+        if [f for f in evt.signature.formals.elements if f.direction == FormalDirection.OUT]:
+            raise DznJsonError('parse_event: Out events can not have an -out- parameter argument')
+
+    return evt
 
 
 def parse_events(element: dict) -> Events:

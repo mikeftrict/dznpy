@@ -50,7 +50,7 @@ def template_hh(ns_prefix: str) -> str:
 // interconnect two strict ports:
 //
 //     """ f'{ns_prefix}' """Dzn::ConnectPorts( strictStsPort, GetStrictPort() ); // Ok
-//     """ f'{ns_prefix}' """Dzn::ConnectPorts( strictMtsPort, GetStrictPort() ); // Error, during compilation
+//     """ f'{ns_prefix}' """Dzn::ConnectPorts( strictMtsPort, GetStrictPort() ); // Error during compilation
 //
 //
 // This is generated code. DO NOT MODIFY manually.

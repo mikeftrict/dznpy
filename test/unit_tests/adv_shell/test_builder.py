@@ -12,8 +12,8 @@ from typing import List
 # system-under-test
 from dznpy import ast
 from dznpy.adv_shell import PortSelect, PortWildcard, all_sts_all_mts, all_mts_all_sts, \
-    all_mts_mixed_ts, all_sts_mixed_ts, all_mts, Configuration, Builder, \
-    FacilitiesOrigin, GeneratedContent as GC
+    all_mts_mixed_ts, all_sts_mixed_ts, all_mts, Configuration, Builder
+from dznpy.adv_shell.common import FacilitiesOrigin
 from dznpy.adv_shell.types import AdvShellError
 from dznpy.code_gen_common import GeneratedContent, CodeGenResult
 from dznpy.support_files import strict_port, ilog, misc_utils, meta_helpers, \

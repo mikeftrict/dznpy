@@ -220,8 +220,9 @@ class EventTest(DznTestCase):
         sut = json_ast.parse_event(dzn.ast)
         assert isinstance(sut, ast.Event)
         assert sut.name == 'SwitchOn'
-        assert isinstance(sut.signature, ast.Signature)
         assert sut.direction == ast.EventDirection.IN
+        assert isinstance(sut.signature, ast.Signature)
+        assert sut.signature.type_name.value == ns_ids_t('Result')
 
     @staticmethod
     def test_event_direction_out_ok():
@@ -229,8 +230,23 @@ class EventTest(DznTestCase):
         sut = json_ast.parse_event(dzn.ast)
         assert isinstance(sut, ast.Event)
         assert sut.name == 'Fail'
-        assert isinstance(sut.signature, ast.Signature)
         assert sut.direction == ast.EventDirection.OUT
+        assert isinstance(sut.signature, ast.Signature)
+        assert sut.signature.type_name.value == ns_ids_t('void')
+
+    @staticmethod
+    def test_event_direction_out_fail_on_return_type():
+        with pytest.raises(DznJsonError) as exc:
+            dzn = DznJsonAst(json_contents=EVENT_OUT_BOGUS1)
+            json_ast.parse_event(dzn.ast)
+        assert str(exc.value) == 'parse_event: Out events have a -void- return value type'
+
+    @staticmethod
+    def test_event_direction_out_fail_on_out_formal():
+        with pytest.raises(DznJsonError) as exc:
+            dzn = DznJsonAst(json_contents=EVENT_OUT_BOGUS2)
+            json_ast.parse_event(dzn.ast)
+        assert str(exc.value) == 'parse_event: Out events can not have an -out- parameter argument'
 
 
 class EventsTest(DznTestCase):
@@ -380,7 +396,7 @@ class FormalsTest(DznTestCase):
 
     @staticmethod
     def test_two_elements():
-        dzn = DznJsonAst(json_contents=FORMALS_TWO_ITEMS)
+        dzn = DznJsonAst(json_contents=FORMALS_TWO_MIXED_ITEMS)
         sut = json_ast.parse_formals(dzn.ast)
         assert isinstance(sut, ast.Formals)
         assert len(sut.elements) == 2
@@ -702,7 +718,7 @@ class SignatureTest(DznTestCase):
 
     @staticmethod
     def test_ok():
-        dzn = DznJsonAst(json_contents=SIGNATURE)
+        dzn = DznJsonAst(json_contents=SIGNATURE_VALUED_MIXED_ITEMS)
         sut = json_ast.parse_signature(dzn.ast)
         assert isinstance(sut, ast.Signature)
         assert str(sut.type_name) == 'Result'

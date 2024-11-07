@@ -62,7 +62,7 @@ template <typename STR_TYPE>
 
     if constexpr (std::is_same_v<STR_TYPE, std::string>)
     {
-        std::transform(result.cbegin(), result.cbegin() + 1, result.begin(), 
+        std::transform(result.cbegin(), result.cbegin() + 1, result.begin(),
                        [](auto c) { return static_cast<char>(std::toupper(c)); });
     }
 

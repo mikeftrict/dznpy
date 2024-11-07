@@ -20,6 +20,7 @@ from . import initialize_ns, create_footer
 
 
 def header_hh_template(cpp_ns: str) -> str:
+    """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
     return """\
 Mutex Wrapped helper
 
@@ -49,6 +50,7 @@ given """ f'{cpp_ns}' """::MutexWrapped<int> m_threadSafeNumber;
 
 
 def body_hh() -> str:
+    """Generate the body of a C++ headerfile with templated fields."""
     return """\
 template <typename T>
 struct MutexWrapped

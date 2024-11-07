@@ -8,8 +8,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 # system modules
 from dataclasses import dataclass, field
 import enum
-from typing import List, Dict, Any, Optional
-from typing_extensions import Self
+from typing import List, Any, Optional
 
 # dznpy modules
 from .misc_utils import assert_t, is_strlist_instance, plural, TextBlock, EOL
@@ -104,20 +103,11 @@ class TypeDesc:
         return f'const {mandatory}' if self.const else mandatory
 
 
+@dataclass
 class Param:
     """Param"""
-
-    def __init__(self, type_desc: TypeDesc, name: str):
-        self._type_desc = type_desc
-        self._name = name
-
-    @property
-    def type_desc(self):
-        return self._type_desc
-
-    @property
-    def name(self):
-        return self._name
+    type_desc: TypeDesc
+    name: str
 
     def __str__(self):
         raise CppGenError('instead of str(), access the properties as_decl or as_def')
@@ -281,7 +271,7 @@ class Constructor:
             return ''  # no definition is generated when declared with initialization
 
         params = ', '.join([p.as_def for p in self.params])
-        mil = TextBlock([': ' + '\n, '.join([mv for mv in self.member_initlist])]).indent() \
+        mil = TextBlock([': ' + '\n, '.join(self.member_initlist)]).indent() \
             if self.member_initlist else None
         content = TextBlock(self.contents).indent() if self.contents else None
         full_signature = f'{self.scope.name}::{self.scope.name}({params})'
@@ -486,55 +476,3 @@ def const_param_ptr_t(ns_ids: NamespaceIds, name: str, default_value='') -> Para
                                     postfix=TypePostfix.POINTER,
                                     const=True,
                                     default_value=default_value), name=name)
-
-
-class Container:
-    """Class to contain and lookup instantiated cpp_gen elements"""
-    _params = Dict[str, Param]
-    _member_variables = Dict[str, MemberVariable]
-    _functions = Dict[str, Function]
-
-    def __init__(self):
-        self._params = {}
-        self._member_variables = {}
-        self._functions = {}
-
-    def add_unique(self, addition: Any or List[Any]) -> Self:
-        """Add a unique cpp_gen element, or a list of cpp_gen elements to the container.
-        Returns self according to the Fluent Interface pattern."""
-        if isinstance(addition, list):
-            for item in addition:
-                self._add_single(item)
-        else:
-            self._add_single(addition)
-
-        return self
-
-    def _add_single(self, item: Any):
-        """Private method to add a single cpp_gen item to the container."""
-        if isinstance(item, Param):
-            if item.name in self._params:
-                raise CppGenError(f'Param "{item.name}" already present')
-            self.params[item.name] = item
-        elif isinstance(item, MemberVariable):
-            if item.name in self._member_variables:
-                raise CppGenError(f'Member Variable "{item.name}" already present')
-            self.member_variables[item.name] = item
-        elif isinstance(item, Function):
-            if item.name in self._functions:
-                raise CppGenError(f'Function "{item.name}" already present')
-            self.functions[item.name] = item
-        else:
-            raise TypeError('type can not be added')
-
-    @property
-    def params(self) -> Dict[str, Param]:
-        return self._params
-
-    @property
-    def member_variables(self) -> Dict[str, MemberVariable]:
-        return self._member_variables
-
-    @property
-    def functions(self) -> Dict[str, Function]:
-        return self._functions
