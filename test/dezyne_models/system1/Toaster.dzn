@@ -32,7 +32,14 @@ requires injected IConfiguration cfg;
 
 behavior
 {
-    enum State { Uninitialized, Idle, Toasting, Error };
+    enum State
+    {
+        Uninitialized,
+        Unclaimed,
+        Idle,
+        Toasting,
+        Error
+    };
 
     // State variable(s)
     State s = State.Uninitialized; // initial state
@@ -50,9 +57,23 @@ behavior
         on api.Initialize(): Initialize();
     }
 
-    [s.Idle]
+    [s.Unclaimed]
     {
         on api.Uninitialize(): Uninitialize();
+
+        on api.Claim(_info):
+        {
+            s = State.Idle;
+            reply(My.Result.Ok);
+        }
+
+        // autonomous events:
+        on cord.Connected(), cord.Disconnected(_): {} // consume because it is not interesting
+    }
+
+    [s.Idle]
+    {
+        on api.Release(_goodbye): s = State.Unclaimed;
 
         on api.GetTime(toastingTime): toastingTime = m_toastingTime;
         on api.SetTime(toastingTime): m_toastingTime = toastingTime;
@@ -123,7 +144,7 @@ behavior
         heater.Initialize();
         cord.Initialize();
         cfg.GetToastingTime(m_toastingTime);
-        s = State.Idle;
+        s = State.Unclaimed;
     }
 
     void Uninitialize()

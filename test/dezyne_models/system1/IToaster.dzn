@@ -8,6 +8,10 @@ interface IToaster
 in void Initialize();
 in void Uninitialize();
 
+// Claim/Release operations
+in Result Claim(out PResultInfo info);
+in void Release(out string goodbye);
+
 // Set and get time duration
 in void SetTime(in MilliSeconds toastingTime);
 in void GetTime(inout MilliSeconds toastingTime);
@@ -24,20 +28,35 @@ out void Ok();
 out void Fail(in PResultInfo info);
 out void Error(in PResultInfo info);
 
-enum State { Uninitialized, Idle, Toasting, Error };
+enum State
+{
+    Uninitialized,
+    Unclaimed,
+    Idle,
+    Toasting,
+    Error
+};
 
-behaviour
+behavior
 {
     State s = State.Uninitialized; // initial state
 
     [s.Uninitialized]
     {
-        on Initialize: s = State.Idle;
+        on Initialize: s = State.Unclaimed;
+    }
+
+    [s.Unclaimed]
+    {
+        on Uninitialize: s = State.Uninitialized;
+
+        on Claim: { s = State.Idle; reply(Result.Ok); }
+        on Claim: reply(Result.Fail);
     }
 
     [s.Idle]
     {
-        on Uninitialize: s = State.Uninitialized;
+        on Release: s = State.Unclaimed;
 
         on GetTime: {}
         on SetTime: {}
@@ -51,7 +70,7 @@ behaviour
     {
         on Cancel: s = State.Idle;
 
-        on optional:   { Ok; s = State.Idle; }
+        on optional: { Ok; s = State.Idle; }
         on inevitable: { Fail; s = State.Idle; }
         on inevitable: { Error; s = State.Error; }
     }

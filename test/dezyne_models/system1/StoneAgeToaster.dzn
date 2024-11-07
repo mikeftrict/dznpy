@@ -24,7 +24,14 @@ requires injected IConfiguration cfg;
 
 behavior
 {
-    enum State { Uninitialized, Idle, Toasting, Error };
+    enum State
+    {
+        Uninitialized,
+        Unclaimed,
+        Idle,
+        Toasting,
+        Error
+    };
 
     // State variable(s)
     State s = State.Uninitialized; // initial state
@@ -33,14 +40,33 @@ behavior
     MilliSeconds m_toastingTime;
 
     // State-based handling:
-    [s.Uninitialized] on api.Initialize(): { heater.Initialize(); s = State.Idle; }
+    [s.Uninitialized] on api.Initialize():
+    {
+        heater.Initialize();
+        s = State.Unclaimed;
+    }
 
-    [s.Idle]
+    [s.Unclaimed]
     {
         on api.Uninitialize():
         {
             heater.Uninitialize();
             s = State.Uninitialized;
+        }
+
+        on api.Claim(_info):
+        {
+            s = State.Idle;
+            reply(My.Result.Ok);
+        }
+    }
+
+    [s.Idle]
+    {
+        on api.Release(goodbye):
+        {
+            goodbye = $"See you next time"$;
+            s = State.Unclaimed;
         }
 
         on api.GetTime(toastingTime): toastingTime = m_toastingTime;
@@ -50,7 +76,7 @@ behavior
         {
             timer.Create(m_toastingTime);
             heater.On();
-            api.reply(Result.Ok);
+            api.reply(My.Result.Ok);
             s = State.Toasting;
         }
     }

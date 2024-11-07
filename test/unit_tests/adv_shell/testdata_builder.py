@@ -298,6 +298,12 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_ppApi.in.Uninitialize = [&] {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Uninitialize(); });
     };
+    m_ppApi.in.Claim = [&](PResultInfo& info) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Claim(info); });
+    };
+    m_ppApi.in.Release = [&](std::string& goodbye) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Release(goodbye); });
+    };
     m_ppApi.in.SetTime = [&](size_t toastingTime) {
         return dzn::shell(m_dispatcher, [&, toastingTime] { return m_encapsulee.api.in.SetTime(toastingTime); });
     };
@@ -486,6 +492,12 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     };
     m_ppApi.in.Uninitialize = [&] {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Uninitialize(); });
+    };
+    m_ppApi.in.Claim = [&](PResultInfo& info) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Claim(info); });
+    };
+    m_ppApi.in.Release = [&](std::string& goodbye) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Release(goodbye); });
     };
     m_ppApi.in.SetTime = [&](size_t toastingTime) {
         return dzn::shell(m_dispatcher, [&, toastingTime] { return m_encapsulee.api.in.SetTime(toastingTime); });
@@ -840,6 +852,12 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     };
     m_ppApi.in.Uninitialize = [&] {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Uninitialize(); });
+    };
+    m_ppApi.in.Claim = [&](PResultInfo& info) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Claim(info); });
+    };
+    m_ppApi.in.Release = [&](std::string& goodbye) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Release(goodbye); });
     };
     m_ppApi.in.SetTime = [&](size_t toastingTime) {
         return dzn::shell(m_dispatcher, [&, toastingTime] { return m_encapsulee.api.in.SetTime(toastingTime); });

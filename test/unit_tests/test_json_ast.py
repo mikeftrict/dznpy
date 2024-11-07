@@ -834,7 +834,7 @@ class LoadFileTest(DznTestCase):
         expected_component_fqns = ['My.Project.Toaster']
         assert_items_name_on_fqn(fc.components, expected_component_fqns)
 
-        expected_enums = ['Result', 'My.Project.IToaster.State', 'My.Project.CountingUp']
+        expected_enums = ['My.Result', 'My.Project.IToaster.State', 'My.Project.CountingUp']
         assert_items_name_on_fqn(fc.enums, expected_enums)
 
         expected_externs = ['MilliSeconds', 'string',
