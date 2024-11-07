@@ -25,6 +25,7 @@ Example configurations:
 
 
 # system modules
+from dataclasses import dataclass
 from typing import Optional
 
 # dznpy modules
@@ -45,6 +46,12 @@ from .port_selection import PortCfg, PortsSemanticsCfg, PortSelect, PortWildcard
 from .core.processing import create_dzn_elements, create_cpp_portitf, create_facilities, \
     create_constructor, create_final_construct_fn, create_facilities_check_fn
 
+
+
+@dataclass(frozen=True)
+class MultiClientSelectorCfg:
+    port_name: str
+    claim_event: 
 
 # helper functions to create a prefined PortCfg
 
