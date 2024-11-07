@@ -32,7 +32,13 @@ requires injected IConfiguration cfg;
 
 behavior
 {
-    enum State { Uninitialized, Idle, Toasting, Error };
+    enum State
+    {
+        Uninitialized,
+        Idle,
+        Toasting,
+        Error
+    };
 
     // State variable(s)
     State s = State.Uninitialized; // initial state

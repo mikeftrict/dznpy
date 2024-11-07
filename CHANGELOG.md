@@ -6,9 +6,13 @@
 
 ### Processed tickets
 
+- [DZNPY-0025](https://github.com/mikeftrict/dznpy/issues/25): Extend example models with
+  a Claim-Release example. As a preparation to the MultiClientSelector feature.
+
 - [DZNPY-0023](https://github.com/mikeftrict/dznpy/issues/23): Resolve a round of pylint and flake8
   feedback on the `src` folder. A notable 'correction' was the leaking of `FacilitiesOrigin` through
-  a using module. The correct way to import it is from the `dznpy.adv_shell.common` module.
+  a module by an import, but it did not use it. The correct way to import it is from
+  the `dznpy.adv_shell.common` module.
 
 ## Changes in 0.4 (20240926) since 0.3
 

@@ -1,0 +1,163 @@
+// Provided interface
+import IExclusiveToaster.dzn;
+
+// Used interfaces/components
+import Hardware/Interfaces/IHeaterElement.dzn;
+import Hardware/Interfaces/IPowerCord.dzn;
+
+// Facilities
+import ITimer.dzn;
+import IConfiguration.dzn;
+
+namespace My { namespace Project {
+
+component ExclusiveToaster
+{
+provides ILifecycle lifecycle;
+provides IExclusiveToaster api;
+requires Some.Vendor.IHeaterElement heater;
+requires Hal.IPowerCord cord;
+requires ITimer timer;
+requires injected IConfiguration cfg;
+
+behavior
+{
+    enum State
+    {
+        Uninitialized,
+        Unclaimed,
+        Idle,
+        Toasting
+    };
+
+    // State variable(s)
+    State s = State.Uninitialized; // initial state
+
+    // Data variable(s)
+    MilliSeconds m_toastingTime;
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Event-based handling:
+    ///////////////////////////////////////////////////////////////////////////////
+
+    // Lifecycle interface:
+    // - Initialization and uninitialization of the component. To be controlled by 1 main client.
+    // - Event based event handling (robust pattern) because the lifecycle requests can be (theoretically)
+    //   called in every state when  not correctly associated with client(s)
+
+    on lifecycle.Initialize(info):
+    {
+        [s.Uninitialized]
+        {
+            heater.Initialize();
+            cord.Initialize();
+            cfg.GetToastingTime(m_toastingTime);
+            s = State.Unclaimed;
+            lifecycle.reply(Result.Ok);
+        }
+        [otherwise]
+        {
+            // not allowed to be called in other states. Tip: set 'info' with some failure information
+            lifecycle.reply(Result.Fail);
+        }
+    }
+
+    on lifecycle.Uninitialize(info):
+    {
+        [s.Uninitialized || s.Unclaimed]
+        {
+            heater.Uninitialize();
+            cord.Uninitialize();
+            s = State.Uninitialized;
+            lifecycle.reply(Result.Ok);
+        }
+        [otherwise]
+        {
+            // not allowed to be called in other states. Tip: set 'info' with some failure information
+            lifecycle.reply(Result.Fail);
+        }
+    }
+
+    // Functional interface:
+    // - Concurrent clients need to request Claim() first.
+
+    on api.Claim(info):
+    {
+        [s.Uninitialized]
+        {
+            // Tip: set out parameter 'info' to a message like 'component has not been initialized'
+            reply(Result.Fail);
+        }
+        [s.Unclaimed]
+        {
+            // The first client is granted access
+            s = State.Idle;
+            reply(Result.Ok);
+        }
+        [otherwise]
+        {
+            // Remaining concurrent clients are rejected.
+            // Tip: set out parameter 'info' to a message like 'component has already been claimed'
+            reply(Result.Fail);
+        }
+    }
+
+    // Miscellaneous:
+
+    on cord.Connected(): {} // consume all because it is not used in this implementation component
+    [!s.Toasting] on cord.Disconnected(_): {} // consume in all other states than 'Toasting'
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // State-based handling:
+    ///////////////////////////////////////////////////////////////////////////////
+
+    [s.Idle]
+    {
+        on api.Release(goodbye): s = State.Unclaimed;
+
+        on api.Toast(motd, _info):
+        {
+            if (cord.IsConnectedToOutlet())
+            {
+                timer.Create(m_toastingTime);
+                heater.On();
+                api.reply(Result.Ok);
+                s = State.Toasting;
+            }
+            else
+            {
+                // Tip: set 'info' with the cause of the failure
+                api.reply(Result.Fail);
+            }
+        }
+    }
+
+    [s.Toasting]
+    {
+        on api.Cancel():
+        {
+            timer.Cancel();
+            heater.Off();
+            s = State.Idle;
+        }
+
+        on timer.Timeout():
+        {
+            timer.Cancel();
+            heater.Off();
+            api.Ok();
+            s = State.Idle;
+        }
+
+        on cord.Disconnected(exampleParameter):
+        {
+            timer.Cancel();
+            heater.Off();
+            api.Fail($"Toasting prematurely ended because the powercord got disconnected"$);
+            s = State.Idle;
+        }
+    }
+
+} // behavior
+} // component
+}} // end namespace My::Project

@@ -1,0 +1,112 @@
+// Description:
+//
+// File with two cohesive interfaces to demonstrate a Multi-Client/Exclusive-Access scenario:
+//
+// - ILifecycle: There is 1 main control client that requests to initialize/uninitialize.
+//
+// - IExclusiveToaster: there can be a multifold of clients that can use the functional interface; but only 1 client can use it at a time.
+//   > to gain exclusive use, a client needs to successfully Claim() first. This scheme is concurrently robust.
+//   > when the granted client has completed its functional use, it needs to issue Release(),
+//     to allow subsequent clients claim the functional interface.
+//   > when the claim is granted to client A, and other concurrent clients try to Claim(),
+//     the other clients will receive a rejecting reply. They are free to retry.
+//   > Important: the initial state (Unclaimed) of the functional interface must -not- emit any out events.
+//     Only synchronous replied events are offered to regulate access by concurrent clients.
+//
+// Code generation and Advanced Shell
+//
+// To actually bring this 'multi-client/exclusive-access' scenario to execution with Dezyne C++, the model needs to
+// be processed by the dznpy/adv_shell module. The main attention point is that out-of-the-box, Dezyne does not support
+// out-events to be shared with multiple clients. To 'provide for this', the adv_shell module wraps a system/component with
+// generated C++ code to arbiter the subscription + propagation of out events to the client that has the 'claim'.
+//
+// Refer to the examples and documentation for more information.
+//
+
+import Types.dzn;
+
+namespace My {
+
+///////////////////////////////////////////////////////////////////////////////
+// A lifecycle interface that needs to be controlled by 1 main client.
+// Typical the one that sets up the system and will finally tear it down.
+//
+// Note: 'regular' clients that only use functionally must not have access to this interface.
+//
+interface ILifecycle
+{
+// Requests to control the operational level
+in Result Initialize(out Project.PResultInfo info);
+in Result Uninitialize(out Project.PResultInfo info);
+
+behavior
+{
+    on Initialize, Uninitialize: reply(Result.Ok);
+    on Initialize, Uninitialize: reply(Result.Fail);
+
+} // end behaviour
+} // end interface
+
+///////////////////////////////////////////////////////////////////////////////
+// A functional interface that is controlled by multiple clients, but only 1 client at a time.
+//
+interface IExclusiveToaster
+{
+// Exclusive use operations
+in Result Claim(out Project.PResultInfo info);
+in void Release(out string goodbye);
+
+// Functional operations
+in Result Toast(in string motd, out Project.PResultInfo info);
+in void Cancel();
+
+// Asynchronous responses
+out void Ok();
+out void Fail(in Project.PResultInfo info);
+
+enum State
+{
+    // state that is accessible by concurrent clients:
+    Unclaimed,
+
+    // states that is accessible only by the client that has granted the claim:
+    Idle,
+    Toasting
+};
+
+behavior
+{
+    State s = State.Unclaimed; // initial state
+
+    // Event-based handling
+    // --------------------
+    // Multi-client arbitrage. Only 1 client A can get a claim and advance to the Idle state. All other
+    // concurrent clients get a Fail replied until the moment the client A has released the claim.
+    on Claim:
+    {
+        [s.Unclaimed] { s = State.Idle; reply(Result.Ok); } // only in the Unclaimed state, a claim is granted
+        [true] reply(Result.Fail); // either it has already been claimed, or the implementating component has not been initialized yet.
+    }
+
+    on Release: [s.Idle] s = State.Unclaimed;
+
+    // State-based handling (as of here begins the functional use of the resource)
+    // --------------------
+    [s.Idle]
+    {
+        on Toast: { reply(Result.Ok); s = State.Toasting; }
+        on Toast: { reply(Result.Fail); }
+    }
+
+    [s.Toasting]
+    {
+        on Cancel: s = State.Idle;
+
+        on optional: { Ok; s = State.Idle; }
+        on inevitable: { Fail; s = State.Idle; }
+    }
+
+} // behaviour
+} // interface
+
+} // end namespace My

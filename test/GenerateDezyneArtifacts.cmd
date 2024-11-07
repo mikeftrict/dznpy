@@ -36,7 +36,9 @@ DEL /Q %genfolder%\* >nul 2> nul
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IPowerCord.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IHeaterElement.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\ILed.dzn
+CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ IExclusiveToaster.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ IToaster.dzn
+CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ExclusiveToaster.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ StoneAgeToaster.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Toaster.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ -s ToasterOne TwoToasters.dzn

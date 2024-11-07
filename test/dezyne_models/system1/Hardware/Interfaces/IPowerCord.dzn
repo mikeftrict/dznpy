@@ -17,7 +17,11 @@ out void Disconnected(MyType exampleParameter);
 
 behavior
 {
-    enum State { Uninitialized, ObservingPowercord };
+    enum State
+    {
+        Uninitialized,
+        ObservingPowercord
+    };
     State s = State.Uninitialized; // initial state
 
     on Uninitialize: s = State.Uninitialized;

@@ -24,9 +24,15 @@ out void Ok();
 out void Fail(in PResultInfo info);
 out void Error(in PResultInfo info);
 
-enum State { Uninitialized, Idle, Toasting, Error };
+enum State
+{
+    Uninitialized,
+    Idle,
+    Toasting,
+    Error
+};
 
-behaviour
+behavior
 {
     State s = State.Uninitialized; // initial state
 
@@ -51,7 +57,7 @@ behaviour
     {
         on Cancel: s = State.Idle;
 
-        on optional:   { Ok; s = State.Idle; }
+        on optional: { Ok; s = State.Idle; }
         on inevitable: { Fail; s = State.Idle; }
         on inevitable: { Error; s = State.Error; }
     }

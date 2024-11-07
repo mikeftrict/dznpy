@@ -16,11 +16,16 @@ in void Uninitialize();
 in void On();
 in void Off();
 
-subint ExampleInt {0..9};
+subint ExampleInt {0 .. 9};
 
-behaviour
+behavior
 {
-    enum State { Uninitialized, Off, Heating };
+    enum State
+    {
+        Uninitialized,
+        Off,
+        Heating
+    };
     State s = State.Uninitialized; // initial state
 
     // Event-based handling:
@@ -45,15 +50,13 @@ behaviour
 } // interface
 }} // end namespace Some::Vendor
 
-
-
 namespace My { namespace Project {
 
 interface IHeaterElement // #2
 {
 in void Second();
 
-behaviour
+behavior
 {
     on Second: {}
 
@@ -61,14 +64,11 @@ behaviour
 } // interface
 }} // end namespace My::Project
 
-
-
-
 interface IHeaterElement // #3 in global namespaceø
 {
 in void Third();
 
-behaviour
+behavior
 {
     on Third: {}
 
