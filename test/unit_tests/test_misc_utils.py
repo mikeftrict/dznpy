@@ -105,6 +105,18 @@ class TextBlockTests(TestCase):
         assert tb.lines == ['']
 
     @staticmethod
+    def test_create_with_empty_list():
+        tb = TextBlock([])
+        assert len(tb.lines) == 0
+        assert str(tb) == ''
+
+    @staticmethod
+    def test_create_with_none():
+        tb = TextBlock(None)
+        assert len(tb.lines) == 0
+        assert str(tb) == ''
+
+    @staticmethod
     def test_create_with_string():
         tb = TextBlock('Hello\n\n')
         assert len(tb.lines) == 2
@@ -148,20 +160,22 @@ class TextBlockTests(TestCase):
         assert str(textblock) == '    Hello\n    There\n'
 
     @staticmethod
-    def test_indent_with_custom_nr_spaces():
-        textblock = TextBlock(content=['Hello', 'There'])
-        textblock.indent(spaces_count=2)
-        assert str(textblock) == '  Hello\n  There\n'
-
-    @staticmethod
     def test_indent_strip_trailing_whitespace():
+        """Test that an empty line will not get indented with spaces as it would yield
+        unncessary trailing whitespace."""
         textblock = TextBlock(content=['Hello', '', 'There']).indent()
         assert str(textblock) == '    Hello\n\n    There\n'
 
     @staticmethod
+    def test_indent_with_custom_nr_spaces():
+        textblock = TextBlock(content=['Hello', 'There'])
+        textblock.indent(Indentizer(spaces_count=2))
+        assert str(textblock) == '  Hello\n  There\n'
+
+    @staticmethod
     def test_indent_with_tab_char():
         textblock = TextBlock(content=['Hello', 'There'])
-        textblock.indent(indentor=Indentor.TAB)
+        textblock.indent(Indentizer(indentor=Indentor.TAB))
         assert str(textblock) == '\tHello\n\tThere\n'
 
     @staticmethod

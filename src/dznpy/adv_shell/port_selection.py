@@ -7,15 +7,16 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import enum
 from typing import Dict, Set
 
 # dznpy modules
-from ..misc_utils import is_strset_instance
+from ..misc_utils import is_strset_instance, TextBlock
 
 # own modules
 from .types import AdvShellError, RuntimeSemantics
+from ..scoping import NamespaceIds
 
 
 class PortWildcard(enum.Enum):
@@ -140,24 +141,49 @@ class PortsSemanticsCfg:
 
 @dataclass(frozen=True)
 class MatchedPorts:
-    """Data class holding the result of a PortCfg match with the actual Encapsulee ports."""
+    """Data class holding the result of a PortsCfg match with the actual Encapsulee ports."""
     value: Dict[str, RuntimeSemantics]
 
 
 @dataclass(frozen=True)
-class PortCfg:
+class MultiClientPortCfg:
+    port_name: str
+    claim_event_name: str
+    claim_granting_reply_value: NamespaceIds
+    release_event_name: str
+
+    def __str__(self):
+        """Stringify the dataclass items as a human friendly readable textblock."""
+        return f'Out-event ClientSelector port "{self.port_name}" (Claim event "{self.claim_event_name}" with ' \
+               f'granting reply value "{self.claim_granting_reply_value}", ' \
+               f'Release event "{self.release_event_name}")'
+
+
+@dataclass(frozen=True)
+class PortsCfg:
     """Data class containing the configuration of the ports and their semantics."""
     provides: PortsSemanticsCfg
     requires: PortsSemanticsCfg
+    multiclient: MultiClientPortCfg = field(default=None)
 
     def __post_init__(self):
         if self.provides.sts.is_not_empty() and self.provides.mts.is_not_empty():
             raise AdvShellError('Mixed STS/MTS provides ports are currently not supported')
 
     def __str__(self):
+        """Stringify the dataclass items as a human friendly readable textblock."""
+        items = []
+
         if self.provides == self.requires:
-            return f'provides/requires: {self.provides}'
-        return f'provides ports: {self.provides}, requires ports: {self.requires}'
+            items.append(f'> provides/requires: {self.provides}')
+        else:
+            items.append(f'> provides ports: {self.provides}')
+            items.append(f'> requires ports: {self.requires}')
+
+        if self.multiclient:
+            items.append(f'> multiclient: {self.multiclient}')
+
+        return str(TextBlock(items))
 
     def match(self, provides_ports: Set[str], requires_ports: Set[str]) -> MatchedPorts:
         """Match the specified port names in the current onfiguration."""

@@ -44,6 +44,7 @@ CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Toaster.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ -s ToasterOne TwoToasters.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ -s My.Project.ToasterSystem ToasterSystem.dzn
 
+CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l json ExclusiveToaster.dzn > %genfolder%\ExclusiveToaster.json
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l json ToasterSystem.dzn > %genfolder%\ToasterSystem.json
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l json StoneAgeToaster.dzn > %genfolder%\StoneAgeToaster.json
 

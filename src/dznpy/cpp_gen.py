@@ -259,7 +259,7 @@ class Constructor:
     def as_decl(self) -> str:
         """Return the constructor declaration textblock."""
         explicit = 'explicit ' if self.explicit else ''
-        params = ', '.join([p.as_decl for p in self.params])
+        params = ', '.join([p.as_decl for p in self.params if p])
         initialization = f' = {self.initialization}' if self.initialization else ''
         full_signature = f'{explicit}{self.scope.name}({params}){initialization};'
         return str(TextBlock(full_signature))
@@ -270,7 +270,7 @@ class Constructor:
         if self.initialization:
             return ''  # no definition is generated when declared with initialization
 
-        params = ', '.join([p.as_def for p in self.params])
+        params = ', '.join([p.as_def for p in self.params if p])
         mil = TextBlock([': ' + '\n, '.join(self.member_initlist)]).indent() \
             if self.member_initlist else None
         content = TextBlock(self.contents).indent() if self.contents else None
@@ -457,22 +457,22 @@ def decl_var_ptr_t(fqn: Fqn, name: str) -> MemberVariable:
     return MemberVariable(type=TypeDesc(fqn=fqn, postfix=TypePostfix.POINTER), name=name)
 
 
-def param_t(ns_ids: NamespaceIds, name: str, default_value='') -> Param:
+def param_t(fqn: Fqn, name: str, default_value='') -> Param:
     """Shortcut helper to create a simple parameter with an optional default value."""
-    return Param(type_desc=TypeDesc(Fqn(ns_ids), default_value=default_value), name=name)
+    return Param(type_desc=TypeDesc(fqn, default_value=default_value), name=name)
 
 
-def const_param_ref_t(ns_ids: NamespaceIds, name: str, default_value='') -> Param:
+def const_param_ref_t(fqn: Fqn, name: str, default_value='') -> Param:
     """Shortcut helper to create a const reference parameter with an optional default value."""
-    return Param(type_desc=TypeDesc(fqn=Fqn(ns_ids),
+    return Param(type_desc=TypeDesc(fqn=fqn,
                                     postfix=TypePostfix.REFERENCE,
                                     const=True,
                                     default_value=default_value), name=name)
 
 
-def const_param_ptr_t(ns_ids: NamespaceIds, name: str, default_value='') -> Param:
+def const_param_ptr_t(fqn: Fqn, name: str, default_value='') -> Param:
     """Shortcut helper to create a const pointer parameter with an optional default value."""
-    return Param(type_desc=TypeDesc(fqn=Fqn(ns_ids),
+    return Param(type_desc=TypeDesc(fqn=fqn,
                                     postfix=TypePostfix.POINTER,
                                     const=True,
                                     default_value=default_value), name=name)

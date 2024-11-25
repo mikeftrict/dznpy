@@ -12,7 +12,7 @@ from typing import List
 # system-under-test
 from dznpy import ast
 from dznpy.adv_shell import PortSelect, PortWildcard, all_sts_all_mts, all_mts_all_sts, \
-    all_mts_mixed_ts, all_sts_mixed_ts, all_mts, Configuration, Builder
+    all_mts_mixed_ts, all_sts_mixed_ts, all_mts, all_sts, Configuration, Builder, MultiClientPortCfg
 from dznpy.adv_shell.common import FacilitiesOrigin
 from dznpy.adv_shell.types import AdvShellError
 from dznpy.code_gen_common import GeneratedContent, CodeGenResult
@@ -29,6 +29,7 @@ from testdata_builder import *
 # test constants
 DZN_FILE1 = resolve(__file__, TOASTER_SYSTEM_JSON_FILE, '../')
 DZN_FILE2 = resolve(__file__, STONE_AGE_TOASTER_FILE, '../')
+DZN_FILE3 = resolve(__file__, EXCLUSIVE_TOASTER_JSON_FILE, '../')
 
 # test data
 GC_DEFAULT_DZN_STRICT_PORT_HH = strict_port.create_header()
@@ -71,7 +72,7 @@ def test_system_component_not_found():
     cfg = Configuration(dezyne_filename=DZN_FILE1, ast_fc=get_fc(DZN_FILE1),
                         output_basename_suffix='AdvShell',
                         fqn_encapsulee_name=ns_ids_t('UnknownComponent'),
-                        port_cfg=all_sts_all_mts(),
+                        ports_cfg=all_sts_all_mts(),
                         facilities_origin=FacilitiesOrigin.IMPORT,
                         copyright=COPYRIGHT, verbose=True)
 
@@ -85,7 +86,7 @@ def test_generate_all_sts_all_mts():
     cfg = Configuration(dezyne_filename=DZN_FILE1, ast_fc=get_fc(DZN_FILE1),
                         output_basename_suffix='AdvShell',
                         fqn_encapsulee_name=ns_ids_t('My.Project.ToasterSystem'),
-                        port_cfg=all_sts_all_mts(),
+                        ports_cfg=all_sts_all_mts(),
                         facilities_origin=FacilitiesOrigin.IMPORT,
                         copyright=COPYRIGHT, verbose=True)
 
@@ -100,7 +101,7 @@ def test_generate_all_mts_all_sts():
     cfg = Configuration(dezyne_filename=DZN_FILE1, ast_fc=get_fc(DZN_FILE1),
                         output_basename_suffix='AdvShell',
                         fqn_encapsulee_name=ns_ids_t('My.Project.ToasterSystem'),
-                        port_cfg=all_mts_all_sts(),
+                        ports_cfg=all_mts_all_sts(),
                         facilities_origin=FacilitiesOrigin.CREATE, copyright=COPYRIGHT,
                         support_files_ns_prefix=ns_ids_t('Other.Project'),
                         verbose=True)
@@ -122,7 +123,7 @@ def test_generate_all_mts_mixed_ts():
     cfg = Configuration(dezyne_filename=DZN_FILE1, ast_fc=get_fc(DZN_FILE1),
                         output_basename_suffix='AdvShell',
                         fqn_encapsulee_name=ns_ids_t('My.Project.ToasterSystem'),
-                        port_cfg=all_mts_mixed_ts(
+                        ports_cfg=all_mts_mixed_ts(
                             sts_requires_ports=PortSelect({'led'}),
                             mts_requires_ports=PortSelect(PortWildcard.REMAINING)),
                         facilities_origin=FacilitiesOrigin.CREATE,
@@ -139,7 +140,7 @@ def test_generate_all_sts_mixed_ts():
     cfg = Configuration(dezyne_filename=DZN_FILE2, ast_fc=get_fc(DZN_FILE2),
                         output_basename_suffix='ImplComp',
                         fqn_encapsulee_name=ns_ids_t('StoneAgeToaster'),
-                        port_cfg=all_sts_mixed_ts(
+                        ports_cfg=all_sts_mixed_ts(
                             mts_requires_ports=PortSelect({'heater'}),
                             sts_requires_ports=PortSelect(PortWildcard.REMAINING)),
                         facilities_origin=FacilitiesOrigin.CREATE,
@@ -156,7 +157,7 @@ def test_generate_all_mts():
     cfg = Configuration(dezyne_filename=DZN_FILE1, ast_fc=get_fc(DZN_FILE1),
                         output_basename_suffix='AdvShell',
                         fqn_encapsulee_name=ns_ids_t('My.Project.ToasterSystem'),
-                        port_cfg=all_mts(),
+                        ports_cfg=all_mts(),
                         facilities_origin=FacilitiesOrigin.CREATE,
                         copyright=COPYRIGHT, verbose=True)
 
@@ -164,3 +165,31 @@ def test_generate_all_mts():
     assert get_filecontents('ToasterSystemAdvShell.hh', result) == HH_ALL_MTS
     assert get_filecontents('ToasterSystemAdvShell.cc', result) == CC_ALL_MTS
     assert_all_default_support_files(result.files)
+
+
+def test_generate_multiclient_selector():
+    """Test a component with one provided to be generated with the MultiClientSelector feature."""
+
+    fc = get_fc(DZN_FILE3)
+    print(fc)
+
+    mc_cfg = MultiClientPortCfg(port_name='api',
+                                claim_event_name='Claim',
+                                claim_granting_reply_value=ns_ids_t('Ok'),
+                                release_event_name='Release')
+
+    cfg = Configuration(dezyne_filename=DZN_FILE3, ast_fc=fc,
+                        output_basename_suffix='AdvShell',
+                        fqn_encapsulee_name=ns_ids_t('My.Project.ExclusiveToaster'),
+                        ports_cfg=all_mts(mc_cfg),
+                        facilities_origin=FacilitiesOrigin.CREATE,
+                        copyright=COPYRIGHT, verbose=True)
+
+    result = Builder().build(cfg)
+    # print(get_filecontents('ExclusiveToasterAdvShell.hh', result))
+    # print(get_filecontents('ExclusiveToasterAdvShell.cc', result))
+    assert get_filecontents('ExclusiveToasterAdvShell.hh', result) == HH_ALL_MTS_MULTICLIENT
+    assert get_filecontents('ExclusiveToasterAdvShell.cc', result) == CC_ALL_MTS_MULTICLIENT
+    assert_all_default_support_files(result.files)
+
+
