@@ -38,7 +38,7 @@ class FindResult:
         return [Component, Enum, Extern, Foreign, Interface, SubInt, System]
 
     def __post_init__(self):
-        """Perform a post check on the dataclass values set by the user."""
+        """Postcheck the constructed data class members on validity."""
         if not isinstance(self.items, list):
             raise TypeError('The type of property "items" must be a list')
 

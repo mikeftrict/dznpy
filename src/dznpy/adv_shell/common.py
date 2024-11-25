@@ -15,12 +15,27 @@ from .. import cpp_gen, ast
 from ..code_gen_common import BLANK_LINE, GeneratedContent
 from ..cpp_gen import Comment, Constructor, Function, MemberVariable, Fqn, Namespace, Struct, \
     TypeDesc
-from ..misc_utils import TextBlock, plural
+from ..misc_utils import TextBlock, plural, flatten_to_strlist
 from ..scoping import NamespaceIds
 
 # own modules
 from .types import RuntimeSemantics
-from .port_selection import PortCfg
+from .port_selection import PortsCfg
+
+
+@dataclass(frozen=True)
+class MultiClientPortCfgFixture:
+    """Dataclass comprising the fixture of the processed user specified multi client port
+     configuration."""
+    claim_event: ast.Event
+    claim_granting_reply: NamespaceIds
+    release_event: ast.Event
+
+    def __str__(self):
+        """Stringify the dataclass items as a human friendly readable textblock."""
+        return f'claim_event={self.claim_event.name}, ' \
+               f'claim_granting_reply={self.claim_granting_reply}, ' \
+               f'release_event={self.release_event.name}'
 
 
 @dataclass(frozen=True)
@@ -29,22 +44,40 @@ class DznPortItf:
     port: ast.Port
     interface: ast.Interface
     semantics: RuntimeSemantics
+    multiclient: Optional[MultiClientPortCfgFixture] = field(default=None)
+
+    def __post_init__(self):
+        """Postcheck the constructed data class members on validity."""
+        if self.multiclient and self.semantics != RuntimeSemantics.MTS:
+            raise ValueError(f'Port "{self.port.name}": Multiclient port configuration is '
+                             'only allowed for MTS ports')
 
 
 @dataclass(frozen=True)
 class CppPortItf:
-    """"Data class grouping Dezyne PortItf with a C++ accessor function and
-    possibly associated class member variable."""
+    """"Data class grouping Dezyne PortItf with a corresponding C++ accessor function.
+    On rerouting the port via the dispatcher, this container provides the associated class member
+    variable."""
     dzn_port_itf: DznPortItf
     type: TypeDesc
     accessor_fn: Function
     accessor_target: str
-    member_var: Optional[MemberVariable]
+    member_var: Optional[MemberVariable] = field(default=None)
 
     @property
     def name(self) -> str:
         """Get the name of the port"""
         return self.dzn_port_itf.port.name
+
+    @property
+    def cap_name(self) -> str:
+        """Get the name of the port with the first character capitalized."""
+        return self.name[0].upper() + self.name[1:]
+
+    @property
+    def is_multiclient(self) -> bool:
+        """Get the name of the port"""
+        return self.dzn_port_itf.multiclient is not None
 
     @property
     def accessor_as_decl(self) -> str:
@@ -70,7 +103,7 @@ class Configuration:
     ast_fc: ast.FileContents
     output_basename_suffix: str
     fqn_encapsulee_name: NamespaceIds
-    port_cfg: PortCfg
+    ports_cfg: PortsCfg
     facilities_origin: FacilitiesOrigin
     copyright: str
     support_files_ns_prefix: Optional[NamespaceIds] = field(default=None)
@@ -85,6 +118,7 @@ class CppPorts:
     ports: List[CppPortItf]
 
     def __post_init__(self):
+        """Postcheck the constructed data class members on validity."""
         if len({x.dzn_port_itf.port.direction for x in self.ports}) > 1:
             raise ValueError('Only a single direction for all ports in the same set is allowed')
 
@@ -95,12 +129,12 @@ class CppPorts:
         return direction.pop().value if direction else '?'
 
     @property
-    def mts_ports(self) -> List:
+    def mts_ports(self) -> List[CppPortItf]:
         """Return a list of all ports matching Multi-threaded semantics (MTS)."""
         return [p for p in self.ports if p.dzn_port_itf.semantics == RuntimeSemantics.MTS]
 
     @property
-    def sts_ports(self):
+    def sts_ports(self) -> List[CppPortItf]:
         """Return a list of all ports matching Single-threaded semantics (STS)."""
         return [p for p in self.ports if p.dzn_port_itf.semantics == RuntimeSemantics.STS]
 
@@ -119,14 +153,92 @@ class CppPorts:
         return TextBlock(BLANK_LINE.join([port.accessor_as_def for port in self.ports]))
 
     @property
-    def member_variables(self) -> TextBlock:
-        """Generate C++ member variable (mv) declarations for ports that require rerouting."""
-        ports_with_mv = [p for p in self.ports if p.member_var is not None]
-        comment = Comment(f'Boundary {self.direction.lower()}-{plural("port", ports_with_mv)}'
-                          ' (MTS) to reroute inwards events')
-        member_vars = [str(p.member_var) for p in ports_with_mv]
+    def rerouting_class_members(self) -> Optional[TextBlock]:
+        """Generate C++ class member declarations for rerouting (of ports)."""
 
-        return TextBlock([comment, member_vars if member_vars else Comment('<none>')])
+        # distil the plain and multiclient ports
+        plain_rerouting_ports = [p for p in self.ports if
+                                 p.member_var is not None and not p.dzn_port_itf.multiclient]
+
+        multiclient_rerouting_ports = [p for p in self.ports if
+                                       p.member_var is not None and p.dzn_port_itf.multiclient]
+
+        # plain
+        comment = Comment(
+            f'Boundary {self.direction.lower()}-{plural("port", plain_rerouting_ports)}'
+            ' (MTS) to reroute inwards events')
+        member_vars = [str(p.member_var) for p in plain_rerouting_ports]
+        tb1 = TextBlock([comment, member_vars if member_vars else Comment('<none>')])
+
+        # multiclient
+        comment = Comment(
+            f'Boundary {self.direction.lower()}-{plural("port", multiclient_rerouting_ports)}'
+            ' (MTS) to reroute inwards events and redirect outwards events to multi clients')
+        member_vars = [str(p.member_var) for p in multiclient_rerouting_ports]
+        tb2 = TextBlock([comment, member_vars]) if member_vars else None
+
+        if tb1 and not tb2:
+            return tb1
+
+        if not tb1 and tb2:
+            return tb2
+
+        if tb1 and tb2:
+            return TextBlock([tb1, BLANK_LINE, tb2])
+
+        return None
+
+    def has_multiclient_port(self) -> bool:
+        """Indicate whether a multiclient port is present."""
+        return any(x.is_multiclient for x in self.ports)
+
+
+@dataclass
+class CppHelperMethods:
+    """Data class comprising C++ methods to support the Advanced Shell mechanics."""
+    label: str
+    public: List[Function] = field(default_factory=list)
+    private: List[Function] = field(default_factory=list)
+
+    @staticmethod
+    def _def(functions: List[Function]) -> Optional[TextBlock]:
+        """Generate public C++ port helper definitions as a TextBlock."""
+        helpers = flatten_to_strlist([fn.as_def for fn in functions])
+        if not helpers:
+            return None
+
+        return TextBlock([helpers])
+
+    def _decl(self, functions: List[Function]) -> Optional[TextBlock]:
+        """Generate public C++ port helper declarations as a TextBlock."""
+        helpers = flatten_to_strlist([fn.as_decl for fn in functions])
+        if not helpers:
+            return None
+
+        if self.label:
+            return TextBlock([Comment(f'{self.label} {plural("helper", helpers)}'), helpers])
+
+        return TextBlock([helpers])
+
+    @property
+    def public_decl(self) -> Optional[TextBlock]:
+        """Generate public C++ port helper declarations as a TextBlock."""
+        return self._decl(self.public)
+
+    @property
+    def public_def(self) -> Optional[TextBlock]:
+        """Generate public C++ helper method definitions as a TextBlock."""
+        return self._def(self.public)
+
+    @property
+    def private_decl(self) -> Optional[TextBlock]:
+        """Generate private C++ helper method declarations as a TextBlock."""
+        return self._decl(self.private)
+
+    @property
+    def private_def(self) -> Optional[TextBlock]:
+        """Generate private C++ helper method definitions as a TextBlock."""
+        return self._def(self.private)
 
 
 @dataclass(frozen=True)
@@ -188,6 +300,7 @@ class CppEncapsulee:
     """Data class comprising attributes of a C++ encapsulee."""
     member_var: MemberVariable
     name: str
+    dzn: DznElements
 
     def __str__(self):
         return str(TextBlock([Comment(f'The encapsulated component "{self.name}"'),
@@ -197,7 +310,22 @@ class CppEncapsulee:
 def create_encapsulee(dzn_elements: DznElements) -> CppEncapsulee:
     """Helper function to create an C++ encapsulee data class"""
     return CppEncapsulee(cpp_gen.decl_var_t(Fqn(dzn_elements.encapsulee.fqn, True), 'm_encapsulee'),
-                         dzn_elements.encapsulee.name)
+                         dzn_elements.encapsulee.name, dzn_elements)
+
+
+@dataclass(frozen=True)
+class SupportFiles:
+    strict_port: GeneratedContent
+    ilog: GeneratedContent
+    misc_utils: GeneratedContent
+    meta_helpers: GeneratedContent
+    multi_client_selector: GeneratedContent
+    mutex_wrapped: GeneratedContent
+
+    def as_list(self) -> List[GeneratedContent]:
+        """Retrieve a list of the support files theirs generated content."""
+        return [self.strict_port, self.ilog, self.misc_utils, self.meta_helpers,
+                self.multi_client_selector, self.mutex_wrapped]
 
 
 @dataclass(frozen=True)
@@ -214,7 +342,8 @@ class CppElements:
     encapsulee: CppEncapsulee
     provides_ports: CppPorts
     requires_ports: CppPorts
-    sf_strict_port: GeneratedContent  # support file 'Dzn_StrictPort'
+    provides_port_helpers: CppHelperMethods
+    support_files: SupportFiles
 
 
 @dataclass(frozen=True)

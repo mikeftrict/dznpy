@@ -8,7 +8,8 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 # system modules
 import enum
 import os
-from typing import Any, List
+from dataclasses import dataclass, field
+from typing import Any, List, Optional
 from typing_extensions import Self
 
 # constants
@@ -68,6 +69,67 @@ class Indentor(enum.Enum):
     TAB = 'Tab'
 
 
+@dataclass
+class Indentizer:
+    indentor: Indentor = field(default=Indentor.SPACES)
+    spaces_count: int = field(default=4)
+
+    def __post_init__(self):
+        """Postcheck the constructed data class members on validity."""
+        if self.indentor is Indentor.SPACES:
+            self._indentation_chars = ' ' * self.spaces_count
+        elif self.indentor is Indentor.TAB:
+            self._indentation_chars = '\t'
+        else:
+            raise TypeError(f'Invalid indentor specified: {self.indentor}')
+
+    def process_to_list(self, contents: Any) -> List[str]:
+        flattened_list = flatten_to_strlist(contents, skip_empty_strings=False)
+        if not flattened_list:
+            return []
+
+        def stripped_indent(line: str):
+            return f'{self._indentation_chars}{line}' if line.strip() else ''
+
+        return [stripped_indent(x) for x in flattened_list]
+
+    def process_to_str(self, contents: Any) -> str:
+        return EOL.join(self.process_to_str(contents)) + EOL
+
+
+class ListBulletMode(enum.Enum):
+    """Enum to indicate the mode of a ListBullet."""
+    ALL = 'All lines'
+    FIRST_ONLY = 'First line only'
+
+
+@dataclass
+class ListBulletizer:
+    mode: ListBulletMode = field(default=ListBulletMode.ALL)
+    glyph: str = field(default='-')
+
+    def __post_init__(self):
+        """Postprocess the constructed data class members."""
+        self._bulletized_preamble = f'{self.glyph} '
+        self._whitespace_preamble = ' ' * len(self._bulletized_preamble)
+
+    def process_to_list(self, contents: Any) -> List[str]:
+        flattened_list = flatten_to_strlist(contents)
+        if not flattened_list:
+            return []
+
+        if self.mode == ListBulletMode.ALL:
+            return [f'{self._bulletized_preamble}{x}' for x in flattened_list]
+
+        if self.mode == ListBulletMode.FIRST_ONLY:
+            result = [f'{self._bulletized_preamble}{flattened_list[0]}']
+            result += [f'{self._whitespace_preamble}{x}' for x in flattened_list[1:]]
+            return result
+
+    def process_to_str(self, contents: Any) -> str:
+        return EOL.join(self.process_to_str(contents)) + EOL
+
+
 class TextBlock:
     """"A class to store, extend, indent and stringify and collection of string lines that
     together form a logical text block."""
@@ -114,24 +176,23 @@ class TextBlock:
 
         return self
 
-    def indent(self, indentor: Indentor = Indentor.SPACES, spaces_count: int = 4) -> Self:
-        """Indent the contents one Indentor increment. As return value a self reference is returned
-        (see Fluent Interface)."""
-        if indentor is Indentor.SPACES:
-            tab_chars = ' ' * spaces_count
-        elif indentor is Indentor.TAB:
-            tab_chars = '\t'
-        else:
-            raise TypeError(f'Invalid indentor specified: {indentor}')
+    def indent(self, indentizer: Optional[Indentizer] = Indentizer(),
+               bulletizer: Optional[ListBulletizer] = None) -> Self:
+        """Indent the contents according to the specified arguments.
+        As return value a self reference is returned (see Fluent Interface)."""
 
-        def tabify(item: str) -> str:
-            return f'{tab_chars}{item}' if item else ''
+        if bulletizer:
+            self.lines = bulletizer.process_to_list(self.lines)
 
-        self.lines = [tabify(item) for item in self.lines]
+        if indentizer:
+            self.lines = indentizer.process_to_list(self.lines)
+
         return self
 
     def __str__(self):
         """"Stringify the lines to an EOL delimited and an EOL-ending string."""
+        if not self.lines:
+            return ''  # empty textblock
         return EOL.join(self.lines) + EOL
 
 
@@ -155,7 +216,10 @@ def flatten_to_strlist(value: Any, skip_empty_strings: bool = True) -> List[str]
     else:
         if value is None:
             return result
-        result.append(str(value))
+
+        if str(value):  # skip appending empty strings
+            result.append(str(value))
+
     return result
 
 

@@ -13,6 +13,10 @@ class AdvShellError(Exception):
     """An error occurred during building of an advanced shell."""
 
 
+class MultiClientCfgError(AdvShellError):
+    """A user error has been detected in the Multi-client port configuration."""
+
+
 class RuntimeSemantics(enum.Enum):
     """Enum to indicate the flavor of runtime execution semantics."""
     STS = 'Single-threaded runtime semantics'

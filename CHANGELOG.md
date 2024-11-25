@@ -1,8 +1,30 @@
 # Changelog
 
-## Changes in 0.5 (DEV) since 0.4
+## Changes in 0.5 (20241126) since 0.4
+
+### Breaking changes
+
+- In `port_selection.py` renamed the type `PortCfg` to `PortsCfg` to better reflect its actual
+  cardinality. The impact is a simple matter of search and replace.
+- In `cpp_gen.py` corrected the first parameter type to `Fqn` (instead of `NamespaceIds`) of helper
+  functions: `param_t()`, `const_param_ref_t()`, `const_param_ptr_t()`. The impact depends on usage
+  of these helper functions and reported back by the Python compiler.
 
 ### Additions and other changes
+
+- [DZNPY-0024](https://github.com/mikeftrict/dznpy/issues/24): Add the MultiClientSelector port
+  feature to Advanced Shell code generation. By configuring `PortsCfg` with the new dataclass
+  member `multiclient` with an instance of `MultiClientPortCfg`. The developer can designate a
+  maximum of **1** provides **MTS** port for multiclient-out-event-selector usage. For now refer to
+  the `test_generate_multiclient_selector()` (in `test_builder.py`), together with
+  studying the `ExclusiveToaster.dzn` component to learn the required modelling semantics that are
+  **mandatory** to let the MultiClientSelector facility to function correctly.
+- Extended `code_gen_common.py` with `chunk()` and `cond_chunk()`
+- Extended `misc_utils.py` with:
+    - new `Indentizer` class to cohesively house indentation logic;
+    - new `ListBulletizer` class to prefix a user customizable _bullet_ to each line of a textblock;
+      or alternatively only the first line of a textblock;
+    - updated `TextBlock` class to use the new `Indentizer` and `ListBulletizer` classes.
 
 ### Processed tickets
 

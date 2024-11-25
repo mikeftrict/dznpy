@@ -237,8 +237,8 @@ def test_constructor_ok():
 
 
 def test_constructor_params_and_content_ok():
-    param1 = param_t(ns_ids_t('int'), 'x')
-    param2 = param_t(ns_ids_t('size_t'), 'y', '123u')
+    param1 = param_t(fqn_t('int'), 'x')
+    param2 = param_t(fqn_t('size_t'), 'y', '123u')
     sut = Constructor(scope=Class('MyToaster'), params=[param1, param2],
                       contents=CONTENTS_MULTI_LINE)
     assert sut.as_decl == CONSTRUCTOR_PARAMS_DECL
@@ -246,8 +246,8 @@ def test_constructor_params_and_content_ok():
 
 
 def test_explicit_constructor_ok():
-    param1 = param_t(ns_ids_t('int'), 'x')
-    param2 = param_t(ns_ids_t('size_t'), 'y', '123u')
+    param1 = param_t(fqn_t('int'), 'x')
+    param2 = param_t(fqn_t('size_t'), 'y', '123u')
     sut = Constructor(scope=Class('MyToaster'), explicit=True, params=[param1, param2],
                       contents=CONTENTS_MULTI_LINE)
     assert sut.as_decl == CONSTRUCTOR_EXPLICIT_DECL
@@ -345,8 +345,8 @@ def test_class_member_function_minimal():
 
 
 def test_function_params():
-    param1 = param_t(ns_ids_t('int'), 'x')
-    param2 = param_t(ns_ids_t('size_t'), 'y', '123u')
+    param1 = param_t(fqn_t('int'), 'x')
+    param2 = param_t(fqn_t('size_t'), 'y', '123u')
     sut = Function(return_type=void_t(), name='Calculate', params=[param1, param2],
                    contents=CONTENTS_MULTI_LINE)
     assert sut.as_decl == FUNCTION_PARAMS_DECL
@@ -355,14 +355,14 @@ def test_function_params():
 
 def test_static_function():
     sut = Function(prefix=FunctionPrefix.STATIC, return_type=int_t(), name='Process',
-                   params=[param_t(ns_ids_t('int'), 'x')])
+                   params=[param_t(fqn_t('int'), 'x')])
     assert sut.as_decl == STATIC_FUNCTION_DECL
     assert sut.as_def == STATIC_FUNCTION_DEF
 
 
 def test_static_member_function():
     sut = Function(prefix=FunctionPrefix.STATIC, return_type=int_t(), name='Process',
-                   params=[param_t(ns_ids_t('int'), 'x')], scope=Struct('MyStruct'))
+                   params=[param_t(fqn_t('int'), 'x')], scope=Struct('MyStruct'))
     assert sut.as_decl == STATIC_FUNCTION_DECL
     assert sut.as_def == STATIC_MEMBER_FUNCTION_DEF
 
@@ -375,7 +375,7 @@ def test_virtual_member_function_fail():
 
 def test_virtual_member_function():
     sut = Function(prefix=FunctionPrefix.VIRTUAL, return_type=float_t(),
-                   name='Calc', params=[param_t(ns_ids_t('float'), 'y')],
+                   name='Calc', params=[param_t(fqn_t('float'), 'y')],
                    scope=Class('MyClass'))
     assert sut.as_decl == VIRTUAL_MEMBER_FUNCTION_DECL
     assert sut.as_def == VIRTUAL_MEMBER_FUNCTION_DEF
@@ -507,41 +507,41 @@ def test_decl_var_ptr_t_ok():
 
 
 def test_param_t_ok():
-    sut = param_t(ns_ids_t('std.string'), 'message')
+    sut = param_t(fqn_t('std.string'), 'message')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'std::string message'
     assert sut.as_def == 'std::string message'
 
 
 def test_param_t_ok_with_default():
-    sut = param_t(ns_ids_t('std::string'), 'message', '"MyDefault"')
+    sut = param_t(fqn_t('std::string'), 'message', '"MyDefault"')
     assert sut.as_decl == 'std::string message = "MyDefault"'
     assert sut.as_def == 'std::string message'
 
 
 def test_const_param_ref_t_ok():
-    sut = const_param_ref_t(ns_ids_t('IBigStruct'), 'data')
+    sut = const_param_ref_t(fqn_t('IBigStruct'), 'data')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'const IBigStruct& data'
     assert sut.as_def == 'const IBigStruct& data'
 
 
 def test_const_param_ref_t_ok_with_default():
-    sut = const_param_ref_t(namespaceids_t('IBigStruct'), 'data', 'nullptr')
+    sut = const_param_ref_t(fqn_t('IBigStruct'), 'data', 'nullptr')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'const IBigStruct& data = nullptr'
     assert sut.as_def == 'const IBigStruct& data'
 
 
 def test_const_param_ptr_t_ok():
-    sut = const_param_ptr_t(NamespaceIds(['IBigStruct']), 'data')
+    sut = const_param_ptr_t(fqn_t(['IBigStruct']), 'data')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'const IBigStruct* data'
     assert sut.as_def == 'const IBigStruct* data'
 
 
 def test_const_param_ptr_t_ok_with_default():
-    sut = const_param_ptr_t(ns_ids_t(['IBigStruct']), 'data', 'nullptr')
+    sut = const_param_ptr_t(fqn_t(['IBigStruct']), 'data', 'nullptr')
     assert isinstance(sut, Param)
     assert sut.as_decl == 'const IBigStruct* data = nullptr'
     assert sut.as_def == 'const IBigStruct* data'

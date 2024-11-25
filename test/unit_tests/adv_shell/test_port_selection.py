@@ -9,17 +9,18 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 import pytest
 
 # system-under-test
-from dznpy.adv_shell import PortSelect, PortWildcard, PortCfg, all_sts_all_mts, all_mts, all_sts, \
-    all_mts_all_sts, all_mts_mixed_ts, all_sts_mixed_ts, PortsSemanticsCfg
+from dznpy.adv_shell import PortSelect, PortWildcard, PortsCfg, all_sts_all_mts, all_mts, all_sts, \
+    all_mts_all_sts, all_mts_mixed_ts, all_sts_mixed_ts, PortsSemanticsCfg, MultiClientPortCfg
 from dznpy.adv_shell.types import AdvShellError, RuntimeSemantics
+from dznpy.scoping import ns_ids_t
 
 # Test data
 from testdata_port_selection import *
 
 
 # test assertion helpers
-def assert_port_cfg(sut: PortCfg, provides_sts, provides_mts, requires_sts, requires_mts):
-    assert isinstance(sut, PortCfg)
+def assert_ports_cfg(sut: PortsCfg, provides_sts, provides_mts, requires_sts, requires_mts):
+    assert isinstance(sut, PortsCfg)
     assert sut.provides.sts.value == provides_sts
     assert sut.provides.mts.value == provides_mts
     assert sut.requires.sts.value == requires_sts
@@ -97,64 +98,64 @@ def test_port_select_natch_port_name_fail():
 
 def test_all_mts():
     """Test the shorthand function to create a port configuration equivalent to `dzn code --shell`."""
-    assert_port_cfg(all_mts(),
-                    PortWildcard.NONE, PortWildcard.ALL,
-                    PortWildcard.NONE, PortWildcard.ALL)
+    assert_ports_cfg(all_mts(),
+                     PortWildcard.NONE, PortWildcard.ALL,
+                     PortWildcard.NONE, PortWildcard.ALL)
 
 
 def test_all_sts():
     """Test the shorthand function to create an all STS port configuration."""
-    assert_port_cfg(all_sts(),
-                    PortWildcard.ALL, PortWildcard.NONE,
-                    PortWildcard.ALL, PortWildcard.NONE)
+    assert_ports_cfg(all_sts(),
+                     PortWildcard.ALL, PortWildcard.NONE,
+                     PortWildcard.ALL, PortWildcard.NONE)
 
 
 def test_all_sts_all_mts():
-    assert_port_cfg(all_sts_all_mts(),
-                    PortWildcard.ALL, PortWildcard.NONE,
-                    PortWildcard.NONE, PortWildcard.ALL)
+    assert_ports_cfg(all_sts_all_mts(),
+                     PortWildcard.ALL, PortWildcard.NONE,
+                     PortWildcard.NONE, PortWildcard.ALL)
 
 
 def test_all_mts_all_sts():
-    assert_port_cfg(all_mts_all_sts(),
-                    PortWildcard.NONE, PortWildcard.ALL,
-                    PortWildcard.ALL, PortWildcard.NONE)
+    assert_ports_cfg(all_mts_all_sts(),
+                     PortWildcard.NONE, PortWildcard.ALL,
+                     PortWildcard.ALL, PortWildcard.NONE)
 
 
 def test_all_mts_mixed_ts_ok():
-    assert_port_cfg(
+    assert_ports_cfg(
         all_mts_mixed_ts(sts_requires_ports=PortSelect({'api'}),
                          mts_requires_ports=PortSelect({'glue'})),
         PortWildcard.NONE, PortWildcard.ALL, {'api'}, {'glue'})
 
-    assert_port_cfg(
+    assert_ports_cfg(
         all_mts_mixed_ts(sts_requires_ports=PortSelect({'api'}),
                          mts_requires_ports=PortSelect(PortWildcard.REMAINING)),
         PortWildcard.NONE, PortWildcard.ALL, {'api'}, PortWildcard.REMAINING)
 
-    assert_port_cfg(
+    assert_ports_cfg(
         all_mts_mixed_ts(sts_requires_ports=PortSelect({'api'}),
                          mts_requires_ports=PortSelect(PortWildcard.NONE)),
         PortWildcard.NONE, PortWildcard.ALL, {'api'}, PortWildcard.NONE)
 
-    assert_port_cfg(
+    assert_ports_cfg(
         all_mts_mixed_ts(sts_requires_ports=PortSelect(PortWildcard.REMAINING),
                          mts_requires_ports=PortSelect({'glue'})),
         PortWildcard.NONE, PortWildcard.ALL, PortWildcard.REMAINING, {'glue'})
 
-    assert_port_cfg(
+    assert_ports_cfg(
         all_mts_mixed_ts(sts_requires_ports=PortSelect(PortWildcard.NONE),
                          mts_requires_ports=PortSelect({'glue'})),
         PortWildcard.NONE, PortWildcard.ALL, PortWildcard.NONE, {'glue'})
 
 
 def test_all_sts_mixed_ts_ok():
-    assert_port_cfg(
+    assert_ports_cfg(
         all_sts_mixed_ts(sts_requires_ports=PortSelect({'api'}),
                          mts_requires_ports=PortSelect({'glue'})),
         PortWildcard.ALL, PortWildcard.NONE, {'api'}, {'glue'})
 
-    assert_port_cfg(
+    assert_ports_cfg(
         all_sts_mixed_ts(sts_requires_ports=PortSelect({'api'}),
                          mts_requires_ports=PortSelect(PortWildcard.REMAINING)),
         PortWildcard.ALL, PortWildcard.NONE, {'api'}, PortWildcard.REMAINING)
@@ -187,15 +188,16 @@ def test_all_mts_mixed_ts_fail():
     assert str(exc.value) == 'properties sts and mts can not overlap'
 
 
-def test_custom_port_cfg_fail():
+def test_custom_ports_cfg_fail():
     with pytest.raises(AdvShellError) as exc:
-        PortCfg(PortsSemanticsCfg(PortSelect({'api'}), PortSelect(PortWildcard.REMAINING)),
-                PortsSemanticsCfg(PortSelect(PortWildcard.ALL), PortSelect(PortWildcard.NONE)))
+        PortsCfg(PortsSemanticsCfg(PortSelect({'api'}), PortSelect(PortWildcard.REMAINING)),
+                 PortsSemanticsCfg(PortSelect(PortWildcard.ALL), PortSelect(PortWildcard.NONE)))
     assert str(exc.value) == 'Mixed STS/MTS provides ports are currently not supported'
 
 
-def test_port_cfg_stringifcation():
+def test_ports_cfg_stringifcation():
     assert str(all_mts()) == PORTCFG_STR_ALL_MTS
+    assert str(all_sts()) == PORTCFG_STR_ALL_STS
     assert str(all_sts_all_mts()) == PORTCFG_STR_ALL_STS_ALL_MTS
     assert str(all_mts_all_sts()) == PORTCFG_STR_ALL_MTS_ALL_STS
     assert str(all_sts_mixed_ts(
@@ -210,6 +212,32 @@ def test_port_cfg_stringifcation():
     assert str(all_mts_mixed_ts(
         PortSelect({'sts_glue'}),
         PortSelect({'mts_glue'}))) == PORTCFG_STR_ALL_MTS_MIXED_TS2
+
+
+def test_ports_with_mc_cfg_stringifcation():
+    mc_cfg1 = MultiClientPortCfg(port_name='api',
+                                 claim_event_name='Claim',
+                                 claim_granting_reply_value=ns_ids_t('Ok'),
+                                 release_event_name='Release')
+
+    mc_cfg2 = MultiClientPortCfg(port_name='my_port',
+                                 claim_event_name='lock',
+                                 claim_granting_reply_value=ns_ids_t('got_it'),
+                                 release_event_name='unlock')
+
+    assert str(all_mts(mc_cfg1)) == PORTCFG_STR_ALL_MTS_MC
+
+    assert str(all_mts_all_sts(mc_cfg2)) == PORTCFG_STR_ALL_MTS_ALL_STS_MC
+
+    assert str(all_mts_mixed_ts(
+        PortSelect(PortWildcard.REMAINING),
+        PortSelect({'mts_glue'}),
+        mc_cfg1)) == PORTCFG_STR_ALL_MTS_MIXED_TS1_MC
+
+    assert str(all_mts_mixed_ts(
+        PortSelect({'sts_glue'}),
+        PortSelect({'mts_glue'}),
+        mc_cfg2)) == PORTCFG_STR_ALL_MTS_MIXED_TS2_MC
 
 
 def test_match_all_sts_all_mts():

@@ -21,6 +21,7 @@ class ScopeName:
     value: NamespaceIds
 
     def __post_init__(self):
+        """Postcheck the constructed data class members on validity."""
         assert_t(self.value, NamespaceIds)
 
     def __str__(self):

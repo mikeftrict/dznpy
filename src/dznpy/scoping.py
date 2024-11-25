@@ -34,7 +34,7 @@ class NamespaceIds:
     items: List[str] = field(default_factory=list)
 
     def __post_init__(self):
-        """Perform a post check on the dataclass values set by the user."""
+        """Postcheck the constructed data class members on validity."""
         if not is_strlist_instance(self.items):
             raise NamespaceIdsTypeError(f'"{self.items}" is not a list of zero or more strings')
 
@@ -69,7 +69,7 @@ class NamespaceTree:
     scope_name: Optional[NamespaceIds] = field(default=None)
 
     def __post_init__(self):
-        """Perform a post check on the dataclass values set by the user."""
+        """Postcheck the constructed data class members on validity."""
         assert_t_optional(self.parent, NamespaceTree)
         assert_t_optional(self.scope_name, NamespaceIds)
 

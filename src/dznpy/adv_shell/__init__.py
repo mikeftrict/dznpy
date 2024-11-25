@@ -25,13 +25,14 @@ Example configurations:
 
 
 # system modules
-from typing import Optional
+from typing import Optional, List
 
 # dznpy modules
 from ..dznpy_version import VERSION
 from .. import cpp_gen
 from ..ast_view import find_fqn
-from ..code_gen_common import BLANK_LINE, CodeGenResult, GeneratedContent, TEXT_GEN_DO_NOT_MODIFY
+from ..code_gen_common import BLANK_LINE, CodeGenResult, GeneratedContent, TEXT_GEN_DO_NOT_MODIFY, \
+    chunk
 from ..cpp_gen import AccessSpecifier, Comment
 from ..misc_utils import TextBlock, get_basename
 from ..support_files import strict_port, ilog, misc_utils, meta_helpers, multi_client_selector, \
@@ -39,70 +40,77 @@ from ..support_files import strict_port, ilog, misc_utils, meta_helpers, multi_c
 from ..scoping import ns_ids_t
 
 # own modules
-from .common import Configuration, Recipe, CppPorts, create_encapsulee, CppElements
+from .common import Configuration, Recipe, CppPorts, create_encapsulee, CppElements, \
+    SupportFiles, CppPortItf
 from .types import AdvShellError
-from .port_selection import PortCfg, PortsSemanticsCfg, PortSelect, PortWildcard
+from .port_selection import PortsCfg, PortsSemanticsCfg, PortSelect, PortWildcard, \
+    MultiClientPortCfg
 from .core.processing import create_dzn_elements, create_cpp_portitf, create_facilities, \
-    create_constructor, create_final_construct_fn, create_facilities_check_fn
+    create_constructor, create_final_construct_fn, create_facilities_check_fn, \
+    create_cpp_port_helper_methods
 
 
-# helper functions to create a prefined PortCfg
+# helper functions to create a prefined PortsCfg
 
-def all_mts() -> PortCfg:
+def all_mts(multiclient: Optional[MultiClientPortCfg] = None) -> PortsCfg:
     """Configure all provides and requires ports with multi-threaded runtime semantics (MTS).
     This is equivalent to what `dzn code --shell` generates."""
-    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
-                                              mts=PortSelect(PortWildcard.ALL)),
-                   requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
-                                              mts=PortSelect(PortWildcard.ALL)))
+    return PortsCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
+                                               mts=PortSelect(PortWildcard.ALL)),
+                    requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
+                                               mts=PortSelect(PortWildcard.ALL)),
+                    multiclient=multiclient)
 
 
-def all_sts() -> PortCfg:
+def all_sts() -> PortsCfg:
     """Configure all provides and requires ports with single-threaded runtime semantics (STS)."""
-    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
-                                              mts=PortSelect(PortWildcard.NONE)),
-                   requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
-                                              mts=PortSelect(PortWildcard.NONE)))
+    return PortsCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
+                                               mts=PortSelect(PortWildcard.NONE)),
+                    requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
+                                               mts=PortSelect(PortWildcard.NONE)))
 
 
-def all_sts_all_mts() -> PortCfg:
+def all_sts_all_mts() -> PortsCfg:
     """Configure all provides ports with single-threaded runtime semantics (STS) and all
     requires ports as multi-threaded runtime semantics (MTS)."""
-    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
-                                              mts=PortSelect(PortWildcard.NONE)),
-                   requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
-                                              mts=PortSelect(PortWildcard.ALL)))
+    return PortsCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
+                                               mts=PortSelect(PortWildcard.NONE)),
+                    requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
+                                               mts=PortSelect(PortWildcard.ALL)))
 
 
-def all_mts_all_sts() -> PortCfg:
+def all_mts_all_sts(multiclient: Optional[MultiClientPortCfg] = None) -> PortsCfg:
     """Configure all provides ports with multi-threaded runtime semantics (MTS) and all
     requires ports as single-threaded runtime semantics (STS)."""
-    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
-                                              mts=PortSelect(PortWildcard.ALL)),
-                   requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
-                                              mts=PortSelect(PortWildcard.NONE)))
+    return PortsCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
+                                               mts=PortSelect(PortWildcard.ALL)),
+                    requires=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
+                                               mts=PortSelect(PortWildcard.NONE)),
+                    multiclient=multiclient)
 
 
 def all_mts_mixed_ts(sts_requires_ports: PortSelect,
-                     mts_requires_ports: PortSelect) -> PortCfg:
+                     mts_requires_ports: PortSelect,
+                     multiclient: Optional[MultiClientPortCfg] = None) -> PortsCfg:
     """Configure all -provides ports- with multi-threaded runtime semantics (MTS) but the
     requires ports as a mix of single or multi-threaded runtime semantics (Mixed)
     specified by user configuration."""
-    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
-                                              mts=PortSelect(PortWildcard.ALL)),
-                   requires=PortsSemanticsCfg(sts=sts_requires_ports,
-                                              mts=mts_requires_ports))
+    return PortsCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.NONE),
+                                               mts=PortSelect(PortWildcard.ALL)),
+                    requires=PortsSemanticsCfg(sts=sts_requires_ports,
+                                               mts=mts_requires_ports),
+                    multiclient=multiclient)
 
 
 def all_sts_mixed_ts(sts_requires_ports: PortSelect,
-                     mts_requires_ports: PortSelect) -> PortCfg:
+                     mts_requires_ports: PortSelect) -> PortsCfg:
     """Configure all -provides ports- with single-threaded runtime semantics (STS) but the
     requires ports as a mix of single or multi-threaded runtime semantics (Mixed)
     specified by user configuration."""
-    return PortCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
-                                              mts=PortSelect(PortWildcard.NONE)),
-                   requires=PortsSemanticsCfg(sts=sts_requires_ports,
-                                              mts=mts_requires_ports))
+    return PortsCfg(provides=PortsSemanticsCfg(sts=PortSelect(PortWildcard.ALL),
+                                               mts=PortSelect(PortWildcard.NONE)),
+                    requires=PortsSemanticsCfg(sts=sts_requires_ports,
+                                               mts=mts_requires_ports))
 
 
 class Builder:
@@ -112,17 +120,17 @@ class Builder:
     def build(self, cfg: Configuration) -> CodeGenResult:
         """Build a custom shell according to the specified configuration."""
 
-        fc = cfg.ast_fc
+        # ---------- Prechecks ----------
+
+        # lookup encapsulee and check its type
+        find_result = find_fqn(cfg.ast_fc, ns_ids_t(cfg.fqn_encapsulee_name))
+        if not find_result.items:
+            raise AdvShellError(f'Encapsulee "{cfg.fqn_encapsulee_name}" not found')
+        dzn_encapsulee = find_result.get_single_instance()
 
         # ---------- Prepare Dezyne Elements ----------
 
-        # lookup encapsulee and check its type
-        r = find_fqn(fc, ns_ids_t(cfg.fqn_encapsulee_name))
-        if not r.items:
-            raise AdvShellError(f'Encapsulee "{cfg.fqn_encapsulee_name}" not found')
-        dzn_encapsulee = r.get_single_instance()
-
-        dzn_elements = create_dzn_elements(cfg, fc, dzn_encapsulee)
+        dzn_elements = create_dzn_elements(cfg, cfg.ast_fc, dzn_encapsulee)
         scope_fqn = dzn_elements.scope_fqn.ns_ids
 
         # ---------- Prepare C++ Elements ----------
@@ -136,37 +144,41 @@ class Builder:
         encapsulee = create_encapsulee(dzn_elements)
 
         sf_ns_prefix = cfg.support_files_ns_prefix
-        sf_strict_port_hh = strict_port.create_header(sf_ns_prefix)
-        sf_ilog_hh = ilog.create_header(sf_ns_prefix)
-        sf_misc_utils_hh = misc_utils.create_header(sf_ns_prefix)
-        sf_meta_helpers_hh = meta_helpers.create_header(sf_ns_prefix)
-        sf_multi_client_selector_hh = multi_client_selector.create_header(sf_ns_prefix)
-        sf_mutex_wrapped_hh = mutex_wrapped.create_header(sf_ns_prefix)
+        sf = SupportFiles(strict_port=strict_port.create_header(sf_ns_prefix),
+                          ilog=ilog.create_header(sf_ns_prefix),
+                          misc_utils=misc_utils.create_header(sf_ns_prefix),
+                          meta_helpers=meta_helpers.create_header(sf_ns_prefix),
+                          multi_client_selector=multi_client_selector.create_header(sf_ns_prefix),
+                          mutex_wrapped=mutex_wrapped.create_header(sf_ns_prefix))
 
-        support_files_ns = sf_strict_port_hh.namespace
-        pp = CppPorts([create_cpp_portitf(p, struct, support_files_ns, encapsulee) for p in
-                       dzn_elements.provides_ports])
-        rp = CppPorts([create_cpp_portitf(p, struct, support_files_ns, encapsulee) for p in
-                       dzn_elements.requires_ports])
+        support_files_ns = sf.strict_port.namespace  # TODO strange
+
+        pp = CppPorts(
+            [create_cpp_portitf(p, struct, support_files_ns, encapsulee, sf) for p in
+             dzn_elements.provides_ports])
+        rp = CppPorts(
+            [create_cpp_portitf(p, struct, support_files_ns, encapsulee, sf) for p in
+             dzn_elements.requires_ports])
+
+        helper_methods = create_cpp_port_helper_methods('Provides port', pp, support_files_ns,
+                                                        struct, cfg.ast_fc)
+
         facilities = create_facilities(cfg.facilities_origin, struct)
 
-        constructor = create_constructor(struct, facilities, encapsulee, pp, rp, fc)
+        constructor = create_constructor(struct, facilities, encapsulee, pp, rp, cfg.ast_fc, sf)
         final_construct_fn = create_final_construct_fn(struct, pp, rp, encapsulee)
         facilities_check_fn = create_facilities_check_fn(struct, cfg.facilities_origin)
 
         cpp_elements = CppElements(orig_file_basename, target_file_basename, namespace, struct,
                                    constructor, final_construct_fn, facilities_check_fn, facilities,
-                                   encapsulee, pp, rp, sf_strict_port_hh)
+                                   encapsulee, pp, rp, helper_methods, sf)
 
         # ---------- Generate ----------
         self._recipe = Recipe(cfg, dzn_elements, cpp_elements)
 
         # generate c++ code
         return CodeGenResult(files=[self._create_headerfile(),
-                                    self._create_sourcefile(),
-                                    sf_strict_port_hh, sf_ilog_hh, sf_misc_utils_hh,
-                                    sf_meta_helpers_hh, sf_multi_client_selector_hh,
-                                    sf_mutex_wrapped_hh])
+                                    self._create_sourcefile()] + sf.as_list())
 
     def _create_headerfile(self) -> GeneratedContent:
         """Generate a c++ headerfile according to the current recipe."""
@@ -187,42 +199,42 @@ class Builder:
             TEXT_GEN_DO_NOT_MODIFY,
         ])
 
+        project_includes_list = [f'{r.cpp_elements.orig_file_basename}.hh',
+                                 f'{cpp.support_files.strict_port.filename}']
+        if cfg.ports_cfg.multiclient:
+            project_includes_list.extend([f'{cpp.support_files.ilog.filename}',
+                                          f'{cpp.support_files.multi_client_selector.filename}'])
+
         header = [header_comments,
                   BLANK_LINE,
                   cpp_gen.SystemIncludes(cpp.facilities.system_includes),
-                  cpp_gen.ProjectIncludes([f'{r.cpp_elements.orig_file_basename}.hh',
-                                           f'{cpp.sf_strict_port.filename}']),
+                  cpp_gen.ProjectIncludes(project_includes_list),
                   BLANK_LINE]
 
-        public_section = TextBlock([cpp.constructor.as_decl,
-                                    cpp.final_construct_fn.as_decl,
-                                    BLANK_LINE,
-                                    cpp.facilities.accessors_decl,
-                                    BLANK_LINE,
-                                    cpp.provides_ports.accessors_decl,
-                                    BLANK_LINE,
-                                    cpp.requires_ports.accessors_decl,
-                                    ])
+        public_section = [chunk([cpp.constructor.as_decl,
+                                 cpp.final_construct_fn.as_decl]),
+                          chunk(cpp.facilities.accessors_decl),
+                          chunk(cpp.provides_ports.accessors_decl),
+                          chunk(cpp.provides_port_helpers.public_decl),
+                          chunk(cpp.requires_ports.accessors_decl),
+                          ]
 
-        private_section = TextBlock([cpp.facilities.member_variables,
-                                     cpp.facilities_check_fn.as_decl,
-                                     BLANK_LINE,
-                                     cpp.encapsulee,
-                                     BLANK_LINE,
-                                     cpp.provides_ports.member_variables,
-                                     BLANK_LINE,
-                                     cpp.requires_ports.member_variables,
-                                     ])
+        private_section = [chunk([cpp.facilities.member_variables,
+                                  cpp.facilities_check_fn.as_decl]),
+                           chunk(cpp.encapsulee),
+                           chunk(cpp.provides_ports.rerouting_class_members),
+                           chunk(cpp.provides_port_helpers.private_decl),
+                           chunk(cpp.requires_ports.rerouting_class_members),
+                           ]
 
         # fill the struct declaration with the public and private sections
         cpp.struct.contents = TextBlock([
             cpp_gen.AccessSpecifiedSection(
                 access_specifier=AccessSpecifier.ANONYMOUS,
-                contents=public_section),
-            BLANK_LINE,
+                contents=TextBlock(public_section)),
             cpp_gen.AccessSpecifiedSection(
                 access_specifier=AccessSpecifier.PRIVATE,
-                contents=private_section)
+                contents=TextBlock(private_section))
         ])
         cpp.namespace.contents = str(cpp.struct)
 
@@ -253,18 +265,14 @@ class Builder:
 
         # fill the struct declaration with the public and private sections
         cpp.namespace.contents = [BLANK_LINE,
-                                  cpp.facilities_check_fn.as_def,
-                                  BLANK_LINE,
-                                  cpp.constructor.as_def,
-                                  BLANK_LINE,
-                                  cpp.final_construct_fn.as_def,
-                                  BLANK_LINE,
-                                  cpp.facilities.accessors_def,
-                                  BLANK_LINE,
-                                  cpp.provides_ports.accessors_def,
-                                  BLANK_LINE,
-                                  cpp.requires_ports.accessors_def,
-                                  BLANK_LINE,
+                                  chunk(cpp.facilities_check_fn.as_def),
+                                  chunk(cpp.constructor.as_def),
+                                  chunk(cpp.final_construct_fn.as_def),
+                                  chunk(cpp.facilities.accessors_def),
+                                  chunk(cpp.provides_ports.accessors_def),
+                                  chunk(cpp.provides_port_helpers.public_def),
+                                  chunk(cpp.requires_ports.accessors_def),
+                                  chunk(cpp.provides_port_helpers.private_def),
                                   ]
 
         footer = Comment(f'Generated by: dznpy/adv_shell v{VERSION}')
@@ -288,29 +296,43 @@ class Builder:
         cpp = r.cpp_elements
 
         return str(TextBlock([
-            'Configuration:',
+            'User configuration:',
             f'- Encapsulee FQN: {cfg.fqn_encapsulee_name}',
             f'- Source file basename: {cpp.orig_file_basename}',
             f'- Target file basename: {cpp.target_file_basename}',
             f'- Dezyne facilities: {cfg.facilities_origin.value}',
-            f'- Port semantics: {cfg.port_cfg}',
+            f'- Ports{"" if cfg.ports_cfg.multiclient else " (none multiclient)"}:',
+            TextBlock(cfg.ports_cfg).indent(),
         ]))
 
     def _create_final_port_overview(self) -> str:
         """Create the final port overview."""
         cpp = self._recipe.cpp_elements
 
-        def port_and_itf_name(ports) -> str:
-            return '\n'.join([f'- {p.name}: {p.dzn_port_itf.interface.name}' for p in ports])
+        def port_info(ports: List[CppPortItf], label: str) -> Optional[TextBlock]:
+            """Stringify the list of ports in a human friendly readable textblock."""
 
-        provides_sts = port_and_itf_name(cpp.provides_ports.sts_ports)
-        provides_mts = port_and_itf_name(cpp.provides_ports.mts_ports)
-        requires_sts = port_and_itf_name(cpp.requires_ports.sts_ports)
-        requires_mts = port_and_itf_name(cpp.requires_ports.mts_ports)
+            if not ports:
+                return None
+
+            all_ports = []
+            for p in ports:
+                itf_name = p.dzn_port_itf.interface.name
+                multiclient = p.dzn_port_itf.multiclient
+
+                if multiclient:
+                    itf_str = f'*MultiClient* {itf_name} (with {multiclient})'
+                else:
+                    itf_str = itf_name
+
+                all_ports.append(f'> {p.name}: {itf_str}')
+
+            return chunk(TextBlock([f'- {label}:', TextBlock(all_ports).indent()]))
 
         return str(TextBlock([
-            f'Provides ports (Single-threaded):\n{provides_sts}\n\n' if provides_sts else None,
-            f'Provides ports (Multi-threaded):\n{provides_mts}\n\n' if provides_mts else None,
-            f'Requires ports (Single-threaded):\n{requires_sts}\n\n' if requires_sts else None,
-            f'Requires ports (Multi-threaded):\n{requires_mts}\n\n' if requires_mts else None,
+            'Final configuration:',
+            port_info(cpp.provides_ports.sts_ports, 'Provides ports (Single-threaded)'),
+            port_info(cpp.provides_ports.mts_ports, 'Provides ports (Multi-threaded)'),
+            port_info(cpp.requires_ports.sts_ports, 'Requires ports (Single-threaded)'),
+            port_info(cpp.requires_ports.mts_ports, 'Requires ports (Multi-threaded)'),
         ]))
