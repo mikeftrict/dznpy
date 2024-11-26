@@ -47,7 +47,7 @@ from .port_selection import PortsCfg, PortsSemanticsCfg, PortSelect, PortWildcar
     MultiClientPortCfg
 from .core.processing import create_dzn_elements, create_cpp_portitf, create_facilities, \
     create_constructor, create_final_construct_fn, create_facilities_check_fn, \
-    create_cpp_port_helper_methods
+    create_cpp_port_helpers
 
 
 # helper functions to create a prefined PortsCfg
@@ -144,47 +144,47 @@ class Builder:
         encapsulee = create_encapsulee(dzn_elements)
 
         sf_ns_prefix = cfg.support_files_ns_prefix
-        sf = SupportFiles(strict_port=strict_port.create_header(sf_ns_prefix),
-                          ilog=ilog.create_header(sf_ns_prefix),
-                          misc_utils=misc_utils.create_header(sf_ns_prefix),
-                          meta_helpers=meta_helpers.create_header(sf_ns_prefix),
-                          multi_client_selector=multi_client_selector.create_header(sf_ns_prefix),
-                          mutex_wrapped=mutex_wrapped.create_header(sf_ns_prefix))
+        sfs = SupportFiles(strict_port=strict_port.create_header(sf_ns_prefix),
+                           ilog=ilog.create_header(sf_ns_prefix),
+                           misc_utils=misc_utils.create_header(sf_ns_prefix),
+                           meta_helpers=meta_helpers.create_header(sf_ns_prefix),
+                           multi_client_selector=multi_client_selector.create_header(sf_ns_prefix),
+                           mutex_wrapped=mutex_wrapped.create_header(sf_ns_prefix))
 
-        support_files_ns = sf.strict_port.namespace  # TODO strange
+        support_files_ns = sfs.strict_port.namespace  # TODO strange
 
-        pp = CppPorts(
-            [create_cpp_portitf(p, struct, support_files_ns, encapsulee, sf) for p in
+        ppo = CppPorts(
+            [create_cpp_portitf(p, struct, support_files_ns, encapsulee, sfs) for p in
              dzn_elements.provides_ports])
-        rp = CppPorts(
-            [create_cpp_portitf(p, struct, support_files_ns, encapsulee, sf) for p in
+        rpo = CppPorts(
+            [create_cpp_portitf(p, struct, support_files_ns, encapsulee, sfs) for p in
              dzn_elements.requires_ports])
 
-        helper_methods = create_cpp_port_helper_methods('Provides port', pp, support_files_ns,
-                                                        struct, cfg.ast_fc)
+        helper_methods = create_cpp_port_helpers('Provides port', ppo, support_files_ns,
+                                                 struct, cfg.ast_fc)
 
         facilities = create_facilities(cfg.facilities_origin, struct)
 
-        constructor = create_constructor(struct, facilities, encapsulee, pp, rp, cfg.ast_fc, sf)
-        final_construct_fn = create_final_construct_fn(struct, pp, rp, encapsulee)
+        constructor = create_constructor(struct, facilities, encapsulee, ppo, rpo, cfg.ast_fc, sfs)
+        final_construct_fn = create_final_construct_fn(struct, ppo, rpo, encapsulee)
         facilities_check_fn = create_facilities_check_fn(struct, cfg.facilities_origin)
 
         cpp_elements = CppElements(orig_file_basename, target_file_basename, namespace, struct,
                                    constructor, final_construct_fn, facilities_check_fn, facilities,
-                                   encapsulee, pp, rp, helper_methods, sf)
+                                   encapsulee, ppo, rpo, helper_methods, sfs)
 
         # ---------- Generate ----------
         self._recipe = Recipe(cfg, dzn_elements, cpp_elements)
 
         # generate c++ code
         return CodeGenResult(files=[self._create_headerfile(),
-                                    self._create_sourcefile()] + sf.as_list())
+                                    self._create_sourcefile()] + sfs.as_list())
 
     def _create_headerfile(self) -> GeneratedContent:
         """Generate a c++ headerfile according to the current recipe."""
-        r = self._recipe
-        cfg = r.configuration
-        cpp = r.cpp_elements
+        rec = self._recipe
+        cfg = rec.configuration
+        cpp = rec.cpp_elements
 
         header_comments = cpp_gen.CommentBlock([
             cfg.copyright,
@@ -199,7 +199,7 @@ class Builder:
             TEXT_GEN_DO_NOT_MODIFY,
         ])
 
-        project_includes_list = [f'{r.cpp_elements.orig_file_basename}.hh',
+        project_includes_list = [f'{rec.cpp_elements.orig_file_basename}.hh',
                                  f'{cpp.support_files.strict_port.filename}']
         if cfg.ports_cfg.multiclient:
             project_includes_list.extend([f'{cpp.support_files.ilog.filename}',
@@ -245,9 +245,9 @@ class Builder:
 
     def _create_sourcefile(self) -> GeneratedContent:
         """Generate a c++ sourcefile according to the current recipe."""
-        r = self._recipe
-        cfg = r.configuration
-        cpp = r.cpp_elements
+        rec = self._recipe
+        cfg = rec.configuration
+        cpp = rec.cpp_elements
 
         header_comments = cpp_gen.CommentBlock([
             cfg.copyright,
@@ -291,9 +291,9 @@ class Builder:
 
     def _create_configuration_overview(self) -> str:
         """Create the configuration overview"""
-        r = self._recipe
-        cfg = r.configuration
-        cpp = r.cpp_elements
+        rec = self._recipe
+        cfg = rec.configuration
+        cpp = rec.cpp_elements
 
         return str(TextBlock([
             'User configuration:',
