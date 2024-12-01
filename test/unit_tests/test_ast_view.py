@@ -7,15 +7,11 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import pytest
-from unittest import TestCase
-from typing import Any, List
 
 # own modules
 from dznpy import ast, json_ast
 
 # system-under-test
-from dznpy import ast_view
-from dznpy.ast import Component, System
 from dznpy.scoping import ns_ids_t, NamespaceIds, NamespaceIdsTypeError
 
 # Test data

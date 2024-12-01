@@ -11,8 +11,9 @@ import enum
 from typing import Any, List
 
 # dznpy modules
-from .misc_utils import TextBlock, assert_t, flatten_to_strlist
+from .misc_utils import assert_t, flatten_to_strlist
 from .scoping import NamespaceIds, NamespaceTree
+from .text_gen import TextBlock
 
 
 @dataclass(frozen=True)

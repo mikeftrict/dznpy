@@ -15,8 +15,9 @@ from ...ast_view import find_fqn, FindError
 from ...code_gen_common import BLANK_LINE, chunk, cond_chunk
 from ...cpp_gen import Comment, Constructor, Function, FunctionPrefix, Fqn, fqn_t, MemberVariable, \
     TypeDesc, TypePostfix, const_param_ref_t, const_param_ptr_t, void_t, TemplateArg
-from ...misc_utils import flatten_to_strlist, TextBlock, assert_t_optional, plural
+from ...misc_utils import flatten_to_strlist, assert_t_optional, plural
 from ...scoping import NamespaceIds, ns_ids_t
+from ...text_gen import TextBlock
 
 # own modules
 from ..common import Configuration, CppPortItf, DznPortItf, \

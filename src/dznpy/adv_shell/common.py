@@ -15,8 +15,9 @@ from .. import cpp_gen, ast
 from ..code_gen_common import BLANK_LINE, GeneratedContent
 from ..cpp_gen import Comment, Constructor, Function, MemberVariable, Fqn, Namespace, Struct, \
     TypeDesc
-from ..misc_utils import TextBlock, plural, flatten_to_strlist
+from ..misc_utils import plural, flatten_to_strlist
 from ..scoping import NamespaceIds
+from ..text_gen import TextBlock
 
 # own modules
 from .types import RuntimeSemantics

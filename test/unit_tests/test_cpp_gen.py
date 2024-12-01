@@ -7,7 +7,6 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import pytest
-from unittest import TestCase
 
 # system-under-test
 from dznpy.cpp_gen import *

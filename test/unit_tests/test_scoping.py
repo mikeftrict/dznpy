@@ -9,7 +9,6 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 import pytest
 
 # dznpy modules
-from dznpy.misc_utils import assert_t
 
 # system-under-test
 from dznpy.scoping import *

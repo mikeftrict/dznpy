@@ -2,11 +2,24 @@
 
 ## Changes in 1.0 (DEV) since 0.5
 
+This is the official first release that is considered stable.
+
 ### Breaking changes
 
-### Additions and other changes
+- TextBlock et al has been moved to the module `text_gen`. Impact is reduced to only update your
+  import statements.
 
-### Processed tickets
+### Noteworthy additions and changes
+
+- [DZNPY-0028](https://github.com/mikeftrict/dznpy/issues/28): Moved `TextBlock` and its cohesively
+  related constructs to a (new) module `text_gen`. Also integrate bullet list numbering
+  functionality into `TextBlock` itself as part of indentation. Lastly, it adds a header content
+  feature to preamble a textblock, without have it affected by indention and/or list bullet-ing.
+  Refer to the unit tests for examples.
+- The (data) class architecture diagrams of each previous dznpy version have been converged into a
+  single Visio document.
+
+### Other processed tickets
 
 ## Changes in 0.5 (20241126) since 0.4
 
@@ -18,7 +31,7 @@
   functions: `param_t()`, `const_param_ref_t()`, `const_param_ptr_t()`. The impact depends on usage
   of these helper functions and reported back by the Python compiler.
 
-### Additions and other changes
+### Noteworthy additions and changes
 
 - [DZNPY-0024](https://github.com/mikeftrict/dznpy/issues/24): Add the MultiClientSelector port
   feature to Advanced Shell code generation. By configuring `PortsCfg` with the new dataclass
