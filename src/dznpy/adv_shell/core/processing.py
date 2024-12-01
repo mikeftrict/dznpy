@@ -25,7 +25,7 @@ from ..common import Configuration, CppPortItf, DznPortItf, \
 from ..types import AdvShellError, RuntimeSemantics, MultiClientCfgError
 
 
-def create_dzn_elements(cfg: Configuration, fc: ast.FileContents,
+def create_dzn_elements(cfg: Configuration, fct: ast.FileContents,
                         encapsulee: ast.System or ast.Component) -> DznElements:
     """Create a DznElements dataclass instance."""
 
@@ -39,12 +39,12 @@ def create_dzn_elements(cfg: Configuration, fc: ast.FileContents,
     provides_ports = []
     requires_ports = []
     for port in encapsulee.ports.elements:
-        find_result = find_fqn(fc, port.type_name.value, scope_fqn)
+        find_result = find_fqn(fct, port.type_name.value, scope_fqn)
         itf = find_result.get_single_instance(ast.Interface)
 
         if port.direction == ast.PortDirection.PROVIDES:
             # check multi client configuration for this port
-            mc_fixture = check_multiclient_cfg(cfg.ports_cfg.multiclient, port.name, itf, fc)
+            mc_fixture = check_multiclient_cfg(cfg.ports_cfg.multiclient, port.name, itf, fct)
             provides_ports.append(DznPortItf(port, itf, all_ports.value[port.name], mc_fixture))
         else:
             if not port.injected.value:  # filter out injected required ports
@@ -56,13 +56,13 @@ def create_dzn_elements(cfg: Configuration, fc: ast.FileContents,
             raise AdvShellError(f'Port "{cfg.ports_cfg.multiclient.port_name}" not found '
                                 'for Multiclient port configuration')
 
-    return DznElements(fc, encapsulee, Fqn(scope_fqn), provides_ports, requires_ports)
+    return DznElements(fct, encapsulee, Fqn(scope_fqn), provides_ports, requires_ports)
 
 
 def check_multiclient_cfg(cfg: Optional[MultiClientPortCfg],
                           candidate_port_name: str,
                           itf: ast.Interface,
-                          fc: ast.FileContents) -> Optional[MultiClientPortCfgFixture]:
+                          fct: ast.FileContents) -> Optional[MultiClientPortCfgFixture]:
     """Check the user specified Multi-Client port configuration on valid values and return
     a final fixture as a result. When parameter 'cfg' is empty an empty fixture is returned.
     On validation errors an exception will be raised."""
@@ -85,7 +85,7 @@ def check_multiclient_cfg(cfg: Optional[MultiClientPortCfg],
     # lookup the return type of the claim event
     enum_instance: ast.Enum
     try:
-        find_result = find_fqn(fc, found_claim_event.signature.type_name.value, itf.fqn)
+        find_result = find_fqn(fct, found_claim_event.signature.type_name.value, itf.fqn)
         enum_instance = find_result.get_single_instance(ast.Enum)
     except FindError as exc:
         raise MultiClientCfgError(
@@ -129,8 +129,8 @@ def create_facilities(origin: FacilitiesOrigin, scope) -> Facilities:
     raise AdvShellError(f'Invalid argument "origin: " {origin}')
 
 
-def create_cpp_port_helper_methods(label: str, cpp_ports: CppPorts, support_files_ns: NamespaceIds,
-                                   scope: cpp_gen.Struct, fc: ast.FileContents) -> CppHelperMethods:
+def create_cpp_port_helpers(label: str, cpp_ports: CppPorts, support_files_ns: NamespaceIds,
+                            scope: cpp_gen.Struct, fct: ast.FileContents) -> CppHelperMethods:
     """Create an instance of CppHelperMethods according to the specified caller arguments."""
     public_fns = []
     private_fns = []
@@ -157,7 +157,7 @@ def create_cpp_port_helper_methods(label: str, cpp_ports: CppPorts, support_file
                                 fqn_t(support_files_ns + ns_ids_t('ClientIdentifier'),
                                       prefix_root_ns=True), 'identifier')],
                             scope=scope,
-                            contents=str(initialize_port_impl(cpp_port, support_files_ns, fc)))
+                            contents=str(initialize_port_impl(cpp_port, support_files_ns, fct)))
 
         if port.dzn_port_itf.multiclient:
             public_fns.append(client_identifiers_fn(port))
@@ -167,48 +167,48 @@ def create_cpp_port_helper_methods(label: str, cpp_ports: CppPorts, support_file
 
 
 def create_cpp_portitf(dzn: DznPortItf, scope: cpp_gen.Struct, support_files_ns: NamespaceIds,
-                       encapsulee: CppEncapsulee, sf: SupportFiles) -> CppPortItf:
+                       encapsulee: CppEncapsulee, sfs: SupportFiles) -> CppPortItf:
     """Create an instance of CppPortItf according to the specified caller arguments."""
-    t = TypeDesc(Fqn(dzn.interface.fqn, True))
+    typ = TypeDesc(Fqn(dzn.interface.fqn, True))
     fn_prefix = f'{dzn.port.direction.value}'
     cap_name = dzn.port.name[0].upper() + dzn.port.name[1:]
 
     def sts():
         # pass-through mode
-        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Sts'), True), TemplateArg(t.fqn))
+        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Sts'), True), TemplateArg(typ.fqn))
         member_var = None
         accessor_target = f'{encapsulee.member_var.name}.{dzn.port.name}'
         accessor_fn = Function(strict_port, f'{fn_prefix}{cap_name}', scope=scope,
                                contents=f'return {{{accessor_target}}};')
-        return CppPortItf(dzn, t, accessor_fn, accessor_target, member_var)
+        return CppPortItf(dzn, typ, accessor_fn, accessor_target, member_var)
 
     def mts_plain():
         # reroute mode, requires an own port instance
-        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Mts'), True), TemplateArg(t.fqn))
+        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Mts'), True), TemplateArg(typ.fqn))
         mv_prefix = 'm_pp' if dzn.port.direction == ast.PortDirection.PROVIDES else 'm_rp'
-        member_var = MemberVariable(t, f'{mv_prefix}{cap_name}')
+        member_var = MemberVariable(typ, f'{mv_prefix}{cap_name}')
         accessor_target = f'{member_var.name}'
         accessor_fn = Function(strict_port, f'{fn_prefix}{cap_name}', scope=scope,
                                contents=f'return {{{accessor_target}}};')
-        return CppPortItf(dzn, t, accessor_fn, accessor_target, member_var)
+        return CppPortItf(dzn, typ, accessor_fn, accessor_target, member_var)
 
     def mts_with_multiclient_selector():
         # multiclient reroute mode, requires an own port instance including the multiclient selector
         mc_t = TypeDesc(Fqn(support_files_ns + ns_ids_t('MultiClientSelector'), True),
                         template_arg=TemplateArg(Fqn(dzn.interface.fqn, True)))
-        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Mts'), True), TemplateArg(t.fqn))
+        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Mts'), True), TemplateArg(typ.fqn))
         mv_prefix = 'm_pp'  # only provides ports can be multiclient
         member_var = MemberVariable(mc_t, f'{mv_prefix}{cap_name}')
         accessor_target = f'{member_var.name}'
         accessor_fn = Function(return_type=strict_port,
                                name=f'{fn_prefix}MultiClient{cap_name}',
                                params=[const_param_ref_t(
-                                   fqn_t(sf.multi_client_selector.namespace + ns_ids_t(
+                                   fqn_t(sfs.multi_client_selector.namespace + ns_ids_t(
                                        'ClientIdentifier'), prefix_root_ns=True), 'identifier')],
                                scope=scope,
                                contents=f'return {{{accessor_target}.Index(identifier).dznPort}};')
 
-        return CppPortItf(dzn, t, accessor_fn, accessor_target, member_var)
+        return CppPortItf(dzn, typ, accessor_fn, accessor_target, member_var)
 
     if dzn.semantics == RuntimeSemantics.STS:
         return sts()
@@ -221,7 +221,7 @@ def create_cpp_portitf(dzn: DznPortItf, scope: cpp_gen.Struct, support_files_ns:
 
 
 def initialize_port_impl(port: CppPortItf,
-                         support_files_ns: NamespaceIds, fc: ast.FileContents) -> TextBlock:
+                         support_files_ns: NamespaceIds, fct: ast.FileContents) -> TextBlock:
     """Create C++ code for the implementation of function InitializePortNNN()."""
     dzn = port.dzn_port_itf
     tb1 = [chunk(initialize_port_localvar_snippet(port, support_files_ns))]
@@ -231,9 +231,9 @@ def initialize_port_impl(port: CppPortItf,
     for event in [e for e in dzn.interface.events.elements if
                   e.direction == EventDirection.IN]:
         if event == dzn.multiclient.claim_event:
-            tb2.append(initialize_port_claim_snippet(port, dzn.multiclient, fc))
+            tb2.append(initialize_port_claim_snippet(port, dzn.multiclient, fct))
         elif event == dzn.multiclient.release_event:
-            tb2.append(initialize_port_release_snippet(port, dzn.multiclient, fc))
+            tb2.append(initialize_port_release_snippet(port, dzn.multiclient, fct))
         else:
             tb2.append(stdref_in_event(port, event))
 
@@ -255,7 +255,7 @@ def initialize_port_localvar_snippet(port: CppPortItf, support_files_ns: Namespa
 
 
 def initialize_port_claim_snippet(port: CppPortItf, multiclient: MultiClientPortCfgFixture,
-                                  fc: ast.FileContents) -> TextBlock:
+                                  fct: ast.FileContents) -> TextBlock:
     """Create C++ snippet for assigning a lambda for the port's claim in-event. Example:
 
         port.in.Claim = [&, identifier](PIncident& incident) {
@@ -270,8 +270,8 @@ def initialize_port_claim_snippet(port: CppPortItf, multiclient: MultiClientPort
 
     args = []
     for i in event.signature.formals.elements:
-        r = find_fqn(fc, i.type_name.value, dzn.interface.fqn)
-        ext_type = r.get_single_instance()
+        res = find_fqn(fct, i.type_name.value, dzn.interface.fqn)
+        ext_type = res.get_single_instance()
         opt_ref = '&' if i.direction != ast.FormalDirection.IN else ''
         args.append(f'{ext_type.value.value}{opt_ref} {i.name}')
 
@@ -289,7 +289,7 @@ def initialize_port_claim_snippet(port: CppPortItf, multiclient: MultiClientPort
 
 
 def initialize_port_release_snippet(port: CppPortItf, multiclient: MultiClientPortCfgFixture,
-                                    fc: ast.FileContents) -> TextBlock:
+                                    fct: ast.FileContents) -> TextBlock:
     """Create C++ snippet for assigning a lambda for the port's release in-event. Example:
 
         port.in.Release = [&, identifier] {
@@ -302,8 +302,8 @@ def initialize_port_release_snippet(port: CppPortItf, multiclient: MultiClientPo
 
     args = []
     for i in event.signature.formals.elements:
-        r = find_fqn(fc, i.type_name.value, dzn.interface.fqn)
-        ext_type = r.get_single_instance()
+        res = find_fqn(fct, i.type_name.value, dzn.interface.fqn)
+        ext_type = res.get_single_instance()
         opt_ref = '&' if i.direction != ast.FormalDirection.IN else ''
         args.append(f'{ext_type.value.value}{opt_ref} {i.name}')
 
@@ -319,12 +319,9 @@ def initialize_port_release_snippet(port: CppPortItf, multiclient: MultiClientPo
 
 
 def reroute_in_events(port: CppPortItf, facilities: Facilities, encapsulee: CppEncapsulee,
-                      fc: ast.FileContents) -> Optional[str]:
+                      fct: ast.FileContents) -> Optional[str]:
     """Create C++ code to reroute in-events of boundary provides ports via the dispatcher. Example:
 
-        m_ppApi.in.Toast = [&](std::string motd, PResultInfo& info) {
-            return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
-        };
         m_ppApi.in.Cancel = [&] {
             return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Cancel(); });
         };
@@ -339,8 +336,8 @@ def reroute_in_events(port: CppPortItf, facilities: Facilities, encapsulee: CppE
 
         args = []
         for i in event.signature.formals.elements:
-            r = find_fqn(fc, i.type_name.value, port.dzn_port_itf.interface.fqn)
-            ext_type = r.get_single_instance()
+            res = find_fqn(fct, i.type_name.value, port.dzn_port_itf.interface.fqn)
+            ext_type = res.get_single_instance()
             opt_ref = '&' if i.direction != ast.FormalDirection.IN else ''
             args.append(f'{ext_type.value.value}{opt_ref} {i.name}')
 
@@ -363,7 +360,7 @@ def reroute_in_events(port: CppPortItf, facilities: Facilities, encapsulee: CppE
 
 
 def reroute_out_events(port: CppPortItf, facilities: Facilities, encapsulee: CppEncapsulee,
-                       fc: ast.FileContents) -> Optional[str]:
+                       fct: ast.FileContents) -> Optional[str]:
     """Create C++ code to reroute out-events of boundary required ports via the dispatcher. Example:
 
         m_rpCord.out.Disconnected = [&](Sub::MyLongNamedType param) {
@@ -380,8 +377,8 @@ def reroute_out_events(port: CppPortItf, facilities: Facilities, encapsulee: Cpp
 
         args = []
         for i in event.signature.formals.elements:
-            r = find_fqn(fc, i.type_name.value, port.dzn_port_itf.interface.fqn)
-            ext_type = r.get_single_instance()
+            res = find_fqn(fct, i.type_name.value, port.dzn_port_itf.interface.fqn)
+            ext_type = res.get_single_instance()
             args.append(f'{ext_type.value.value} {i.name}')
 
         captures_by_value = ''.join(f', {x.name}' for x in in_formals)
@@ -399,8 +396,9 @@ def reroute_out_events(port: CppPortItf, facilities: Facilities, encapsulee: Cpp
     return str(TextBlock(result)) if result else None
 
 
-def reroute_multiclient_out_events(port: CppPortItf, fc: ast.FileContents) -> Optional[str]:
-    """Create C++ code to reroute out-events of the encapsulee to the MultiClientSelector facility. Example:
+def reroute_multiclient_out_events(port: CppPortItf, fct: ast.FileContents) -> Optional[str]:
+    """Create C++ code to reroute out-events of the encapsulee to the MultiClientSelector facility.
+    Example:
 
         m_ppApi().out.Fail = [&](PIncident incident) {
             auto lockAndData = m_ppApi.CurrentClient();
@@ -414,8 +412,8 @@ def reroute_multiclient_out_events(port: CppPortItf, fc: ast.FileContents) -> Op
                   event.direction == ast.EventDirection.OUT]:
         args = []
         for i in event.signature.formals.elements:
-            r = find_fqn(fc, i.type_name.value, port.dzn_port_itf.interface.fqn)
-            ext_type = r.get_single_instance()
+            res = find_fqn(fct, i.type_name.value, port.dzn_port_itf.interface.fqn)
+            ext_type = res.get_single_instance()
             args.append(f'{ext_type.value.value} {i.name}')
 
         stdfunction_arguments = '(' + ', '.join(args) + ')' if args else ''
@@ -451,8 +449,8 @@ def create_constructor(scope, facilities: Facilities,
                        encapsulee: CppEncapsulee,
                        provides_ports: CppPorts,
                        requires_ports: CppPorts,
-                       fc: ast.FileContents,
-                       sf: SupportFiles
+                       fct: ast.FileContents,
+                       sfs: SupportFiles
                        ) -> Constructor:
     """Create C++ code for the constructor"""
 
@@ -474,20 +472,20 @@ def create_constructor(scope, facilities: Facilities,
         raise AdvShellError(f'Invalid argument "origin: " {facilities.origin}')
 
     p_opt_multiclient_log = const_param_ref_t(
-        fqn_t(sf.ilog.namespace + ns_ids_t('ILog'), prefix_root_ns=True),
+        fqn_t(sfs.ilog.namespace + ns_ids_t('ILog'), prefix_root_ns=True),
         'multiclientLog') if provides_ports.has_multiclient_port() else None
     p_shell_name = const_param_ref_t(fqn_t('std.string'), 'encapsuleeInstanceName', '""')
 
     # construct the (MTS) boundary ports
     mts_pp, mts_rp = (provides_ports.mts_ports, requires_ports.mts_ports)
 
-    for p in mts_pp:
-        if p.dzn_port_itf.multiclient:
+    for prt in mts_pp:
+        if prt.dzn_port_itf.multiclient:
             mil.append(
-                f'{p.member_var.name}(multiclientLog, "{p.name}", [this](const auto& identifier)'
-                f' {{ return InitializePort{p.cap_name}(identifier); }})')
+                f'{prt.member_var.name}(multiclientLog, "{prt.name}", [this](const auto& identifier)'
+                f' {{ return InitializePort{prt.cap_name}(identifier); }})')
         else:
-            mil.append(f'{p.member_var.name}({encapsulee.member_var.name}.{p.name})')
+            mil.append(f'{prt.member_var.name}({encapsulee.member_var.name}.{prt.name})')
 
     mts_rp = requires_ports.mts_ports
     mil.extend([f'{p.member_var.name}({encapsulee.member_var.name}.{p.name})' for p in mts_rp])
@@ -497,18 +495,18 @@ def create_constructor(scope, facilities: Facilities,
     encapsulee_mv = encapsulee.member_var.name
 
     rerouted_boundary_in_events = flatten_to_strlist(
-        [reroute_in_events(p, facilities, encapsulee, fc) for p in mts_pp if
+        [reroute_in_events(p, facilities, encapsulee, fct) for p in mts_pp if
          not p.dzn_port_itf.multiclient])
 
     rerouted_boundary_out_events = flatten_to_strlist(
-        [reroute_out_events(p, facilities, encapsulee, fc) for p in mts_rp])
+        [reroute_out_events(p, facilities, encapsulee, fct) for p in mts_rp])
 
     rerouted_multiclient_in_events = flatten_to_strlist(
-        [reroute_in_events(p, facilities, encapsulee, fc) for p in mts_pp if
+        [reroute_in_events(p, facilities, encapsulee, fct) for p in mts_pp if
          p.dzn_port_itf.multiclient])
 
     rerouted_multiclient_out_events = flatten_to_strlist(
-        [reroute_multiclient_out_events(p, fc) for p in mts_pp if
+        [reroute_multiclient_out_events(p, fct) for p in mts_pp if
          p.dzn_port_itf.multiclient])
 
     tmp = []
@@ -556,8 +554,8 @@ def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
                               requires_ports: CppPorts, encapsulee: CppEncapsulee) -> Function:
     """Create c++ code for the FinalConstruct method."""
     param = const_param_ptr_t(fqn_t('dzn.meta'), 'parentComponentMeta', 'nullptr')
-    fn = Function(return_type=void_t(), name='FinalConstruct',
-                  scope=scope, params=[param])
+    fnc = Function(return_type=void_t(), name='FinalConstruct',
+                   scope=scope, params=[param])
 
     all_pp, mts_pp = (provides_ports.ports, provides_ports.mts_ports)
     all_rp, mts_rp = (requires_ports.ports, requires_ports.mts_ports)
@@ -566,7 +564,7 @@ def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
     final_construct_calls = [f'{p.accessor_target}.FinalConstruct();' for p in all_pp if
                              p.dzn_port_itf.multiclient]
 
-    fn.contents = TextBlock([
+    fnc.contents = TextBlock([
 
         [Comment(f'Call final construct on multiclient {plural("port", final_construct_calls)}'),
          final_construct_calls,
@@ -598,18 +596,18 @@ def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
         f'{encapsulee_mv}.dzn_meta.parent = {param.name};',
         f'{encapsulee_mv}.check_bindings();',
     ])
-    return fn
+    return fnc
 
 
 def create_facilities_check_fn(scope: cpp_gen.Struct,
                                facilities_origin: FacilitiesOrigin) -> Function:
     """Create c++ code for the FacilitiesCheck() method."""
     param = const_param_ref_t(fqn_t('dzn.locator'), 'locator')
-    fn = Function(return_type=param.type_desc, name='FacilitiesCheck', params=[param],
-                  prefix=FunctionPrefix.STATIC, scope=scope)
+    fnc = Function(return_type=param.type_desc, name='FacilitiesCheck', params=[param],
+                   prefix=FunctionPrefix.STATIC, scope=scope)
 
     if facilities_origin == FacilitiesOrigin.CREATE:
-        fn.contents = TextBlock([
+        fnc.contents = TextBlock([
             Comment('This class creates the required facilities. But in case the user provided '
                     'locator argument already contains some or\nall facilities, it indicates an '
                     'execution deployment error. Important: each threaded subsystem has its own '
@@ -624,7 +622,7 @@ def create_facilities_check_fn(scope: cpp_gen.Struct,
             'return locator;'
         ])
     elif facilities_origin == FacilitiesOrigin.IMPORT:
-        fn.contents = TextBlock([
+        fnc.contents = TextBlock([
             Comment('This class imports the required facilities that must be provided by the user '
                     'via the locator argument.'),
             BLANK_LINE,
@@ -636,4 +634,4 @@ def create_facilities_check_fn(scope: cpp_gen.Struct,
             'return locator;'
         ])
 
-    return fn
+    return fnc
