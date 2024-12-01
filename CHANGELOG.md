@@ -1,5 +1,13 @@
 # Changelog
 
+## Changes in 1.0 (DEV) since 0.5
+
+### Breaking changes
+
+### Additions and other changes
+
+### Processed tickets
+
 ## Changes in 0.5 (20241126) since 0.4
 
 ### Breaking changes
