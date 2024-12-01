@@ -11,8 +11,9 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Any
 
 # dznpy modules
-from .misc_utils import EOL, assert_t_optional, flatten_to_strlist, TextBlock
+from .misc_utils import assert_t_optional, flatten_to_strlist
 from .scoping import NamespaceIds
+from .text_gen import TextBlock, EOL
 
 # constants
 BLANK_LINE = EOL

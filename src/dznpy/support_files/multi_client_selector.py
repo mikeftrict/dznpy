@@ -12,8 +12,8 @@ from typing import Optional
 from ..dznpy_version import COPYRIGHT
 from ..code_gen_common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
 from ..cpp_gen import CommentBlock, ProjectIncludes, SystemIncludes, Namespace
-from ..misc_utils import TextBlock
 from ..scoping import NamespaceIds
+from ..text_gen import TextBlock
 
 # own modules
 from . import initialize_ns, create_footer

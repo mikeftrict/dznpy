@@ -11,8 +11,9 @@ import enum
 from typing import List, Any, Optional
 
 # dznpy modules
-from .misc_utils import assert_t, is_strlist_instance, plural, TextBlock, EOL
+from .misc_utils import assert_t, is_strlist_instance, plural
 from .scoping import NamespaceIds, ns_ids_t
+from .text_gen import TextBlock, EOL
 
 
 class CppGenError(Exception):
@@ -72,7 +73,7 @@ class AccessSpecifiedSection:
     contents: TextBlock
 
     def __str__(self):
-        tb = TextBlock(self.access_specifier.value).add(TextBlock(self.contents).indent())
+        tb = TextBlock(self.access_specifier.value) + TextBlock(self.contents).indent()
         return str(tb)
 
 

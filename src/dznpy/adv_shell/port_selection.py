@@ -12,11 +12,12 @@ import enum
 from typing import Dict, Set
 
 # dznpy modules
-from ..misc_utils import is_strset_instance, TextBlock, assert_t
+from ..misc_utils import assert_t, is_strset_instance
 
 # own modules
 from .types import AdvShellError, RuntimeSemantics, MultiClientCfgError
 from ..scoping import NamespaceIds
+from ..text_gen import TextBlock
 
 
 class PortWildcard(enum.Enum):

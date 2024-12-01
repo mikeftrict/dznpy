@@ -34,10 +34,11 @@ from ..ast_view import find_fqn
 from ..code_gen_common import BLANK_LINE, CodeGenResult, GeneratedContent, TEXT_GEN_DO_NOT_MODIFY, \
     chunk
 from ..cpp_gen import AccessSpecifier, Comment
-from ..misc_utils import TextBlock, get_basename
+from ..misc_utils import get_basename
 from ..support_files import strict_port, ilog, misc_utils, meta_helpers, multi_client_selector, \
     mutex_wrapped
 from ..scoping import ns_ids_t
+from ..text_gen import TextBlock
 
 # own modules
 from .common import Configuration, Recipe, CppPorts, create_encapsulee, CppElements, \
