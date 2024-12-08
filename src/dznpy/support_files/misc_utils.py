@@ -9,19 +9,18 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from typing import Optional
 
 # dznpy modules
-from ..dznpy_version import COPYRIGHT
-from ..code_gen_common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
-from ..cpp_gen import CommentBlock, SystemIncludes, Namespace
+from ..code_gen_common import GeneratedContent
+from ..cpp_gen import SystemIncludes
 from ..scoping import NamespaceIds
 from ..text_gen import TextBlock
 
 # own modules
-from . import initialize_ns, create_footer
+from . import distillate_ns, SupportFileCfg, generate_cpp_code
 
 
-def header_hh() -> str:
+def header_hh() -> TextBlock:
     """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
-    return """\
+    return TextBlock("""\
 Miscellaneous utilities
 
 Description: miscellaneous utilities for generic usage.
@@ -39,12 +38,12 @@ Examples of CapitalizeFirstChar:
 
    auto result = CapitalizeFirstChar(std::string("")); // result = std::string("")
 
-"""
+""")
 
 
-def body_hh() -> str:
+def body_hh() -> TextBlock:
     """Generate the body of a C++ headerfile with templated fields."""
-    return """\
+    return TextBlock("""\
 template <typename STR_TYPE>
 [[nodiscard]] STR_TYPE CapitalizeFirstChar(const STR_TYPE& str)
 {
@@ -66,27 +65,23 @@ template <typename STR_TYPE>
 
     return result;
 }
-"""
+""")
 
 
-def create_header(namespace_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
+def create_header(ns_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
     """Create the c++ header file contents that provides miscellaneous utilities."""
 
-    ns, _, file_ns = initialize_ns(namespace_prefix)
-    header = CommentBlock([header_hh(),
-                           BLANK_LINE,
-                           TEXT_GEN_DO_NOT_MODIFY,
-                           BLANK_LINE,
-                           COPYRIGHT
-                           ])
-    includes = SystemIncludes(['algorithm', 'cctype', 'cwctype', 'regex', 'string'])
-    body = Namespace(ns, contents=TextBlock([BLANK_LINE, body_hh(), BLANK_LINE]))
+    namespace, _, file_ns = distillate_ns(ns_prefix)
+
+    cfg = SupportFileCfg(header=header_hh(),
+                         body=body_hh(),
+                         includes=TextBlock(SystemIncludes(['algorithm',
+                                                            'cctype',
+                                                            'cwctype',
+                                                            'regex',
+                                                            'string'])),
+                         ns_prefix=ns_prefix)
 
     return GeneratedContent(filename=f'{file_ns}_MiscUtils.hh',
-                            contents=str(TextBlock([header,
-                                                    BLANK_LINE,
-                                                    includes,
-                                                    BLANK_LINE,
-                                                    body,
-                                                    create_footer()])),
-                            namespace=ns)
+                            contents=str(generate_cpp_code(cfg)),
+                            namespace=namespace)

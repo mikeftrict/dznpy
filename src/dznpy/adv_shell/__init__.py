@@ -152,7 +152,7 @@ class Builder:
                            multi_client_selector=multi_client_selector.create_header(sf_ns_prefix),
                            mutex_wrapped=mutex_wrapped.create_header(sf_ns_prefix))
 
-        support_files_ns = sfs.strict_port.namespace  # TODO strange
+        support_files_ns = sfs.strict_port.namespace
 
         ppo = CppPorts(
             [create_cpp_portitf(p, struct, support_files_ns, encapsulee, sfs) for p in
@@ -187,7 +187,7 @@ class Builder:
         cfg = rec.configuration
         cpp = rec.cpp_elements
 
-        header_comments = cpp_gen.CommentBlock([
+        header_comments = cpp_gen.Comment([
             cfg.copyright,
             BLANK_LINE,
             'Advanced Shell',
@@ -250,7 +250,7 @@ class Builder:
         cfg = rec.configuration
         cpp = rec.cpp_elements
 
-        header_comments = cpp_gen.CommentBlock([
+        header_comments = cpp_gen.Comment([
             cfg.copyright,
             BLANK_LINE,
             'Advanced Shell',
@@ -317,16 +317,16 @@ class Builder:
                 return None
 
             all_ports = []
-            for p in ports:
-                itf_name = p.dzn_port_itf.interface.name
-                multiclient = p.dzn_port_itf.multiclient
+            for prt in ports:
+                itf_name = prt.dzn_port_itf.interface.name
+                multiclient = prt.dzn_port_itf.multiclient
 
                 if multiclient:
                     itf_str = f'*MultiClient* {itf_name} (with {multiclient})'
                 else:
                     itf_str = itf_name
 
-                all_ports.append(f'> {p.name}: {itf_str}')
+                all_ports.append(f'> {prt.name}: {itf_str}')
 
             return chunk(TextBlock([f'- {label}:', TextBlock(all_ports).indent()]))
 

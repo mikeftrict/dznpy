@@ -14,12 +14,12 @@ PORTCFG_MULTICLIENT2 = '> multiclient: Out-event ClientSelector port "my_port" (
                        'Release event "unlock")\n'
 
 # all_mts()
-PORTCFG_STR_ALL_MTS = f'> provides/requires: All MTS\n'
+PORTCFG_STR_ALL_MTS = '> provides/requires: All MTS\n'
 
 PORTCFG_STR_ALL_MTS_MC = PORTCFG_STR_ALL_MTS + PORTCFG_MULTICLIENT1
 
 # all_sts()
-PORTCFG_STR_ALL_STS = f'> provides/requires: All STS\n'
+PORTCFG_STR_ALL_STS = '> provides/requires: All STS\n'
 
 # all_sts_all_mts()
 PORTCFG_STR_ALL_STS_ALL_MTS = '> provides ports: All STS\n' \

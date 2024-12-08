@@ -4,7 +4,7 @@ Module providing helpers for generating c++ source and header files
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
-
+from copy import deepcopy
 # system modules
 from dataclasses import dataclass, field
 import enum
@@ -13,7 +13,7 @@ from typing import List, Any, Optional
 # dznpy modules
 from .misc_utils import assert_t, is_strlist_instance, plural
 from .scoping import NamespaceIds, ns_ids_t
-from .text_gen import TextBlock, EOL
+from .text_gen import TextBlock, Indentizer, BulletList
 
 
 class CppGenError(Exception):
@@ -73,8 +73,7 @@ class AccessSpecifiedSection:
     contents: TextBlock
 
     def __str__(self):
-        tb = TextBlock(self.access_specifier.value) + TextBlock(self.contents).indent()
-        return str(tb)
+        return str(TextBlock(self.access_specifier.value) + TextBlock(self.contents).indent())
 
 
 @dataclass(frozen=True)
@@ -139,7 +138,7 @@ class Struct:
         """Postcheck the constructed data class members on validity."""
         if not self.name:
             raise CppGenError('name must not be empty')
-        # TODO check contents type equalling TextBlock
+        assert_t(self.contents, TextBlock)
         self._struct_class = StructOrClass.STRUCT
 
     def __str__(self):
@@ -205,38 +204,18 @@ class Namespace:
         return str(TextBlock([f'{head}}}']))  # one-liner
 
 
-@dataclass(frozen=True)
-class CommentBlock:
-    """CommentBlock"""
-    comments: List[str]
+class Comment(TextBlock):
+    """C++ comment class derived from TextBlock that is configured with C++ '//' indentation."""
+
+    def __init__(self, content: Optional[Any] = None):
+        super().__init__(content)
+        self.set_indentor(Indentizer(spaces_count=3, bullet_list=BulletList(glyph='//')))
 
     def __str__(self) -> str:
-        """Create a comment block where trailing whitespace has been trimmed. Skip lines
-        that already preceed with //. """
-        result = ''
-        for item in self.comments:
-            if isinstance(item, str):
-                for line in item.splitlines():
-                    stripped = line.rstrip(' ')
-                    if line[:2] == '//':
-                        result += f'{stripped}{EOL}'
-                    else:
-                        result += f'// {stripped}{EOL}' if stripped else f'//{EOL}'
-        return result
-
-
-@dataclass(frozen=True)
-class Comment:
-    """Comment"""
-    value: str
-
-    def __str__(self) -> str:
-        """Create a comment line where trailing whitespace has been trimmed."""
-        result = ''
-        for line in self.value.splitlines():
-            stripped = line.rstrip(' ')
-            result += f'// {stripped}{EOL}' if stripped else f'//{EOL}'
-        return result
+        # Generate a C++ multiline comment textstring, by cloning the lines buffer and subsequently
+        # applying the C++ '// ' indentation.
+        # The original lines buffer stays in tact to allow a user further extending the buffer.
+        return str(TextBlock(deepcopy(self).indent()))
 
 
 @dataclass
@@ -341,7 +320,7 @@ class Function:
     name: str
     params: List[Param] = field(default_factory=list)
     prefix: FunctionPrefix = field(default=FunctionPrefix.MEMBER_FUNCTION)
-    cv: str = field(default='')
+    cav: str = field(default='')  # = const and volatile type qualifiers
     override: bool = field(default=False)
     initialization: str = field(default='')
     contents: str = field(default='')
@@ -370,11 +349,11 @@ class Function:
         return_type = f'{self.return_type} ' if self.return_type else ''
         name = self.name
         params = ', '.join([p.as_decl for p in self.params])
-        cv = f' {self.cv}' if self.cv != '' else ''
+        cav = f' {self.cav}' if self.cav != '' else ''
         override = ' override' if self.override else ''
         initialization = f' = {self.initialization}' if self.initialization != '' else ''
         return str(
-            TextBlock(f'{prefix}{return_type}{name}({params}){cv}{override}{initialization};'))
+            TextBlock(f'{prefix}{return_type}{name}({params}){cav}{override}{initialization};'))
 
     @property
     def as_def(self) -> str:
@@ -386,8 +365,8 @@ class Function:
         scope = f'{self.scope.name}::' if self.scope is not None else ''
         name = self.name
         params = ', '.join([p.as_def for p in self.params])
-        cv = f' {self.cv}' if self.cv != '' else ''
-        full_signature = f'{return_type}{scope}{name}({params}){cv}'
+        cav = f' {self.cav}' if self.cav != '' else ''
+        full_signature = f'{return_type}{scope}{name}({params}){cav}'
 
         if not self.contents:
             return str(TextBlock(f'{full_signature} {{}}'))

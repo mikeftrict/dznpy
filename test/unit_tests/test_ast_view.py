@@ -12,7 +12,7 @@ import pytest
 from dznpy import ast, json_ast
 
 # system-under-test
-from dznpy.scoping import ns_ids_t, NamespaceIds, NamespaceIdsTypeError
+from dznpy.scoping import ns_ids_t
 
 # Test data
 from common.helpers import resolve

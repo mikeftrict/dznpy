@@ -9,19 +9,17 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from typing import Optional
 
 # dznpy modules
-from ..dznpy_version import COPYRIGHT
-from ..code_gen_common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
-from ..cpp_gen import CommentBlock, Namespace
+from ..code_gen_common import GeneratedContent
 from ..scoping import NamespaceIds
 from ..text_gen import TextBlock
 
 # own modules
-from . import initialize_ns, create_footer
+from . import distillate_ns, SupportFileCfg, generate_cpp_code
 
 
-def header_hh_template(cpp_ns: str) -> str:
+def header_hh_template(cpp_ns: str) -> TextBlock:
     """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
-    return """\
+    return TextBlock("""\
 Dezyne Strict Port
 
 Description: helping constructs to ensure correct interconnection of Dezyne ports based
@@ -53,12 +51,12 @@ interconnect two strict ports:
     """ f'{cpp_ns}' """::ConnectPorts( strictStsPort, GetStrictPort() ); // Ok
     """ f'{cpp_ns}' """::ConnectPorts( strictMtsPort, GetStrictPort() ); // Error during compilation
 
-"""
+""")
 
 
-def body_hh() -> str:
+def body_hh() -> TextBlock:
     """Generate the body of a C++ headerfile with templated fields."""
-    return """\
+    return TextBlock("""\
 // Enclosure for a port that conforms to Single-threaded Runtime Semantics (STS)
 template <typename P>
 struct Sts
@@ -84,24 +82,18 @@ void ConnectPorts(Mts<P> provided, Mts<P> required)
 {
     connect(provided.port, required.port);
 }
-"""
+""")
 
 
-def create_header(namespace_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
+def create_header(ns_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
     """Create the c++ header file contents that facilitates strict port typing."""
 
-    ns, cpp_ns, file_ns = initialize_ns(namespace_prefix)
-    header = CommentBlock([header_hh_template(cpp_ns),
-                           BLANK_LINE,
-                           TEXT_GEN_DO_NOT_MODIFY,
-                           BLANK_LINE,
-                           COPYRIGHT
-                           ])
-    body = Namespace(ns, contents=TextBlock([BLANK_LINE, body_hh(), BLANK_LINE]))
+    namespace, cpp_ns, file_ns = distillate_ns(ns_prefix)
+
+    cfg = SupportFileCfg(header=header_hh_template(cpp_ns),
+                         body=body_hh(),
+                         ns_prefix=ns_prefix)
 
     return GeneratedContent(filename=f'{file_ns}_StrictPort.hh',
-                            contents=str(TextBlock([header,
-                                                    BLANK_LINE,
-                                                    body,
-                                                    create_footer()])),
-                            namespace=ns)
+                            contents=str(generate_cpp_code(cfg)),
+                            namespace=namespace)

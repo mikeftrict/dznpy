@@ -9,19 +9,18 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from typing import Optional
 
 # dznpy modules
-from ..dznpy_version import COPYRIGHT
-from ..code_gen_common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
-from ..cpp_gen import CommentBlock, ProjectIncludes, SystemIncludes, Namespace
+from ..code_gen_common import GeneratedContent, chunk
+from ..cpp_gen import SystemIncludes, ProjectIncludes
 from ..scoping import NamespaceIds
 from ..text_gen import TextBlock
 
 # own modules
-from . import initialize_ns, create_footer
+from . import distillate_ns, SupportFileCfg, generate_cpp_code
 
 
-def header_hh_template() -> str:
+def header_hh() -> TextBlock:
     """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
-    return """\
+    return TextBlock("""\
 Multi Client Selector
 
 Description: A templated struct that is used in close collaboration with Advanced Shell to
@@ -30,12 +29,12 @@ Description: A templated struct that is used in close collaboration with Advance
 
 Example: Refer to Advanced Shell examples with a MultiClient port configuration.
 
-"""
+""")
 
 
-def body_hh() -> str:
+def body_hh() -> TextBlock:
     """Generate the body of a C++ headerfile with templated fields."""
-    return """\
+    return TextBlock("""\
 // Types
 using ClientIdentifier = std::string;
 
@@ -169,33 +168,25 @@ private:
     std::map<ClientIdentifier, ClientPort> m_clients;
     MutexWrapped<ClientSelect> m_clientSelect;
 };
-"""
+""")
 
 
-def create_header(namespace_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
-    """Create the c++ header file contents that facilitates strict port typing."""
+def create_header(ns_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
+    """Create the c++ header file contents that facilitates the multi client out-event selector."""
 
-    ns, _, file_ns = initialize_ns(namespace_prefix)
-    header = CommentBlock([header_hh_template(),
-                           BLANK_LINE,
-                           TEXT_GEN_DO_NOT_MODIFY,
-                           BLANK_LINE,
-                           COPYRIGHT
-                           ])
+    namespace, _, file_ns = distillate_ns(ns_prefix)
+
     system_includes = SystemIncludes(['optional', 'functional', 'string', 'vector'])
     project_includes = ProjectIncludes([f'{file_ns}_{x}.hh' for x in ['ILog',
                                                                       'MiscUtils',
                                                                       'MetaHelpers',
                                                                       'MutexWrapped']])
-    body = Namespace(ns, contents=TextBlock([BLANK_LINE, body_hh(), BLANK_LINE]))
+
+    cfg = SupportFileCfg(header=header_hh(),
+                         body=body_hh(),
+                         includes=TextBlock([chunk(system_includes), project_includes]),
+                         ns_prefix=ns_prefix)
 
     return GeneratedContent(filename=f'{file_ns}_MultiClientSelector.hh',
-                            contents=str(TextBlock([header,
-                                                    BLANK_LINE,
-                                                    system_includes,
-                                                    BLANK_LINE,
-                                                    project_includes,
-                                                    BLANK_LINE,
-                                                    body,
-                                                    create_footer()])),
-                            namespace=ns)
+                            contents=str(generate_cpp_code(cfg)),
+                            namespace=namespace)
