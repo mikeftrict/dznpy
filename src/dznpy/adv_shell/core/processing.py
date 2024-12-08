@@ -397,6 +397,42 @@ def reroute_out_events(port: CppPortItf, facilities: Facilities, encapsulee: Cpp
     return str(TextBlock(result)) if result else None
 
 
+def stdref_provides_out_events(port: CppPortItf, encapsulee: CppEncapsulee) -> Optional[str]:
+    """Create C++ code to stdref out-events of boundary provides ports directly to
+    the encapsulee associated port. Example:
+
+        m_encapsulee.api.in.Ok = std::ref(m_ppApi.in.Ok);
+        ...etc...
+    """
+    result = []
+    for event in [event for event in port.dzn_port_itf.interface.events.elements if
+                  event.direction == ast.EventDirection.OUT]:
+        txt = f'{encapsulee.member_var.name}.{port.name}.out.{event.name} = ' \
+              f'std::ref({port.accessor_target}.out.{event.name});'
+
+        result.append(txt)
+
+    return str(TextBlock(result)) if result else None
+
+
+def stdref_requires_in_events(port: CppPortItf, encapsulee: CppEncapsulee) -> Optional[str]:
+    """Create C++ code to stdref in-events of boundary requires ports directly to
+    the encapsulee associated port. Example:
+
+        m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
+        ...etc...
+    """
+    result = []
+    for event in [event for event in port.dzn_port_itf.interface.events.elements if
+                  event.direction == ast.EventDirection.IN]:
+        txt = f'{encapsulee.member_var.name}.{port.name}.in.{event.name} = ' \
+              f'std::ref({port.accessor_target}.in.{event.name});'
+
+        result.append(txt)
+
+    return str(TextBlock(result)) if result else None
+
+
 def reroute_multiclient_out_events(port: CppPortItf, fct: ast.FileContents) -> Optional[str]:
     """Create C++ code to reroute out-events of the encapsulee to the MultiClientSelector facility.
     Example:
@@ -511,13 +547,20 @@ def create_constructor(scope, facilities: Facilities,
         [reroute_multiclient_out_events(p, fct) for p in mts_pp if
          p.dzn_port_itf.multiclient])
 
+    stdrefd_mts_boundary_out_events = flatten_to_strlist(
+        [stdref_provides_out_events(p, encapsulee) for p in mts_pp if
+         not p.dzn_port_itf.multiclient])
+
+    stdrefd_mts_boundary_in_events = flatten_to_strlist(
+        [stdref_requires_in_events(p, encapsulee) for p in mts_rp])
+
     tmp = []
     for mc_port in [pp for pp in mts_pp if pp.is_multiclient]:
         for event in mc_port.dzn_port_itf.interface.events.elements:
             if event.direction == EventDirection.OUT:
                 tmp.append(f'{encapsulee_mv}.{mc_port.name}.out.{event.name} = '
                            f'std::ref({mc_port.accessor_target}().out.{event.name});')
-    stdreffed_encapsulee_out_events = flatten_to_strlist(tmp)
+    stdrefd_encapsulee_out_events = flatten_to_strlist(tmp)
 
     contents = TextBlock([
         chunk([Comment('Complete the component meta info of the encapsulee and its ports that '
@@ -527,9 +570,16 @@ def create_constructor(scope, facilities: Facilities,
                [f'{encapsulee_mv}.{p.name}.meta.provide.name = "{p.name}";' for p in mts_rp]
                ]),
 
+        chunk(Comment(['Boundary provides ports (MTS) initialization:', '-' * 45])),
+        cond_chunk(None, Comment('<None>' if not mts_pp else None), None, all_or_nothing=True),
+
         cond_chunk(Comment('Reroute in-events of boundary provides ports (MTS) via the dispatcher '
                            'to the encapsulee'),
                    rerouted_boundary_in_events, None, all_or_nothing=True),
+
+        cond_chunk(Comment('Reference out-events of boundary provides ports (MTS) to '
+                           'the respective ports of the encapsulee'),
+                   stdrefd_mts_boundary_out_events, None, all_or_nothing=True),
 
         cond_chunk(Comment('Reroute in-events of the internal arbitered multiclient port via the '
                            'dispatcher to the encapsulee'),
@@ -541,11 +591,19 @@ def create_constructor(scope, facilities: Facilities,
 
         cond_chunk(Comment('Reference out-events of the encapsulee to the internal arbitered '
                            'multiclient port'),
-                   stdreffed_encapsulee_out_events, None, all_or_nothing=True),
+                   stdrefd_encapsulee_out_events, None, all_or_nothing=True),
+
+        chunk(Comment(['Boundary requires ports (MTS) initialization:', '-' * 45])),
+        cond_chunk(None, Comment('<None>' if not mts_rp else None), None, all_or_nothing=True),
 
         cond_chunk(Comment('Reroute out-events of boundary requires ports (MTS)'
                            ' via the dispatcher'),
-                   rerouted_boundary_out_events, None, all_or_nothing=True, appendix=None),
+                   rerouted_boundary_out_events, None, all_or_nothing=True),
+
+        cond_chunk(Comment('Reference in-events of boundary requires ports (MTS) to '
+                           'the respective ports of the encapsulee'),
+                   stdrefd_mts_boundary_in_events, None, all_or_nothing=True, appendix=None),
+
     ])
 
     return Constructor(scope, params=[p_locator, p_opt_multiclient_log, p_shell_name],
@@ -559,8 +617,8 @@ def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
     fnc = Function(return_type=void_t(), name='FinalConstruct',
                    scope=scope, params=[param])
 
-    all_pp, mts_pp = (provides_ports.ports, provides_ports.mts_ports)
-    all_rp, mts_rp = (requires_ports.ports, requires_ports.mts_ports)
+    all_pp = provides_ports.ports
+    all_rp = requires_ports.ports
     encapsulee_mv = encapsulee.member_var.name
 
     final_construct_calls = [f'{p.accessor_target}.FinalConstruct();' for p in all_pp if
@@ -576,20 +634,6 @@ def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
         [f'{p.accessor_target}.check_bindings();' for p in all_pp if
          not p.dzn_port_itf.multiclient],
         [f'{p.accessor_target}.check_bindings();' for p in all_rp],
-
-        BLANK_LINE,
-
-        Comment('Copy the out-functors of the boundary provides-ports (MTS) to the '
-                'respective ports of the encapsulated component'),
-        [f'{encapsulee_mv}.{p.name}.out = {p.accessor_target}.out;'
-         for p in mts_pp if not p.dzn_port_itf.multiclient] if mts_pp else Comment('<none>'),
-
-        BLANK_LINE,
-
-        Comment('Copy the in-functors of the boundary requires-ports (MTS) to the '
-                'respective ports of the encapsulated component'),
-        [f'{encapsulee_mv}.{p.name}.in = {p.accessor_target}.in;'
-         for p in mts_rp] if mts_rp else Comment('<none>'),
 
         BLANK_LINE,
 

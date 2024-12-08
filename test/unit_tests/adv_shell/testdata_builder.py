@@ -9,6 +9,8 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 TOASTER_SYSTEM_JSON_FILE = 'generated/ToasterSystem.json'
 STONE_AGE_TOASTER_FILE = 'generated/StoneAgeToaster.json'
 EXCLUSIVE_TOASTER_JSON_FILE = 'generated/ExclusiveToaster.json'
+DUMMY_EXCLUSIVE_TOASTER_JSON_FILE = 'generated/DummyExclusiveToaster.json'
+DUMMY_COMPONENT_JSON_FILE = 'generated/DummyToaster.json'
 
 CREATOR_INFO = '''\
 ABC
@@ -128,6 +130,14 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& locator, const 
     m_encapsulee.cord.meta.provide.name = "cord";
     m_encapsulee.led.meta.provide.name = "led";
 
+    // Boundary provides ports (MTS) initialization:
+    // ---------------------------------------------
+
+    // <None>
+
+    // Boundary requires ports (MTS) initialization:
+    // ---------------------------------------------
+
     // Reroute out-events of boundary requires ports (MTS) via the dispatcher
     m_rpCord.out.Connected = [&] {
         return m_dispatcher([&] { return m_encapsulee.cord.out.Connected(); });
@@ -138,6 +148,17 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& locator, const 
     m_rpLed.out.GlitchOccurred = [&] {
         return m_dispatcher([&] { return m_encapsulee.led.out.GlitchOccurred(); });
     };
+
+    // Reference in-events of boundary requires ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.heaterElement.in.Initialize = std::ref(m_rpHeaterElement.in.Initialize);
+    m_encapsulee.heaterElement.in.Uninitialize = std::ref(m_rpHeaterElement.in.Uninitialize);
+    m_encapsulee.heaterElement.in.On = std::ref(m_rpHeaterElement.in.On);
+    m_encapsulee.heaterElement.in.Off = std::ref(m_rpHeaterElement.in.Off);
+    m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
+    m_encapsulee.cord.in.Uninitialize = std::ref(m_rpCord.in.Uninitialize);
+    m_encapsulee.cord.in.IsConnectedToOutlet = std::ref(m_rpCord.in.IsConnectedToOutlet);
+    m_encapsulee.led.in.Initialize = std::ref(m_rpLed.in.Initialize);
+    m_encapsulee.led.in.Uninitialize = std::ref(m_rpLed.in.Uninitialize);
 }
 
 void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
@@ -147,14 +168,6 @@ void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
     m_rpHeaterElement.check_bindings();
     m_rpCord.check_bindings();
     m_rpLed.check_bindings();
-
-    // Copy the out-functors of the boundary provides-ports (MTS) to the respective ports of the encapsulated component
-    // <none>
-
-    // Copy the in-functors of the boundary requires-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.heaterElement.in = m_rpHeaterElement.in;
-    m_encapsulee.cord.in = m_rpCord.in;
-    m_encapsulee.led.in = m_rpLed.in;
 
     // Complete the encapsulated component meta information and check the bindings of all encapsulee ports
     m_encapsulee.dzn_meta.parent = parentComponentMeta;
@@ -296,6 +309,9 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_encapsulee.dzn_meta.name = encapsuleeInstanceName;
     m_encapsulee.api.meta.require.name = "api";
 
+    // Boundary provides ports (MTS) initialization:
+    // ---------------------------------------------
+
     // Reroute in-events of boundary provides ports (MTS) via the dispatcher to the encapsulee
     m_ppApi.in.Initialize = [&] {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Initialize(); });
@@ -319,6 +335,16 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Recover(); });
     };
 
+    // Reference out-events of boundary provides ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.api.out.Ok = std::ref(m_ppApi.out.Ok);
+    m_encapsulee.api.out.Fail = std::ref(m_ppApi.out.Fail);
+    m_encapsulee.api.out.Error = std::ref(m_ppApi.out.Error);
+
+    // Boundary requires ports (MTS) initialization:
+    // ---------------------------------------------
+
+    // <None>
+
 }
 
 void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
@@ -328,12 +354,6 @@ void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
     m_encapsulee.heaterElement.check_bindings();
     m_encapsulee.cord.check_bindings();
     m_encapsulee.led.check_bindings();
-
-    // Copy the out-functors of the boundary provides-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.api.out = m_ppApi.out;
-
-    // Copy the in-functors of the boundary requires-ports (MTS) to the respective ports of the encapsulated component
-    // <none>
 
     // Complete the encapsulated component meta information and check the bindings of all encapsulee ports
     m_encapsulee.dzn_meta.parent = parentComponentMeta;
@@ -487,6 +507,9 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_encapsulee.heaterElement.meta.provide.name = "heaterElement";
     m_encapsulee.cord.meta.provide.name = "cord";
 
+    // Boundary provides ports (MTS) initialization:
+    // ---------------------------------------------
+
     // Reroute in-events of boundary provides ports (MTS) via the dispatcher to the encapsulee
     m_ppApi.in.Initialize = [&] {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Initialize(); });
@@ -510,6 +533,14 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Recover(); });
     };
 
+    // Reference out-events of boundary provides ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.api.out.Ok = std::ref(m_ppApi.out.Ok);
+    m_encapsulee.api.out.Fail = std::ref(m_ppApi.out.Fail);
+    m_encapsulee.api.out.Error = std::ref(m_ppApi.out.Error);
+
+    // Boundary requires ports (MTS) initialization:
+    // ---------------------------------------------
+
     // Reroute out-events of boundary requires ports (MTS) via the dispatcher
     m_rpCord.out.Connected = [&] {
         return m_dispatcher([&] { return m_encapsulee.cord.out.Connected(); });
@@ -517,6 +548,15 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_rpCord.out.Disconnected = [&](Sub::MyLongNamedType exampleParameter) {
         return m_dispatcher([&, exampleParameter] { return m_encapsulee.cord.out.Disconnected(exampleParameter); });
     };
+
+    // Reference in-events of boundary requires ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.heaterElement.in.Initialize = std::ref(m_rpHeaterElement.in.Initialize);
+    m_encapsulee.heaterElement.in.Uninitialize = std::ref(m_rpHeaterElement.in.Uninitialize);
+    m_encapsulee.heaterElement.in.On = std::ref(m_rpHeaterElement.in.On);
+    m_encapsulee.heaterElement.in.Off = std::ref(m_rpHeaterElement.in.Off);
+    m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
+    m_encapsulee.cord.in.Uninitialize = std::ref(m_rpCord.in.Uninitialize);
+    m_encapsulee.cord.in.IsConnectedToOutlet = std::ref(m_rpCord.in.IsConnectedToOutlet);
 }
 
 void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
@@ -526,13 +566,6 @@ void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
     m_rpHeaterElement.check_bindings();
     m_rpCord.check_bindings();
     m_encapsulee.led.check_bindings();
-
-    // Copy the out-functors of the boundary provides-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.api.out = m_ppApi.out;
-
-    // Copy the in-functors of the boundary requires-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.heaterElement.in = m_rpHeaterElement.in;
-    m_encapsulee.cord.in = m_rpCord.in;
 
     // Complete the encapsulated component meta information and check the bindings of all encapsulee ports
     m_encapsulee.dzn_meta.parent = parentComponentMeta;
@@ -681,6 +714,19 @@ StoneAgeToasterImplComp::StoneAgeToasterImplComp(const dzn::locator& prototypeLo
     m_encapsulee.dzn_meta.name = encapsuleeInstanceName;
     m_encapsulee.heater.meta.provide.name = "heater";
 
+    // Boundary provides ports (MTS) initialization:
+    // ---------------------------------------------
+
+    // <None>
+
+    // Boundary requires ports (MTS) initialization:
+    // ---------------------------------------------
+
+    // Reference in-events of boundary requires ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.heater.in.Initialize = std::ref(m_rpHeater.in.Initialize);
+    m_encapsulee.heater.in.Uninitialize = std::ref(m_rpHeater.in.Uninitialize);
+    m_encapsulee.heater.in.On = std::ref(m_rpHeater.in.On);
+    m_encapsulee.heater.in.Off = std::ref(m_rpHeater.in.Off);
 }
 
 void StoneAgeToasterImplComp::FinalConstruct(const dzn::meta* parentComponentMeta)
@@ -689,12 +735,6 @@ void StoneAgeToasterImplComp::FinalConstruct(const dzn::meta* parentComponentMet
     m_encapsulee.api.check_bindings();
     m_rpHeater.check_bindings();
     m_encapsulee.timer.check_bindings();
-
-    // Copy the out-functors of the boundary provides-ports (MTS) to the respective ports of the encapsulated component
-    // <none>
-
-    // Copy the in-functors of the boundary requires-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.heater.in = m_rpHeater.in;
 
     // Complete the encapsulated component meta information and check the bindings of all encapsulee ports
     m_encapsulee.dzn_meta.parent = parentComponentMeta;
@@ -843,6 +883,9 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_encapsulee.cord.meta.provide.name = "cord";
     m_encapsulee.led.meta.provide.name = "led";
 
+    // Boundary provides ports (MTS) initialization:
+    // ---------------------------------------------
+
     // Reroute in-events of boundary provides ports (MTS) via the dispatcher to the encapsulee
     m_ppApi.in.Initialize = [&] {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Initialize(); });
@@ -866,6 +909,14 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Recover(); });
     };
 
+    // Reference out-events of boundary provides ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.api.out.Ok = std::ref(m_ppApi.out.Ok);
+    m_encapsulee.api.out.Fail = std::ref(m_ppApi.out.Fail);
+    m_encapsulee.api.out.Error = std::ref(m_ppApi.out.Error);
+
+    // Boundary requires ports (MTS) initialization:
+    // ---------------------------------------------
+
     // Reroute out-events of boundary requires ports (MTS) via the dispatcher
     m_rpCord.out.Connected = [&] {
         return m_dispatcher([&] { return m_encapsulee.cord.out.Connected(); });
@@ -876,6 +927,17 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_rpLed.out.GlitchOccurred = [&] {
         return m_dispatcher([&] { return m_encapsulee.led.out.GlitchOccurred(); });
     };
+
+    // Reference in-events of boundary requires ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.heaterElement.in.Initialize = std::ref(m_rpHeaterElement.in.Initialize);
+    m_encapsulee.heaterElement.in.Uninitialize = std::ref(m_rpHeaterElement.in.Uninitialize);
+    m_encapsulee.heaterElement.in.On = std::ref(m_rpHeaterElement.in.On);
+    m_encapsulee.heaterElement.in.Off = std::ref(m_rpHeaterElement.in.Off);
+    m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
+    m_encapsulee.cord.in.Uninitialize = std::ref(m_rpCord.in.Uninitialize);
+    m_encapsulee.cord.in.IsConnectedToOutlet = std::ref(m_rpCord.in.IsConnectedToOutlet);
+    m_encapsulee.led.in.Initialize = std::ref(m_rpLed.in.Initialize);
+    m_encapsulee.led.in.Uninitialize = std::ref(m_rpLed.in.Uninitialize);
 }
 
 void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
@@ -885,14 +947,6 @@ void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
     m_rpHeaterElement.check_bindings();
     m_rpCord.check_bindings();
     m_rpLed.check_bindings();
-
-    // Copy the out-functors of the boundary provides-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.api.out = m_ppApi.out;
-
-    // Copy the in-functors of the boundary requires-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.heaterElement.in = m_rpHeaterElement.in;
-    m_encapsulee.cord.in = m_rpCord.in;
-    m_encapsulee.led.in = m_rpLed.in;
 
     // Complete the encapsulated component meta information and check the bindings of all encapsulee ports
     m_encapsulee.dzn_meta.parent = parentComponentMeta;
@@ -1062,6 +1116,9 @@ ExclusiveToasterAdvShell::ExclusiveToasterAdvShell(const dzn::locator& prototype
     m_encapsulee.cord.meta.provide.name = "cord";
     m_encapsulee.timer.meta.provide.name = "timer";
 
+    // Boundary provides ports (MTS) initialization:
+    // ---------------------------------------------
+
     // Reroute in-events of boundary provides ports (MTS) via the dispatcher to the encapsulee
     m_ppLifecycle.in.Initialize = [&](PResultInfo& info) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.lifecycle.in.Initialize(info); });
@@ -1098,6 +1155,9 @@ ExclusiveToasterAdvShell::ExclusiveToasterAdvShell(const dzn::locator& prototype
     m_encapsulee.api.out.Ok = std::ref(m_ppApi().out.Ok);
     m_encapsulee.api.out.Fail = std::ref(m_ppApi().out.Fail);
 
+    // Boundary requires ports (MTS) initialization:
+    // ---------------------------------------------
+
     // Reroute out-events of boundary requires ports (MTS) via the dispatcher
     m_rpCord.out.Connected = [&] {
         return m_dispatcher([&] { return m_encapsulee.cord.out.Connected(); });
@@ -1108,6 +1168,17 @@ ExclusiveToasterAdvShell::ExclusiveToasterAdvShell(const dzn::locator& prototype
     m_rpTimer.out.Timeout = [&] {
         return m_dispatcher([&] { return m_encapsulee.timer.out.Timeout(); });
     };
+
+    // Reference in-events of boundary requires ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.heater.in.Initialize = std::ref(m_rpHeater.in.Initialize);
+    m_encapsulee.heater.in.Uninitialize = std::ref(m_rpHeater.in.Uninitialize);
+    m_encapsulee.heater.in.On = std::ref(m_rpHeater.in.On);
+    m_encapsulee.heater.in.Off = std::ref(m_rpHeater.in.Off);
+    m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
+    m_encapsulee.cord.in.Uninitialize = std::ref(m_rpCord.in.Uninitialize);
+    m_encapsulee.cord.in.IsConnectedToOutlet = std::ref(m_rpCord.in.IsConnectedToOutlet);
+    m_encapsulee.timer.in.Create = std::ref(m_rpTimer.in.Create);
+    m_encapsulee.timer.in.Cancel = std::ref(m_rpTimer.in.Cancel);
 }
 
 void ExclusiveToasterAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
@@ -1120,14 +1191,6 @@ void ExclusiveToasterAdvShell::FinalConstruct(const dzn::meta* parentComponentMe
     m_rpHeater.check_bindings();
     m_rpCord.check_bindings();
     m_rpTimer.check_bindings();
-
-    // Copy the out-functors of the boundary provides-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.lifecycle.out = m_ppLifecycle.out;
-
-    // Copy the in-functors of the boundary requires-ports (MTS) to the respective ports of the encapsulated component
-    m_encapsulee.heater.in = m_rpHeater.in;
-    m_encapsulee.cord.in = m_rpCord.in;
-    m_encapsulee.timer.in = m_rpTimer.in;
 
     // Complete the encapsulated component meta information and check the bindings of all encapsulee ports
     m_encapsulee.dzn_meta.parent = parentComponentMeta;
@@ -1189,5 +1252,379 @@ std::vector<::Dzn::ClientIdentifier> ExclusiveToasterAdvShell::GetApiClientIdent
 }
 
 } // namespace My::Project
+// Generated by: dznpy/adv_shell v1.0.DEV
+'''
+
+HH_ALL_MTS_DUMMY_MULTICLIENT = '''\
+// Copyright Example Line 1
+// Copyright Example Line 2
+//
+// Advanced Shell
+//
+// Creator information:
+// <none>
+//
+// User configuration:
+// - Encapsulee FQN: My.DummyExclusiveToaster
+// - Source file basename: DummyExclusiveToaster
+// - Target file basename: DummyExclusiveToasterAdvShell
+// - Dezyne facilities: Create all facilities (dispatcher, runtime and locator)
+// - Ports:
+//     > provides/requires: All MTS
+//     > multiclient: Out-event ClientSelector port "api" (Claim event "Claim" with granting reply value "Ok", Release event "Release")
+//
+// Final configuration:
+// - Provides ports (Multi-threaded):
+//     > lifecycle: ILifecycle
+//     > api: *MultiClient* IExclusiveToaster (with claim_event=Claim, claim_granting_reply=My.Result.Ok, release_event=Release)
+//
+// This is generated code. DO NOT MODIFY manually.
+
+// System includes
+#include <dzn/locator.hh>
+#include <dzn/pump.hh>
+#include <dzn/runtime.hh>
+// Project includes
+#include "DummyExclusiveToaster.hh"
+#include "Dzn_StrictPort.hh"
+#include "Dzn_ILog.hh"
+#include "Dzn_MultiClientSelector.hh"
+
+namespace My {
+struct DummyExclusiveToasterAdvShell
+{
+    DummyExclusiveToasterAdvShell(const dzn::locator& prototypeLocator, const ::Dzn::ILog& multiclientLog, const std::string& encapsuleeInstanceName = "");
+    void FinalConstruct(const dzn::meta* parentComponentMeta = nullptr);
+
+    // Facility accessor
+    dzn::locator& Locator();
+
+    // Provides port accessors
+    ::Dzn::Mts<::My::ILifecycle> ProvidesLifecycle();
+    ::Dzn::Mts<::My::IExclusiveToaster> ProvidesMultiClientApi(const ::Dzn::ClientIdentifier& identifier);
+
+    // Provides port helper
+    std::vector<::Dzn::ClientIdentifier> GetApiClientIdentifiers() const;
+
+private:
+    // Facilities
+    dzn::runtime m_runtime;
+    dzn::pump m_dispatcher;
+    dzn::locator m_locator;
+    static const dzn::locator& FacilitiesCheck(const dzn::locator& locator);
+
+    // The encapsulated component "DummyExclusiveToaster"
+    ::My::DummyExclusiveToaster m_encapsulee;
+
+    // Boundary provides-port (MTS) to reroute inwards events
+    ::My::ILifecycle m_ppLifecycle;
+
+    // Boundary provides-port (MTS) to reroute inwards events and redirect outwards events to multi clients
+    ::Dzn::MultiClientSelector<::My::IExclusiveToaster> m_ppApi;
+
+    // Provides port helper
+    ::My::IExclusiveToaster InitializePortApi(const ::Dzn::ClientIdentifier& identifier);
+
+};
+} // namespace My
+// Generated by: dznpy/adv_shell v1.0.DEV
+'''
+
+CC_ALL_MTS_DUMMY_MULTICLIENT = '''\
+// Copyright Example Line 1
+// Copyright Example Line 2
+//
+// Advanced Shell
+//
+// This is generated code. DO NOT MODIFY manually.
+
+// System include
+#include <dzn/runtime.hh>
+// Project include
+#include "DummyExclusiveToasterAdvShell.hh"
+
+namespace My {
+
+const dzn::locator& DummyExclusiveToasterAdvShell::FacilitiesCheck(const dzn::locator& locator)
+{
+    // This class creates the required facilities. But in case the user provided locator argument already contains some or
+    // all facilities, it indicates an execution deployment error. Important: each threaded subsystem has its own exclusive
+    // instances of the dispatcher and dezyne runtime facilities. They can never be shared with other threaded subsystems.
+
+    if (locator.try_get<dzn::pump>() != nullptr) throw std::runtime_error("DummyExclusiveToasterAdvShell: Overlapping dispatcher found (dzn::pump)");
+    if (locator.try_get<dzn::runtime>() != nullptr) throw std::runtime_error("DummyExclusiveToasterAdvShell: Overlapping Dezyne runtime found (dzn::runtime)");
+
+    return locator;
+}
+
+DummyExclusiveToasterAdvShell::DummyExclusiveToasterAdvShell(const dzn::locator& prototypeLocator, const ::Dzn::ILog& multiclientLog, const std::string& encapsuleeInstanceName)
+    : m_locator(std::move(FacilitiesCheck(prototypeLocator).clone().set(m_runtime).set(m_dispatcher)))
+    , m_encapsulee(m_locator)
+    , m_ppLifecycle(m_encapsulee.lifecycle)
+    , m_ppApi(multiclientLog, "api", [this](const auto& identifier) { return InitializePortApi(identifier); })
+{
+    // Complete the component meta info of the encapsulee and its ports that are configured for MTS
+    m_encapsulee.dzn_meta.name = encapsuleeInstanceName;
+    m_encapsulee.lifecycle.meta.require.name = "lifecycle";
+    m_encapsulee.api.meta.require.name = "api";
+
+    // Boundary provides ports (MTS) initialization:
+    // ---------------------------------------------
+
+    // Reroute in-events of boundary provides ports (MTS) via the dispatcher to the encapsulee
+    m_ppLifecycle.in.Initialize = [&](PResultInfo& info) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.lifecycle.in.Initialize(info); });
+    };
+    m_ppLifecycle.in.Uninitialize = [&](PResultInfo& info) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.lifecycle.in.Uninitialize(info); });
+    };
+
+    // Reroute in-events of the internal arbitered multiclient port via the dispatcher to the encapsulee
+    m_ppApi().in.Claim = [&](PResultInfo& info) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Claim(info); });
+    };
+    m_ppApi().in.Release = [&](std::string& goodbye) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Release(goodbye); });
+    };
+    m_ppApi().in.Toast = [&](std::string motd, PResultInfo& info) {
+        return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
+    };
+    m_ppApi().in.Cancel = [&] {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Cancel(); });
+    };
+
+    // Reroute out-events of the internal arbitered multiclient port via the MultiClientSelector facility to the current Client having the claim
+    m_ppApi().out.Ok = [&] {
+        auto lockAndData = m_ppApi.CurrentClient();
+        if (lockAndData->has_value()) lockAndData->value().get().dznPort.out.Ok();
+    };
+    m_ppApi().out.Fail = [&](PResultInfo info) {
+        auto lockAndData = m_ppApi.CurrentClient();
+        if (lockAndData->has_value()) lockAndData->value().get().dznPort.out.Fail(info);
+    };
+
+    // Reference out-events of the encapsulee to the internal arbitered multiclient port
+    m_encapsulee.api.out.Ok = std::ref(m_ppApi().out.Ok);
+    m_encapsulee.api.out.Fail = std::ref(m_ppApi().out.Fail);
+
+    // Boundary requires ports (MTS) initialization:
+    // ---------------------------------------------
+
+    // <None>
+
+}
+
+void DummyExclusiveToasterAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
+{
+    // Call final construct on multiclient port
+    m_ppApi.FinalConstruct();
+
+    // Check the bindings of all boundary ports
+    m_ppLifecycle.check_bindings();
+
+    // Complete the encapsulated component meta information and check the bindings of all encapsulee ports
+    m_encapsulee.dzn_meta.parent = parentComponentMeta;
+    m_encapsulee.check_bindings();
+}
+
+dzn::locator& DummyExclusiveToasterAdvShell::Locator()
+{
+    return m_locator;
+}
+
+::Dzn::Mts<::My::ILifecycle> DummyExclusiveToasterAdvShell::ProvidesLifecycle()
+{
+    return {m_ppLifecycle};
+}
+
+::Dzn::Mts<::My::IExclusiveToaster> DummyExclusiveToasterAdvShell::ProvidesMultiClientApi(const ::Dzn::ClientIdentifier& identifier)
+{
+    return {m_ppApi.Index(identifier).dznPort};
+}
+
+std::vector<::Dzn::ClientIdentifier> DummyExclusiveToasterAdvShell::GetApiClientIdentifiers() const
+{
+    return m_ppApi.GetClientIdentifiers();
+}
+
+::My::IExclusiveToaster DummyExclusiveToasterAdvShell::InitializePortApi(const ::Dzn::ClientIdentifier& identifier)
+{
+    auto port(::Dzn::CreatePort<::My::IExclusiveToaster>("api", "arbiterApi"));
+
+    port.in.Claim = [&, identifier](PResultInfo& info) {
+        const auto r = m_ppApi.Arbitered().in.Claim(info);
+        if (r == ::My::Result::Ok) m_ppApi.Select(identifier);
+        return r;
+    };
+    port.in.Release = [&, identifier](std::string& goodbye) {
+        m_ppApi.Arbitered().in.Release(goodbye);
+        m_ppApi.Deselect(identifier);
+    };
+    port.in.Toast = std::ref(m_ppApi().in.Toast);
+    port.in.Cancel = std::ref(m_ppApi().in.Cancel);
+
+    return port;
+}
+
+} // namespace My
+// Generated by: dznpy/adv_shell v1.0.DEV
+'''
+
+HH_DUMMY_ALL_MTS = '''\
+// Copyright Example Line 1
+// Copyright Example Line 2
+//
+// Advanced Shell
+//
+// Creator information:
+//     My Dummy
+//
+// User configuration:
+// - Encapsulee FQN: My.DummyToaster
+// - Source file basename: DummyToaster
+// - Target file basename: DummyToasterAdvShell
+// - Dezyne facilities: Create all facilities (dispatcher, runtime and locator)
+// - Ports (none multiclient):
+//     > provides/requires: All MTS
+//
+// Final configuration:
+// - Provides ports (Multi-threaded):
+//     > api: IToaster
+//
+// This is generated code. DO NOT MODIFY manually.
+
+// System includes
+#include <dzn/locator.hh>
+#include <dzn/pump.hh>
+#include <dzn/runtime.hh>
+// Project includes
+#include "DummyToaster.hh"
+#include "Dzn_StrictPort.hh"
+
+namespace My {
+struct DummyToasterAdvShell
+{
+    DummyToasterAdvShell(const dzn::locator& prototypeLocator, const std::string& encapsuleeInstanceName = "");
+    void FinalConstruct(const dzn::meta* parentComponentMeta = nullptr);
+
+    // Facility accessor
+    dzn::locator& Locator();
+
+    // Provides port accessor
+    ::Dzn::Mts<::My::Project::IToaster> ProvidesApi();
+
+private:
+    // Facilities
+    dzn::runtime m_runtime;
+    dzn::pump m_dispatcher;
+    dzn::locator m_locator;
+    static const dzn::locator& FacilitiesCheck(const dzn::locator& locator);
+
+    // The encapsulated component "DummyToaster"
+    ::My::DummyToaster m_encapsulee;
+
+    // Boundary provides-port (MTS) to reroute inwards events
+    ::My::Project::IToaster m_ppApi;
+
+};
+} // namespace My
+// Generated by: dznpy/adv_shell v1.0.DEV
+'''
+
+CC_DUMMY_ALL_MTS = '''\
+// Copyright Example Line 1
+// Copyright Example Line 2
+//
+// Advanced Shell
+//
+// This is generated code. DO NOT MODIFY manually.
+
+// System include
+#include <dzn/runtime.hh>
+// Project include
+#include "DummyToasterAdvShell.hh"
+
+namespace My {
+
+const dzn::locator& DummyToasterAdvShell::FacilitiesCheck(const dzn::locator& locator)
+{
+    // This class creates the required facilities. But in case the user provided locator argument already contains some or
+    // all facilities, it indicates an execution deployment error. Important: each threaded subsystem has its own exclusive
+    // instances of the dispatcher and dezyne runtime facilities. They can never be shared with other threaded subsystems.
+
+    if (locator.try_get<dzn::pump>() != nullptr) throw std::runtime_error("DummyToasterAdvShell: Overlapping dispatcher found (dzn::pump)");
+    if (locator.try_get<dzn::runtime>() != nullptr) throw std::runtime_error("DummyToasterAdvShell: Overlapping Dezyne runtime found (dzn::runtime)");
+
+    return locator;
+}
+
+DummyToasterAdvShell::DummyToasterAdvShell(const dzn::locator& prototypeLocator, const std::string& encapsuleeInstanceName)
+    : m_locator(std::move(FacilitiesCheck(prototypeLocator).clone().set(m_runtime).set(m_dispatcher)))
+    , m_encapsulee(m_locator)
+    , m_ppApi(m_encapsulee.api)
+{
+    // Complete the component meta info of the encapsulee and its ports that are configured for MTS
+    m_encapsulee.dzn_meta.name = encapsuleeInstanceName;
+    m_encapsulee.api.meta.require.name = "api";
+
+    // Boundary provides ports (MTS) initialization:
+    // ---------------------------------------------
+
+    // Reroute in-events of boundary provides ports (MTS) via the dispatcher to the encapsulee
+    m_ppApi.in.Initialize = [&] {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Initialize(); });
+    };
+    m_ppApi.in.Uninitialize = [&] {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Uninitialize(); });
+    };
+    m_ppApi.in.SetTime = [&](size_t toastingTime) {
+        return dzn::shell(m_dispatcher, [&, toastingTime] { return m_encapsulee.api.in.SetTime(toastingTime); });
+    };
+    m_ppApi.in.GetTime = [&](size_t& toastingTime) {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.GetTime(toastingTime); });
+    };
+    m_ppApi.in.Toast = [&](std::string motd, PResultInfo& info) {
+        return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
+    };
+    m_ppApi.in.Cancel = [&] {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Cancel(); });
+    };
+    m_ppApi.in.Recover = [&] {
+        return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Recover(); });
+    };
+
+    // Reference out-events of boundary provides ports (MTS) to the respective ports of the encapsulee
+    m_encapsulee.api.out.Ok = std::ref(m_ppApi.out.Ok);
+    m_encapsulee.api.out.Fail = std::ref(m_ppApi.out.Fail);
+    m_encapsulee.api.out.Error = std::ref(m_ppApi.out.Error);
+
+    // Boundary requires ports (MTS) initialization:
+    // ---------------------------------------------
+
+    // <None>
+
+}
+
+void DummyToasterAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
+{
+    // Check the bindings of all boundary ports
+    m_ppApi.check_bindings();
+
+    // Complete the encapsulated component meta information and check the bindings of all encapsulee ports
+    m_encapsulee.dzn_meta.parent = parentComponentMeta;
+    m_encapsulee.check_bindings();
+}
+
+dzn::locator& DummyToasterAdvShell::Locator()
+{
+    return m_locator;
+}
+
+::Dzn::Mts<::My::Project::IToaster> DummyToasterAdvShell::ProvidesApi()
+{
+    return {m_ppApi};
+}
+
+} // namespace My
 // Generated by: dznpy/adv_shell v1.0.DEV
 '''

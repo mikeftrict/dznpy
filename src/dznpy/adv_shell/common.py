@@ -142,6 +142,9 @@ class CppPorts:
     @property
     def accessors_decl(self) -> TextBlock:
         """Generate C++ port accessor declarations for all ports."""
+        if not self.ports:
+            return TextBlock()
+
         comment = Comment(f'{self.direction} port {plural("accessor", self.ports)}')
         accessors = [port.accessor_as_decl for port in
                      self.ports] if self.ports else Comment('<none>')
@@ -151,6 +154,9 @@ class CppPorts:
     @property
     def accessors_def(self) -> TextBlock:
         """Generate C++ port accessor definitions for all ports."""
+        if not self.ports:
+            return TextBlock()
+
         return TextBlock(BLANK_LINE.join([port.accessor_as_def for port in self.ports]))
 
     @property
@@ -164,14 +170,16 @@ class CppPorts:
         multiclient_rerouting_ports = [p for p in self.ports if
                                        p.member_var is not None and p.dzn_port_itf.multiclient]
 
-        # plain
-        comment = Comment(
-            f'Boundary {self.direction.lower()}-{plural("port", plain_rerouting_ports)}'
-            ' (MTS) to reroute inwards events')
-        member_vars = [str(p.member_var) for p in plain_rerouting_ports]
-        tb1 = TextBlock([comment, member_vars if member_vars else Comment('<none>')])
+        # plain port rerouting
+        tb1 = TextBlock()
+        if self.ports:
+            comment = Comment(
+                f'Boundary {self.direction.lower()}-{plural("port", plain_rerouting_ports)}'
+                ' (MTS) to reroute inwards events')
+            member_vars = [str(p.member_var) for p in plain_rerouting_ports]
+            tb1 += [comment, member_vars if member_vars else Comment('<none>')]
 
-        # multiclient
+        # multiclient rerouting
         comment = Comment(
             f'Boundary {self.direction.lower()}-{plural("port", multiclient_rerouting_ports)}'
             ' (MTS) to reroute inwards events and redirect outwards events to multi clients')

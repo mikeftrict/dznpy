@@ -1,0 +1,43 @@
+// DummyToaster
+//
+// Description:
+// - a dummy/bad-weather-ish stub of an interface
+//
+
+// Provided interface
+import IToaster.dzn;
+
+namespace My {
+
+component DummyToaster
+{
+provides Project.IToaster api;
+
+behavior
+{
+    enum State
+    {
+        Uninitialized,
+        Idle
+    };
+
+    // State variable(s)
+    State s = State.Uninitialized; // initial state
+
+    // State-based handling:
+    [s.Uninitialized] on api.Initialize(): s = State.Idle;
+
+    [s.Idle]
+    {
+        on api.Uninitialize(): s = State.Uninitialized;
+
+        on api.GetTime(_toastingTime): {}
+        on api.SetTime(_toastingTime): {}
+
+        // TIP: set 'info' out parameters with a rootcause something like 'Not implemented'
+        on api.Toast(_motd, _info): api.reply(Result.Fail);
+    }
+
+} // behavior
+} // component
+} // namespace My

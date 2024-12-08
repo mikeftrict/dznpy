@@ -1,0 +1,28 @@
+// DummyExclusiveToaster
+//
+// Description:
+// - a dummy/bad-weather-ish stub of an interface
+//
+
+// Provided interface
+import IExclusiveToaster.dzn;
+
+namespace My {
+
+component DummyExclusiveToaster
+{
+provides ILifecycle lifecycle;
+provides IExclusiveToaster api;
+
+behavior
+{
+    // TIP: set 'info' out parameters with a rootcause something like 'Not implemented'
+
+    on lifecycle.Initialize(_info): reply(Result.Fail);
+    on lifecycle.Uninitialize(_info): reply(Result.Fail);
+
+    on api.Claim(_info): reply(Result.Fail);
+
+} // behavior
+} // component
+} // namespace My
