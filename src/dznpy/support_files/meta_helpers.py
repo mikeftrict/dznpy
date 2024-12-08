@@ -9,19 +9,18 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from typing import Optional
 
 # dznpy modules
-from ..dznpy_version import COPYRIGHT
-from ..code_gen_common import GeneratedContent, BLANK_LINE, TEXT_GEN_DO_NOT_MODIFY
-from ..cpp_gen import CommentBlock, SystemIncludes, Namespace
+from ..code_gen_common import GeneratedContent
+from ..cpp_gen import SystemIncludes
 from ..scoping import NamespaceIds
 from ..text_gen import TextBlock
 
 # own modules
-from . import initialize_ns, create_footer
+from . import distillate_ns, generate_cpp_code, SupportFileCfg
 
 
-def header_hh_template(cpp_ns: str) -> str:
+def header_hh_template(cpp_ns: str) -> TextBlock:
     """Generate the headerpart (a comment block) of a C++ headerfile with templated fields."""
-    return """\
+    return TextBlock("""\
 Dezyne Meta helpers
 
 Description: helper functions for creating Dezyne Port meta
@@ -39,12 +38,12 @@ given a Dezyne port IMyService:
 
     IMyService port = """ f'{cpp_ns}' """::CreatePort<IMyService>("api", "hal");
 
-"""
+""")
 
 
-def body_hh() -> str:
+def body_hh() -> TextBlock:
     """Generate the body of a C++ headerfile with templated fields."""
-    return """\
+    return TextBlock("""\
 template <typename DZN_PORT>
 DZN_PORT CreateProvidedPort(const std::string& name)
 {
@@ -62,27 +61,19 @@ DZN_PORT CreatePort(const std::string& provideName, const std::string& requireNa
 {
     return DZN_PORT{{{provideName, nullptr, nullptr, nullptr}, {requireName, nullptr, nullptr, nullptr}}};
 }
-"""
+""")
 
 
-def create_header(namespace_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
+def create_header(ns_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:
     """Create the c++ header file contents that provides miscellaneous utilities."""
 
-    ns, cpp_ns, file_ns = initialize_ns(namespace_prefix)
-    header = CommentBlock([header_hh_template(cpp_ns),
-                           BLANK_LINE,
-                           TEXT_GEN_DO_NOT_MODIFY,
-                           BLANK_LINE,
-                           COPYRIGHT
-                           ])
-    includes = SystemIncludes(['string', 'dzn/meta.hh'])
-    body = Namespace(ns, contents=TextBlock([BLANK_LINE, body_hh(), BLANK_LINE]))
+    namespace, cpp_ns, file_ns = distillate_ns(ns_prefix)
+
+    cfg = SupportFileCfg(header=header_hh_template(cpp_ns),
+                         body=body_hh(),
+                         includes=TextBlock(SystemIncludes(['string', 'dzn/meta.hh'])),
+                         ns_prefix=ns_prefix)
 
     return GeneratedContent(filename=f'{file_ns}_MetaHelpers.hh',
-                            contents=str(TextBlock([header,
-                                                    BLANK_LINE,
-                                                    includes,
-                                                    BLANK_LINE,
-                                                    body,
-                                                    create_footer()])),
-                            namespace=ns)
+                            contents=str(generate_cpp_code(cfg)),
+                            namespace=namespace)

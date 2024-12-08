@@ -149,6 +149,7 @@ class MatchedPorts:
 
 @dataclass(frozen=True)
 class MultiClientPortCfg:
+    """"A class to store, the user specified configuration for multi-client out-event selector."""
     port_name: str
     claim_event_name: str
     claim_granting_reply_value: NamespaceIds
@@ -172,7 +173,8 @@ class MultiClientPortCfg:
 
     def __str__(self):
         """Stringify the dataclass items as a human friendly readable textblock."""
-        return f'Out-event ClientSelector port "{self.port_name}" (Claim event "{self.claim_event_name}" with ' \
+        return f'Out-event ClientSelector port "{self.port_name}" ' \
+               f'(Claim event "{self.claim_event_name}" with ' \
                f'granting reply value "{self.claim_granting_reply_value}", ' \
                f'Release event "{self.release_event_name}")'
 

@@ -6,11 +6,18 @@ This is the official first release that is considered stable.
 
 ### Breaking changes
 
-- TextBlock et al has been moved to the module `text_gen`. Impact is reduced to only update your
+- `TextBlock` et al has been moved to the module `text_gen`. Impact is minimal: only update your
   import statements.
+- `CommentBlock` has been renamed to `Comment`. Impact is minimal since one can just find and
+  replace.
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0029](https://github.com/mikeftrict/dznpy/issues/29): Generate explicit constructor port
+  initialization to be closer with the 2.18/2.19 code generation.
+    - Also, the `CommentBlock` class is renamed to `Comment` (replacing the old one). It uses the
+      the new TextBlock features.
+    - Solved a bunch of PyLint issues.
 - [DZNPY-0028](https://github.com/mikeftrict/dznpy/issues/28): Moved `TextBlock` and its cohesively
   related constructs to a (new) module `text_gen`. Also integrate bullet list numbering
   functionality into `TextBlock` itself as part of indentation. Lastly, it adds a header content

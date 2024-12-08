@@ -423,7 +423,7 @@ class DznJsonAst:
 
     def __init__(self, json_contents: str = None, verbose: bool = False):
         if json_contents is not None:
-            self._ast = orjson.loads(json_contents)
+            self._ast = orjson.loads(json_contents)  # pylint: disable=no-member
         self._verbose = verbose
         self._ns_trail = NamespaceTree()
         self._file_contents = FileContents()
@@ -431,7 +431,7 @@ class DznJsonAst:
     def load_file(self, dezyne_filepath: str):
         """Load Dezyne JSON contents from a file."""
         with open(dezyne_filepath, 'rb') as file:
-            self._ast = orjson.loads(file.read())
+            self._ast = orjson.loads(file.read())  # pylint: disable=no-member
         return self  # Fluent interface
 
     def log(self, message):
@@ -458,27 +458,27 @@ class DznJsonAst:
 
     def parse_element(self, element, parent_ns: NamespaceTree):
         """"Parse an element and identify its type."""
-        fc = self.file_contents
+        fct = self.file_contents
 
         if isinstance(element, dict):
             cls = get_class_value(element)
             if cls == 'component':
-                fc.components.append(parse_component(element, parent_ns))
+                fct.components.append(parse_component(element, parent_ns))
             elif cls == 'enum':
-                fc.enums.append(parse_enum(element, parent_ns))
+                fct.enums.append(parse_enum(element, parent_ns))
             elif cls == 'extern':
-                fc.externs.append(parse_extern(element, parent_ns))
+                fct.externs.append(parse_extern(element, parent_ns))
             elif cls == 'foreign':
-                fc.foreigns.append(parse_foreign(element, parent_ns))
+                fct.foreigns.append(parse_foreign(element, parent_ns))
             elif cls == 'file-name':
-                fc.filenames.append(parse_filename(element))
+                fct.filenames.append(parse_filename(element))
             elif cls == 'import':
-                fc.imports.append(parse_import(element))
+                fct.imports.append(parse_import(element))
             elif cls == 'interface':
                 interface = parse_interface(element, parent_ns)
-                fc.interfaces.append(interface)
-                fc.enums.extend(interface.types.enums)
-                fc.subints.extend(interface.types.subints)
+                fct.interfaces.append(interface)
+                fct.enums.extend(interface.types.enums)
+                fct.subints.extend(interface.types.subints)
             elif cls == 'namespace':
                 namespace = parse_namespace(element)
                 sub_ns = NamespaceTree(parent=parent_ns,
@@ -486,9 +486,9 @@ class DznJsonAst:
                 for sub_element in namespace.elements:
                     self.parse_element(sub_element, sub_ns)
             elif cls == 'system':
-                fc.systems.append(parse_system(element, parent_ns))
+                fct.systems.append(parse_system(element, parent_ns))
             elif cls == 'subint':
-                fc.subints.append(parse_subint(element, parent_ns))
+                fct.subints.append(parse_subint(element, parent_ns))
             else:
                 self.log(f'Unknown element class {cls}')
         else:

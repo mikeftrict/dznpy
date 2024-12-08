@@ -27,6 +27,17 @@ COMMENT_BLOCK = '''\
 // I have spoken.
 '''
 
+COMMENT_BLOCK_WITH_PRECEEDING_NR = '''\
+// 123
+''' + COMMENT_BLOCK
+
+DOUBLE_COMMENTED_BLOCK = '''\
+// // As the mandalorian says:
+// // this is the way.
+// //
+// // I have spoken.
+'''
+
 SYSTEM_INCLUDE = '''\
 // System include
 #include <string>

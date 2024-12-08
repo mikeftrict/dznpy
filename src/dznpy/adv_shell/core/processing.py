@@ -8,7 +8,6 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from typing import Optional
 
 # dznpy modules
-from .. import MultiClientPortCfg
 from ... import cpp_gen, ast, ast_view
 from ...ast import Component, System, Event, EventDirection
 from ...ast_view import find_fqn, FindError
@@ -23,6 +22,7 @@ from ...text_gen import TextBlock
 from ..common import Configuration, CppPortItf, DznPortItf, \
     FacilitiesOrigin, DznElements, Facilities, CppEncapsulee, CppPorts, MultiClientPortCfgFixture, \
     SupportFiles, CppHelperMethods
+from ..port_selection import MultiClientPortCfg
 from ..types import AdvShellError, RuntimeSemantics, MultiClientCfgError
 
 
@@ -145,14 +145,14 @@ def create_cpp_port_helpers(label: str, cpp_ports: CppPorts, support_files_ns: N
                             name=f'Get{cpp_port.cap_name}ClientIdentifiers',
                             scope=scope,
                             contents=f'return {cpp_port.accessor_target}.GetClientIdentifiers();',
-                            cv='const')
+                            cav='const')
 
         def initialize_port_fn(cpp_port: CppPortItf):
             """Create the private InitializePort<name>() helper function."""
             dzn = cpp_port.dzn_port_itf
-            t = TypeDesc(Fqn(dzn.interface.fqn, True))
+            return_type = TypeDesc(Fqn(dzn.interface.fqn, True))
 
-            return Function(return_type=TypeDesc(t.fqn),
+            return Function(return_type=TypeDesc(return_type.fqn),
                             name=f'InitializePort{cpp_port.cap_name}',
                             params=[const_param_ref_t(
                                 fqn_t(support_files_ns + ns_ids_t('ClientIdentifier'),
@@ -483,7 +483,8 @@ def create_constructor(scope, facilities: Facilities,
     for prt in mts_pp:
         if prt.dzn_port_itf.multiclient:
             mil.append(
-                f'{prt.member_var.name}(multiclientLog, "{prt.name}", [this](const auto& identifier)'
+                f'{prt.member_var.name}(multiclientLog, "{prt.name}",'
+                f' [this](const auto& identifier)'
                 f' {{ return InitializePort{prt.cap_name}(identifier); }})')
         else:
             mil.append(f'{prt.member_var.name}({encapsulee.member_var.name}.{prt.name})')

@@ -186,10 +186,6 @@ def test_generate_multiclient_selector():
                         copyright=COPYRIGHT, verbose=True)
 
     result = Builder().build(cfg)
-    # print(get_filecontents('ExclusiveToasterAdvShell.hh', result))
-    # print(get_filecontents('ExclusiveToasterAdvShell.cc', result))
     assert get_filecontents('ExclusiveToasterAdvShell.hh', result) == HH_ALL_MTS_MULTICLIENT
     assert get_filecontents('ExclusiveToasterAdvShell.cc', result) == CC_ALL_MTS_MULTICLIENT
     assert_all_default_support_files(result.files)
-
-

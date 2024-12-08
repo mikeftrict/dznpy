@@ -11,39 +11,34 @@ import pytest
 # system-under-test
 from dznpy.cpp_gen import *
 from dznpy.scoping import NamespaceIds, NamespaceIdsTypeError, ns_ids_t, namespaceids_t
+from dznpy.text_gen import EOL
 
 # test data
 from common.testdata import *
 from testdata_cpp_gen import *
 
 
-def test_comment():
-    assert str(Comment('I see the sun')) == COMMENT_LINE
-    assert str(Comment('As the mandalorian says:\nthis is the way.  \n \n'
-                       'I have spoken.\n')) == COMMENT_BLOCK
-
-
 def test_comment_block():
     # each string in the list is considered a comment line
-    assert str(CommentBlock(['As the mandalorian says:',
-                             'this is the way.  ',
-                             ' ',
-                             'I have spoken.'])) == COMMENT_BLOCK
+    assert str(Comment(['As the mandalorian says:',
+                        'this is the way.  ',
+                        ' ',
+                        'I have spoken.'])) == COMMENT_BLOCK
 
     # newline characters in strings will be respected as an end-of-line
-    assert str(CommentBlock(['As the mandalorian says:\nthis is the way.  \n \n',
-                             'I have spoken.'])) == COMMENT_BLOCK
+    assert str(Comment(['As the mandalorian says:\nthis is the way.  \n \n',
+                        'I have spoken.'])) == COMMENT_BLOCK
 
-    # non-str list items are skipped
-    assert str(CommentBlock([123, 'As the mandalorian says:\nthis is the way.  \n \n',
-                             None,
-                             'I have spoken.'])) == COMMENT_BLOCK
+    # non-trivial stringifiable list items are skipped (such as None)
+    assert str(Comment([123, 'As the mandalorian says:\nthis is the way.  \n \n',
+                        None,
+                        'I have spoken.'])) == COMMENT_BLOCK_WITH_PRECEEDING_NR
 
-    # already commented lines are left in tact; but trailing whitespace is stripped anyhow
-    assert str(CommentBlock(['// As the mandalorian says:',
-                             '// this is the way.  ',
-                             '// ',
-                             '// I have spoken.'])) == COMMENT_BLOCK
+    # already commented lines are left in tact. Which means they are 'indented again'; but trailing whitespace is stripped anyhow
+    assert str(Comment(['// As the mandalorian says:',
+                        '// this is the way.  ',
+                        '// ',
+                        '// I have spoken.'])) == DOUBLE_COMMENTED_BLOCK
 
 
 def test_project_includes():
@@ -399,13 +394,13 @@ def test_function_initialization_pure_virtual():
 
 
 def test_function_const():
-    sut = Function(return_type=void_t(), name='Calc', cv='const', contents=CONTENTS_MULTI_LINE)
+    sut = Function(return_type=void_t(), name='Calc', cav='const', contents=CONTENTS_MULTI_LINE)
     assert sut.as_decl == FUNCTION_CONST_DECL
     assert sut.as_def == FUNCTION_CONST_DEF
 
 
 def test_member_function_const():
-    sut = Function(return_type=void_t(), name='Calc', cv='const', scope=Class('MyClass'))
+    sut = Function(return_type=void_t(), name='Calc', cav='const', scope=Class('MyClass'))
     assert sut.as_decl == FUNCTION_CONST_DECL
     assert sut.as_def == MEMBER_FUNCTION_CONST_DEF
 

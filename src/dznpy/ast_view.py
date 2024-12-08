@@ -113,7 +113,7 @@ def portnames_t(ports: Ports) -> PortNames:
 # Module functions
 #
 
-def find_fqn(fc: FileContents, ns_ids: NamespaceIds,
+def find_fqn(fct: FileContents, ns_ids: NamespaceIds,
              as_of_inner_scope: Optional[NamespaceIds] = None) -> FindResult:
     """Find instance(s) in the Dezyne AST FileContents (but Filename and Import excluded) whose
     Fully Qualified Name equals the specified NamespaceIds argument. The 'as_of_inner_scope'
@@ -122,13 +122,13 @@ def find_fqn(fc: FileContents, ns_ids: NamespaceIds,
     An example of this is the scenario when finding interfaces AST instances of a component that
     may reside in the same parent or higher namespace.
     A list of all found instances is returned where the first item is the first one matching."""
-    assert_filecontents_t(fc)
+    assert_filecontents_t(fct)
     assert_t(ns_ids, NamespaceIds)
     resolution_order = scope_resolution_order(ns_ids, as_of_inner_scope)
     result = []
 
-    for container in [fc.components, fc.enums, fc.externs, fc.foreigns,
-                      fc.interfaces, fc.subints, fc.systems]:
+    for container in [fct.components, fct.enums, fct.externs, fct.foreigns,
+                      fct.interfaces, fct.subints, fct.systems]:
         for element in container:
             for lookup in resolution_order:
                 if element.fqn == lookup:
@@ -138,17 +138,17 @@ def find_fqn(fc: FileContents, ns_ids: NamespaceIds,
     return FindResult(items=result)
 
 
-def find_any(fc: FileContents, endswith_ids: NamespaceIds) -> FindResult:
+def find_any(fct: FileContents, endswith_ids: NamespaceIds) -> FindResult:
     """Find all instances (but Filename and Import excluded) in the Dezyne AST FileContents whose
     Fully Qualified Name ends with the specified NamespaceIds argument.
     A list of all found instances is returned."""
-    assert_filecontents_t(fc)
+    assert_filecontents_t(fct)
     assert_t(endswith_ids, NamespaceIds)
     result = []
     nr_ids = len(endswith_ids.items)
 
-    for container in [fc.components, fc.enums, fc.externs, fc.foreigns,
-                      fc.interfaces, fc.subints, fc.systems]:
+    for container in [fct.components, fct.enums, fct.externs, fct.foreigns,
+                      fct.interfaces, fct.subints, fct.systems]:
         for element in container:
             if element.fqn.items[-nr_ids:] == endswith_ids.items:
                 result.append(element)

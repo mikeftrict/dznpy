@@ -316,6 +316,7 @@ def create_encapsulee(dzn_elements: DznElements) -> CppEncapsulee:
 
 @dataclass(frozen=True)
 class SupportFiles:
+    """Data class as container for Support Files generated C++ content."""
     strict_port: GeneratedContent
     ilog: GeneratedContent
     misc_utils: GeneratedContent

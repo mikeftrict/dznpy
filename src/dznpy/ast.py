@@ -288,10 +288,10 @@ class FileContents:
     systems: List[System] = field(default_factory=list)
 
     def __repr__(self):
-        tb = TextBlock(content=flatten_to_strlist([self.components, self.enums, self.externs,
-                                                   self.filenames, self.foreigns, self.imports,
-                                                   self.interfaces, self.subints, self.systems]))
-        return str(tb)
+        return str(TextBlock(content=flatten_to_strlist(
+            [self.components, self.enums, self.externs,
+             self.filenames, self.foreigns, self.imports,
+             self.interfaces, self.subints, self.systems])))
 
 
 ###############################################################################
