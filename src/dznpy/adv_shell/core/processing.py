@@ -11,12 +11,11 @@ from typing import Optional
 from ... import cpp_gen, ast, ast_view
 from ...ast import Component, System, Event, EventDirection
 from ...ast_view import find_fqn, FindError
-from ...code_gen_common import BLANK_LINE, chunk, cond_chunk
 from ...cpp_gen import Comment, Constructor, Function, FunctionPrefix, Fqn, fqn_t, MemberVariable, \
     TypeDesc, TypePostfix, const_param_ref_t, const_param_ptr_t, void_t, TemplateArg
 from ...misc_utils import flatten_to_strlist, assert_t_optional, plural
 from ...scoping import NamespaceIds, ns_ids_t
-from ...text_gen import TextBlock
+from ...text_gen import BLANK_LINE, chunk, cond_chunk, TextBlock
 
 # own modules
 from ..common import Configuration, CppPortItf, DznPortItf, \
@@ -607,7 +606,7 @@ def create_constructor(scope, facilities: Facilities,
     ])
 
     return Constructor(scope, params=[p_locator, p_opt_multiclient_log, p_shell_name],
-                       member_initlist=mil, contents=str(contents))
+                       member_initlist=mil, contents=str(contents.trim()))
 
 
 def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,

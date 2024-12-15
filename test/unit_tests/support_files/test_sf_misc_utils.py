@@ -39,7 +39,7 @@ def template_hh(ns_prefix: str) -> str:
 //    auto result = CapitalizeFirstChar(std::string("")); // result = std::string("")
 //
 //
-// This is generated code. DO NOT MODIFY manually.
+// This is generated content. DO NOT MODIFY manually.
 //
 // Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 // This is free software, released under the MIT License. Refer to dznpy/LICENSE.

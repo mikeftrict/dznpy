@@ -4,15 +4,15 @@ Module providing C++ code generation of the support file "Dezyne Misc Utils".
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
+# pylint: disable=line-too-long
 
 # system modules
 from typing import Optional
 
 # dznpy modules
-from ..code_gen_common import GeneratedContent
 from ..cpp_gen import SystemIncludes
 from ..scoping import NamespaceIds
-from ..text_gen import TextBlock
+from ..text_gen import GeneratedContent, TextBlock
 
 # own modules
 from . import distillate_ns, SupportFileCfg, generate_cpp_code
@@ -38,7 +38,7 @@ Examples of CapitalizeFirstChar:
 
    auto result = CapitalizeFirstChar(std::string("")); // result = std::string("")
 
-""")
+""")  # noqa: E501
 
 
 def body_hh() -> TextBlock:
@@ -65,7 +65,7 @@ template <typename STR_TYPE>
 
     return result;
 }
-""")
+""")  # noqa: E501
 
 
 def create_header(ns_prefix: Optional[NamespaceIds] = None) -> GeneratedContent:

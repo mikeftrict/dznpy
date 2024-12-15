@@ -12,16 +12,21 @@ from typing import List, Optional
 
 # dznpy modules
 from .. import cpp_gen, ast
-from ..code_gen_common import BLANK_LINE, GeneratedContent
 from ..cpp_gen import Comment, Constructor, Function, MemberVariable, Fqn, Namespace, Struct, \
     TypeDesc
 from ..misc_utils import plural, flatten_to_strlist
 from ..scoping import NamespaceIds
-from ..text_gen import TextBlock
+from ..text_gen import BLANK_LINE, GeneratedContent, TextBlock
 
 # own modules
 from .types import RuntimeSemantics
 from .port_selection import PortsCfg
+
+
+@dataclass(frozen=True)
+class CodeGenResult:
+    """Data class containing a list of artifacts as a result of code generation."""
+    files: List[GeneratedContent]
 
 
 @dataclass(frozen=True)

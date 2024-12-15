@@ -11,7 +11,7 @@ import pytest
 # system-under-test
 from dznpy.cpp_gen import *
 from dznpy.scoping import NamespaceIds, NamespaceIdsTypeError, ns_ids_t, namespaceids_t
-from dznpy.text_gen import EOL
+from dznpy.text_gen import EOL, TB
 
 # test data
 from common.testdata import *
@@ -45,25 +45,43 @@ def test_project_includes():
     assert str(ProjectIncludes(['IToaster.h'])) == PROJECT_INCLUDE
     assert str(ProjectIncludes(['IHeater.h', 'ProjectB/Lunchbox.h'])) == PROJECT_INCLUDES
 
+    with pytest.raises(TypeError) as exc:
+        ProjectIncludes(123)
+    assert str(exc.value) == 'property "includes" must be a list of strings'
+
 
 def test_system_includes():
     assert str(SystemIncludes(['string'])) == SYSTEM_INCLUDE
     assert str(SystemIncludes(['string', 'dzn/pump.hh'])) == SYSTEM_INCLUDES
 
+    with pytest.raises(TypeError) as exc:
+        SystemIncludes(123)
+    assert str(exc.value) == 'property "includes" must be a list of strings'
+
 
 def test_global_namespace():
-    assert str(Namespace(ns_ids_t([]), contents='')) == GLOBAL_NAMESPACE_EMPTY
-    assert str(Namespace(ns_ids_t(''), contents=CONTENTS_SINGLE_LINE)) == GLOBAL_NAMESPACE_CONTENTS
+    assert str(Namespace(ns_ids_t([]))) == GLOBAL_NAMESPACE_EMPTY
+    assert str(Namespace(ns_ids_t(''), contents=TB(CONTENTS_SINGLE_LINE))) == GLOBAL_NAMESPACE_CONTENTS
 
 
 def test_fqn_namespace():
-    assert str(Namespace(ns_ids_t('My.Project.XY'), contents='')) == FQN_NAMESPACE_EMPTY
-    assert str(Namespace(ns_ids_t('My.Project.XY'), CONTENTS_SINGLE_LINE)) == FQN_NAMESPACE_CONTENTS
+    assert str(Namespace(ns_ids_t('My.Project.XY'))) == FQN_NAMESPACE_EMPTY
+    assert str(Namespace(ns_ids_t('My.Project.XY'), TB(CONTENTS_SINGLE_LINE))) == FQN_NAMESPACE_CONTENTS
 
 
 def test_namespace_with_textblock():
     tb = TextBlock([EOL, EOL, CONTENTS_SINGLE_LINE, EOL])
     assert str(Namespace(ns_ids=ns_ids_t(''), contents=tb)) == GLOBAL_NAMESPACE_TEXTBLOCK
+
+
+def test_namespace_with_post_contents():
+    ns = Namespace(ns_ids=ns_ids_t(''))
+    ns.contents = TextBlock([EOL, EOL, CONTENTS_SINGLE_LINE, EOL])
+    assert str(ns) == GLOBAL_NAMESPACE_TEXTBLOCK
+
+    with pytest.raises(TypeError) as exc:
+        ns.contents = 123
+    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
 
 
 def test_fqn_ok():
@@ -128,25 +146,33 @@ def test_typedesc_other_postfices():
     assert str(TypeDesc(fqn_t('Number', True), const=True)) == 'const ::Number'
 
 
-def test_struct_decl_fail():
-    with pytest.raises(CppGenError) as exc:
-        Struct(name='', contents='')
-    assert str(exc.value) == 'name must not be empty'
-
-
 def test_struct_decl_without_contents():
     assert str(Struct(name='MyStruct')) == STRUCT_DECL_ENPTY
 
 
 def test_struct_decl():
     assert str(Struct(name='MyStruct',
-                      contents=TextBlock(CONTENTS_SINGLE_LINE))) == STRUCT_DECL_CONTENTS
+                      contents=TB(CONTENTS_SINGLE_LINE))) == STRUCT_DECL_CONTENTS
 
 
-def test_class_decl_fail():
+def test_struct_with_post_contents():
+    sut = Struct(name='MyStruct', contents=TB(456))
+    sut.contents = TB(CONTENTS_SINGLE_LINE)
+    assert str(sut) == STRUCT_DECL_CONTENTS
+
+    with pytest.raises(TypeError) as exc:
+        sut.contents = 123
+    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
+
+
+def test_struct_decl_fail():
     with pytest.raises(CppGenError) as exc:
-        Class(name='')
+        Struct(name='')
     assert str(exc.value) == 'name must not be empty'
+
+    with pytest.raises(TypeError) as exc:
+        Struct(name='MyStruct', contents=123)
+    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
 
 
 def test_class_decl_without_contents():
@@ -155,18 +181,38 @@ def test_class_decl_without_contents():
 
 def test_class_decl():
     assert str(Class(name='MyClass',
-                     contents=TextBlock(CONTENTS_MULTI_LINE))) == CLASS_DECL_CONTENTS
+                     contents=TB(CONTENTS_MULTI_LINE))) == CLASS_DECL_CONTENTS
+
+
+def test_class_with_post_contents():
+    sut = Class(name='MyClass', contents=TB(789))
+    sut.contents = TB(CONTENTS_MULTI_LINE)
+    assert str(sut) == CLASS_DECL_CONTENTS
+
+    with pytest.raises(TypeError) as exc:
+        sut.contents = 303
+    assert """Value argument "303" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
+
+
+def test_class_decl_fail():
+    with pytest.raises(CppGenError) as exc:
+        Class(name='')
+    assert str(exc.value) == 'name must not be empty'
+
+    with pytest.raises(TypeError) as exc:
+        Class(name='MyClass', contents=[123])
+    assert """Value argument "[123]" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
 
 
 def test_access_specified_section():
     assert PUBLIC_SECTION == str(
-        AccessSpecifiedSection(AccessSpecifier.PUBLIC, CONTENTS_MULTI_LINE))
+        AccessSpecifiedSection(AccessSpecifier.PUBLIC, TB(CONTENTS_MULTI_LINE)))
     assert PROTECTED_SECTION == str(
-        AccessSpecifiedSection(AccessSpecifier.PROTECTED, CONTENTS_SINGLE_LINE))
+        AccessSpecifiedSection(AccessSpecifier.PROTECTED, TB(CONTENTS_SINGLE_LINE)))
     assert PRIVATE_SECTION == str(
-        AccessSpecifiedSection(AccessSpecifier.PRIVATE, CONTENTS_SINGLE_LINE))
+        AccessSpecifiedSection(AccessSpecifier.PRIVATE, TB(CONTENTS_SINGLE_LINE)))
     assert ANYNOMOUS_SECTION == str(
-        AccessSpecifiedSection(AccessSpecifier.ANONYMOUS, CONTENTS_MULTI_LINE))
+        AccessSpecifiedSection(AccessSpecifier.ANONYMOUS, TB(CONTENTS_MULTI_LINE)))
 
 
 def test_param_with_default1():
@@ -423,11 +469,11 @@ def test_member_variable():
 def test_member_variable_fail():
     with pytest.raises(TypeError) as exc:
         MemberVariable(type=123, name='')
-    assert str(exc.value) == 'type of "type" must be TypeDesc'
+    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.cpp_gen.TypeDesc'>""" in str(exc.value)
 
     with pytest.raises(TypeError) as exc:
         MemberVariable(type=void_t(), name=123)
-    assert str(exc.value) == 'name must be a non-empty string'
+    assert """Value argument "123" is not equal to the expected type: <class 'str'>""" in str(exc.value)
 
     with pytest.raises(TypeError) as exc:
         MemberVariable(type=void_t(), name='')

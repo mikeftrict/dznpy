@@ -10,12 +10,11 @@ from dataclasses import dataclass, field
 from typing import Optional, Tuple
 
 # dznpy modules
-from ..code_gen_common import chunk, TEXT_GEN_DO_NOT_MODIFY, BLANK_LINE
 from ..cpp_gen import fqn_t, Namespace, Comment
 from ..dznpy_version import VERSION, COPYRIGHT
 from ..misc_utils import assert_t_optional, assert_t
 from ..scoping import NamespaceIds, ns_ids_t
-from ..text_gen import TextBlock
+from ..text_gen import BLANK_LINE, chunk, DO_NOT_MODIFY, TextBlock, TB
 
 
 def distillate_ns(namespace_prefix: Optional[NamespaceIds]) -> Tuple[NamespaceIds, str, str]:
@@ -61,17 +60,17 @@ def generate_cpp_code(cfg: SupportFileCfg) -> str:
     full_ns, _, _ = distillate_ns(cfg.ns_prefix)
 
     extended_header = Comment([chunk(cfg.header),
-                               chunk(TEXT_GEN_DO_NOT_MODIFY),
+                               chunk(DO_NOT_MODIFY),
                                COPYRIGHT
                                ])
 
-    namespace_with_body = Namespace(full_ns, contents=TextBlock([BLANK_LINE,
-                                                                 chunk(cfg.body)
-                                                                 ]))
+    namespace_with_body = Namespace(full_ns, contents=TB([BLANK_LINE,
+                                                          chunk(cfg.body)
+                                                          ]))
 
-    result = TextBlock([chunk(extended_header),
-                        chunk(cfg.includes),
-                        namespace_with_body,
-                        footer()])
+    result = TB([chunk(extended_header),
+                 chunk(cfg.includes),
+                 namespace_with_body,
+                 footer()])
 
     return str(result)

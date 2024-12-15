@@ -111,3 +111,28 @@ def plural(singular_noun: str, ref_collection: Any) -> str:
         return f'{singular_noun}{addition}'
 
     return singular_noun
+
+
+def trim_list(list_to_trim: list, end_only: bool = False) -> list:
+    """Return a trimmed list at the start and end from 'Python empty' items except that
+    boolean false, zero integer, zero float and zero complex values are excluded from trimming.
+    As an option only trim the end of the list with 'end_only' set to True.
+    """
+    assert_t(list_to_trim, list)
+    lst = list_to_trim
+
+    def is_trimmable(value: Any) -> bool:
+        """Inner function to mark a value to be logically trimmable. Exclude zero number and
+        false bool values and from the python if check whether it is 'empty'."""
+        if isinstance(value, (bool, int, float, complex)):
+            return False
+        return not value
+
+    if not end_only:
+        while lst and is_trimmable(lst[0]):
+            lst = lst[1:]
+
+    while lst and is_trimmable(lst[-1]):
+        lst = lst[:-1]
+
+    return lst

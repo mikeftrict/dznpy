@@ -113,3 +113,67 @@ great   :
 
     line 4
 '''
+
+TRIMMABLE_TB = '''\
+
+line 1
+line 2
+
+line 4
+
+
+'''
+
+END_TRIMMED_TB = '''\
+
+line 1
+line 2
+
+line 4
+'''
+
+CHUNKED_TB = '''\
+line 1
+line 2
+
+line 4
+
+'''
+
+CUSTOM_CHUNKED_TB = '''\
+line 1
+line 2
+
+line 4
+123
+456
+789
+'''
+
+DEFAULT_COND_CHUNKED_TB = '''\
+MyPreAmble
+line 1
+line 2
+
+line 4
+
+'''
+
+DEFAULT_COND_CHUNKED_TB_EMPTY_CONTENTS = '''\
+MyPreAmble
+<None>
+
+'''
+
+CUSTOM_COND_CHUNKED_TB_EMPTY_CONTENTS = '''\
+MyPreAmble
+<None>
+123
+456
+789
+'''
+
+ALL_OR_NOTHING_COND_CHUNKED_TB_EMPTY_CONTENTS = '''\
+<AllOrNothing>
+'''
+

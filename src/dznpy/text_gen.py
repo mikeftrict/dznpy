@@ -4,6 +4,7 @@ Module providing helpers for generating text
 Copyright (c) 2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
+import hashlib
 from copy import deepcopy
 # system modules
 from dataclasses import dataclass, field
@@ -12,13 +13,17 @@ from typing import List, Any, Optional
 from typing_extensions import Self
 
 # dznpy modules
-from .misc_utils import flatten_to_strlist, is_strlist_instance, assert_t, assert_t_optional
+from .misc_utils import assert_t, assert_t_optional, flatten_to_strlist, is_strlist_instance, \
+    trim_list
+from .scoping import NamespaceIds
 
 # constants
 EOL = '\n'
+BLANK_LINE = EOL  # alias
 SPACE = ' '
 TAB = '\t'
 DEFAULT_INDENT_NR_SPACES = 4
+DO_NOT_MODIFY = 'This is generated content. DO NOT MODIFY manually.'
 
 
 def fetch_default_indent_nr_spaces():
@@ -197,6 +202,37 @@ class TextBlock:
         self.lines = self._indentizer.to_list(self.lines)
         return self
 
+    def trim(self, end_only: bool = False):
+        """Trim the internal buffer from empty lines at the start and at the end.
+        Optionally trim only empty lines at the end with 'end_only' set to True.
+        As return value a self reference is returned (see Fluent Interface)."""
+        self.lines = trim_list(self.lines, end_only)
+        return self
+
+
+# A shortcut alias for the TextBlock class
+TB = TextBlock
+
+
+@dataclass(frozen=True)
+class GeneratedContent:
+    """Data class containing generated content, its md5 hash, a designated filename and
+    an optional namespace indication."""
+    filename: str
+    contents: str
+    namespace: Optional[NamespaceIds] = field(default=None)
+
+    def __post_init__(self):
+        """Postcheck the constructed data class members on validity."""
+        assert_t(self.filename, str)
+        assert_t(self.contents, str)
+        assert_t_optional(self.namespace, NamespaceIds)
+
+    @property
+    def hash(self):
+        """Get the hash of the contents."""
+        return hashlib.md5(self.contents.encode('utf-8')).hexdigest().lower()
+
 
 ###############################################################################
 # Type creation functions
@@ -248,3 +284,82 @@ def initial_dash_t(indentor: Optional[Indentor] = Indentor.SPACES) -> Indentizer
                           bullet_list=BulletList(mode=BulletListMode.FIRST_ONLY))
     return Indentizer(spaces_count=2,
                       bullet_list=BulletList(mode=BulletListMode.FIRST_ONLY))
+
+
+###############################################################################
+# Module functions
+#
+
+
+def chunk(content: Any, appendix: Any = BLANK_LINE) -> Optional[TextBlock]:
+    """Pour the stringifiable contents into a textblock as a chunk with an "appendix"
+    (which is a blank line by default, that can be customized).
+
+    Examples with the TextBlock depicted between <start> and <end>:
+
+    <start (default)>
+    Line 1
+    Line 2
+
+    <end>
+
+    <start (custom 2 liner appendix)>
+    Line 1
+    Line 2
+    custom-appendix-line-1
+    custom-appendix-line-2
+    <end>
+    """
+    true_contents = flatten_to_strlist(content)
+    true_appendix = flatten_to_strlist(appendix)
+    return TextBlock([content, true_appendix]) if true_contents else None
+
+
+def cond_chunk(preamble: Any, content: Any, empty_response: Any, appendix: Any = BLANK_LINE,
+               all_or_nothing: bool = False) -> Optional[TextBlock]:
+    """Pour the stringifiable "preamble + contents" into a textblock as a chunk
+    with an "appendix" (which is a blank line by default, that can be customized).
+
+    Alternatively when the content appears to be 'empty', a different textblock that is a
+    stringified "preamble + empty_response" with an appendix is returned.
+
+    Finally, on specifying True for "all_or_nothing", only the literal "empty_response" is
+    returned when the "content' appears to be 'empty'.
+
+    Examples with the TextBlock depicted between <start> and <end>:
+
+    <start (where contents has values)>
+    My Preamble:
+    Line 1
+    Line 2
+
+    <end>
+
+    <start (where contents is empty)>
+    My Preamble:
+    my-empty-response
+
+    <end>
+
+    <start (where contents is empty, all_or_nothing=True>
+    my-empty-response
+
+    <end>
+
+    <start (where contents has values, and acustom 2 liner appendix)>
+    My Preamble:
+    Line 1
+    Line 2
+    custom-appendix-line-1
+    custom-appendix-line-2
+    <end>
+    """
+    true_preamble = flatten_to_strlist(preamble)
+    true_contents = flatten_to_strlist(content)
+    true_empty_response = flatten_to_strlist(empty_response)
+
+    if all_or_nothing and not true_contents:
+        return TextBlock(empty_response) if empty_response else None
+
+    return chunk([true_preamble, content], appendix) if true_contents else chunk(
+        [true_preamble, true_empty_response], appendix)

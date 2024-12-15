@@ -181,3 +181,20 @@ def test_assert_t_optional_fails():
         assert_t_optional('Some text', float)
     assert str(
         exc.value) == """Value argument "Some text" is not equal to the expected type: <class 'float'>, actual type found: <class 'str'>."""
+
+
+def test_trim_list():
+    """Test trimming a list from true-ish empty items at the start and end of the list.
+    Boolean false, zero integer, zero float and zero complex values are excluded from trimming."""
+
+    example = ['', 0, '', 'One', '', 'Two', 'Three', '', None]
+
+    assert trim_list(example) == [0, '', 'One', '', 'Two', 'Three']
+    assert trim_list(example, end_only=True) == ['', 0, '', 'One', '', 'Two', 'Three']
+    assert trim_list([]) == []
+    assert trim_list([True]) == [True]
+    assert trim_list([False]) == [False]
+    assert trim_list([False, True, False]) == [False, True, False]
+    assert trim_list([0]) == [0]
+    assert trim_list([0.0]) == [0.0]
+    assert trim_list([complex(0j)]) == [complex(0j)]

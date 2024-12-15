@@ -4,20 +4,21 @@ Module providing helpers for generating c++ source and header files
 Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
-from copy import deepcopy
+
 # system modules
+from copy import deepcopy
 from dataclasses import dataclass, field
 import enum
 from typing import List, Any, Optional
 
 # dznpy modules
-from .misc_utils import assert_t, is_strlist_instance, plural
+from .misc_utils import assert_t, assert_t_optional, is_strlist_instance, plural
 from .scoping import NamespaceIds, ns_ids_t
-from .text_gen import TextBlock, Indentizer, BulletList
+from .text_gen import Indentizer, BulletList, TB, TextBlock
 
 
 class CppGenError(Exception):
-    """An error occurred during generating c++ code."""
+    """An error occurred during generating C++ code."""
 
 
 class AccessSpecifier(enum.Enum):
@@ -51,7 +52,12 @@ class TypePostfix(enum.Enum):
 @dataclass
 class Fqn:
     """Dataclass representing a C++ fully-qualified name by wrapping the NamespaceIds type and
-    additionally providing the option to prefix stringification with the C++ root namespace."""
+    additionally providing the option to prefix stringification with the C++ root namespace.
+    Example for ns_ids = 'my.data':
+
+        My::Data
+        ::My::Data
+    """
     ns_ids: NamespaceIds
     prefix_root_ns: bool = False
 
@@ -59,7 +65,8 @@ class Fqn:
         """Postcheck the constructed data class members on validity."""
         assert_t(self.ns_ids, NamespaceIds)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the contents of this dataclass as a single string."""
         if not self.ns_ids.items:
             return ''
         all_ids = self.ns_ids.items
@@ -68,26 +75,48 @@ class Fqn:
 
 @dataclass(frozen=True)
 class AccessSpecifiedSection:
-    """AccessSpecifiedSection"""
-    access_specifier: AccessSpecifier
-    contents: TextBlock
+    """Dataclass representing a C++ access specifified section where the specified
+    contents is indented. Example:
 
-    def __str__(self):
-        return str(TextBlock(self.access_specifier.value) + TextBlock(self.contents).indent())
+        public:
+            <contents>
+    """
+    access_specifier: AccessSpecifier
+    contents: TB
+
+    def __post_init__(self):
+        """Postcheck the constructed data class members on validity."""
+        assert_t(self.access_specifier, AccessSpecifier)
+        assert_t(self.contents, TB)
+
+    def __str__(self) -> str:
+        """Return the contents of this dataclass as a multiline string."""
+        return str(TB(self.access_specifier.value) + TB(self.contents).indent())
 
 
 @dataclass(frozen=True)
 class TemplateArg:
-    """TemplateArg"""
+    """Dataclass representing a C++ Template Argument. Example:
+
+        <MyType>
+    """
     fqn: Fqn
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'<{self.fqn}>'
 
 
 @dataclass(frozen=True)
 class TypeDesc:
-    """TypeDesc"""
+    """Dataclass representing a C++ type description and an optional default value that is used
+    by other cpp_gen types such as Param. Example:
+
+        My::Data
+        My::Data&
+        My::Data*
+        ::My::Data<Hal::IHeater>
+        const My::Data
+    """
     fqn: Fqn
     template_arg: Optional[TemplateArg] = None
     postfix: TypePostfix = TypePostfix.NONE
@@ -99,7 +128,7 @@ class TypeDesc:
         if self.default_value is not None and not isinstance(self.default_value, str):
             raise CppGenError('default_value must be a string type')
 
-    def __str__(self):
+    def __str__(self) -> str:
         tpl_arg = f'{self.template_arg}' if self.template_arg else ''
         mandatory = f'{self.fqn}{tpl_arg}{self.postfix.value}'
         return f'const {mandatory}' if self.const else mandatory
@@ -107,11 +136,25 @@ class TypeDesc:
 
 @dataclass
 class Param:
-    """Param"""
+    """Dataclass representing a C++ parameter as declaration and definition.
+    Examples of a declaration:
+
+        MyType* example
+        int number = 123
+        const std::string& message = ""
+        ::My::Data<Hal::IHeater> = {}
+
+    Examples of a definition:
+
+        MyType* example
+        int number
+        const std::string& message
+        ::My::Data<Hal::IHeater>
+    """
     type_desc: TypeDesc
     name: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         raise CppGenError('instead of str(), access the properties as_decl or as_def')
 
     @property
@@ -128,86 +171,173 @@ class Param:
         return f'{self.type_desc} {self.name}'
 
 
-@dataclass
 class Struct:
-    """Struct"""
-    name: str
-    contents: TextBlock = field(default_factory=TextBlock)
+    """Dataclass representing a C++ struct clause with un-indented contents. The contents
+    can be set later after initial construction but note that strict typing checking applues.
+    Example:
 
-    def __post_init__(self):
-        """Postcheck the constructed data class members on validity."""
-        if not self.name:
+        struct MyStruct
+        {
+        <contents>
+        };
+    """
+    _name: str
+    _contents: TextBlock
+
+    def __init__(self, name: str, contents: Optional[TextBlock] = None):
+        """Initialize with a name and optional initial content."""
+        assert_t(name, str)
+        assert_t_optional(contents, TextBlock)
+        if not name:
             raise CppGenError('name must not be empty')
-        assert_t(self.contents, TextBlock)
+
+        self._name = name
+        self._contents = contents if contents else TextBlock()
         self._struct_class = StructOrClass.STRUCT
 
-    def __str__(self):
-        """Return the contents of this dataclass as textblock."""
+    def __str__(self) -> str:
+        """Return the contents of this dataclass as a multiline string."""
         if self.contents.lines:
             return str(
-                TextBlock([f'{self._struct_class.value} {self.name}', '{', self.contents, '};']))
+                TB([f'{self._struct_class.value} {self.name}', '{', self.contents, '};']))
 
-        return str(TextBlock([f'{self._struct_class.value} {self.name}', '{', '};']))
+        return str(TB([f'{self._struct_class.value} {self.name}', '{', '};']))
+
+    @property
+    def name(self) -> str:
+        """Get the current name of the struct."""
+        return self._name
+
+    @property
+    def contents(self) -> TextBlock:
+        """Get the current contents."""
+        return self._contents
+
+    @contents.setter
+    def contents(self, value: TextBlock):
+        """Set new contents that must be a TextBlock."""
+        assert_t(value, TextBlock)
+        self._contents = value
 
 
 @dataclass
 class Class(Struct):
-    """Class"""
+    """Dataclass representing a C++ class clause with un-indented contents. The contents
+    can be set later after initial construction but note that strict typing checking applues.
+    Example:
 
-    def __post_init__(self):
-        """Postcheck the constructed data class members on validity."""
-        if not self.name:
-            raise CppGenError('name must not be empty')
+        struct MyClass
+        {
+        <contents>
+        };
+    """
+
+    def __init__(self, name: str, contents: Optional[TextBlock] = None):
+        """Initialize with a name and optional initial content."""
+        super().__init__(name, contents)
         self._struct_class = StructOrClass.CLASS
 
 
 @dataclass(frozen=True)
 class ProjectIncludes:
-    """ProjectIncludes"""
+    """Dataclass representing a C++ 'system' include statements. Example:
+
+        // Project include
+        #include "IToaster.h"
+
+        // Project includes
+        #include "IHeater.h"
+        #include "ProjectB/Lunchbox.h"
+    """
     includes: List[str]
 
+    def __post_init__(self):
+        """Postcheck the constructed data class members on validity."""
+        if not is_strlist_instance(self.includes):
+            raise TypeError('property "includes" must be a list of strings')
+
     def __str__(self) -> str:
-        return str(TextBlock([Comment(f'Project {plural("include", self.includes)}'),
-                              [f'#include "{x}"' for x in self.includes]]))
+        """Return the contents of this dataclass as a multiline string."""
+        return str(TB([Comment(f'Project {plural("include", self.includes)}'),
+                       [f'#include "{x}"' for x in self.includes]]))
 
 
 @dataclass(frozen=True)
 class SystemIncludes:
-    """SystemInclude"""
+    """Dataclass representing a C++ 'project' include statements. Example:
+
+        // System include
+        #include <string>
+
+        // System includes
+        #include <string>
+        #include <dzn/pump.hh>
+    """
     includes: List[str]
-
-    def __str__(self) -> str:
-        """Return the contents of this dataclass as textblock."""
-        return str(TextBlock([Comment(f'System {plural("include", self.includes)}'),
-                              [f'#include <{x}>' for x in self.includes]]))
-
-
-@dataclass
-class Namespace:
-    """Namespace"""
-    ns_ids: NamespaceIds
-    contents: str or TextBlock = field(default='')
 
     def __post_init__(self):
         """Postcheck the constructed data class members on validity."""
-        assert_t(self.ns_ids, NamespaceIds)
+        if not is_strlist_instance(self.includes):
+            raise TypeError('property "includes" must be a list of strings')
 
-    def __str__(self):
-        """Return the contents of this dataclass as textblock."""
+    def __str__(self) -> str:
+        """Return the contents of this dataclass as a multiline string."""
+        return str(TB([Comment(f'System {plural("include", self.includes)}'),
+                       [f'#include <{x}>' for x in self.includes]]))
+
+
+class Namespace:
+    """Dataclass representing a C++ namespace clause with un-indented contents. The contents
+    can be set later after initial construction but note that strict typing checking applues.
+    Example:
+
+        namespace My::Project::XY {
+        <contents>
+        } // namespace My::Project::XY
+    """
+    _ns_ids: NamespaceIds
+    _contents: TextBlock
+
+    def __init__(self, ns_ids: NamespaceIds, contents: Optional[TextBlock] = None):
+        """Initialize with a namespace and optional initial content."""
+        assert_t(ns_ids, NamespaceIds)
+        assert_t_optional(contents, TextBlock)
+        self._ns_ids = ns_ids
+        self._contents = contents if contents else TextBlock()
+
+    def __str__(self) -> str:
+        """Return the contents of this dataclass as a multiline string."""
         ns_ids_str = f' {fqn_t(self.ns_ids)}' if self.ns_ids.items else ''
         head = f'namespace{ns_ids_str} {{'
         fqn_tail = f'}} // namespace{ns_ids_str}'
 
-        if self.contents:
-            return str(TextBlock([head, self.contents, fqn_tail]))  # multi-line
+        if self.contents.lines:
+            return str(TB([head, self.contents, fqn_tail]))  # multi-line
 
-        return str(TextBlock([f'{head}}}']))  # one-liner
+        return str(TB([f'{head}}}']))  # one-liner
+
+    @property
+    def ns_ids(self) -> NamespaceIds:
+        """Get the current namespace value."""
+        return self._ns_ids
+
+    @property
+    def contents(self) -> TextBlock:
+        """Get the current contents."""
+        return self._contents
+
+    @contents.setter
+    def contents(self, value: TextBlock):
+        """Set new contents that must be a TextBlock."""
+        assert_t(value, TextBlock)
+        self._contents = value
 
 
 class Comment(TextBlock):
-    """C++ comment class derived from TextBlock that is configured with C++ '//' indentation."""
+    """C++ comment class derived from TB that is configured with C++ '//' indentation."""
 
     def __init__(self, content: Optional[Any] = None):
+        """Initialize the comment class instance with a prefab C++ Indentizer."""
         super().__init__(content)
         self.set_indentor(Indentizer(spaces_count=3, bullet_list=BulletList(glyph='//')))
 
@@ -220,7 +350,33 @@ class Comment(TextBlock):
 
 @dataclass
 class Constructor:
-    """Constructor"""
+    """Dataclass representing a C++ constructor where its scope must be assigned to an existing
+    instance of a Struct or Class because that determines the name of the constructor function.
+    The contents for the constructor definition will be indented.
+
+    Example of a declaration:
+
+        explicit MyToaster(int x, size_t y = 123u);
+
+        MyToaster();
+
+        MyToaster() = default;
+
+    Examples of a definition:
+
+        MyToaster::MyToaster(int x, size_t y)
+        {
+            <contents>
+        }
+
+        MyToaster::MyToaster()
+            : m_number(1)
+            , m_two{2 }
+            , m_xyz ("Two")
+        {
+            <contents>
+        }
+    """
     scope: Struct or Class
     explicit: bool = field(default=False)
     params: List[Param] = field(default_factory=list)
@@ -238,43 +394,61 @@ class Constructor:
         if not is_strlist_instance(self.member_initlist):
             raise CppGenError('the member initializer list must be a list of strings')
 
-    def __str__(self):
+    def __str__(self) -> str:
         raise CppGenError('instead of str(), access the properties as_decl or as_def')
 
     @property
     def as_decl(self) -> str:
-        """Return the constructor declaration textblock."""
+        """Return the constructor declaration as a multiline string."""
         explicit = 'explicit ' if self.explicit else ''
         params = ', '.join([p.as_decl for p in self.params if p])
         initialization = f' = {self.initialization}' if self.initialization else ''
         full_signature = f'{explicit}{self.scope.name}({params}){initialization};'
-        return str(TextBlock(full_signature))
+        return str(TB(full_signature))
 
     @property
     def as_def(self) -> str:
-        """Return the constructor definition textblock."""
+        """Return the constructor definition as a multiline string."""
         if self.initialization:
             return ''  # no definition is generated when declared with initialization
 
         params = ', '.join([p.as_def for p in self.params if p])
-        mil = TextBlock([': ' + '\n, '.join(self.member_initlist)]).indent() \
+        mil = TB([': ' + '\n, '.join(self.member_initlist)]).indent() \
             if self.member_initlist else None
-        content = TextBlock(self.contents).indent() if self.contents else None
+        content = TB(self.contents).indent() if self.contents else None
         full_signature = f'{self.scope.name}::{self.scope.name}({params})'
 
         if mil is None and not content:
-            return str(TextBlock(f'{full_signature} {{}}'))
+            return str(TB(f'{full_signature} {{}}'))
 
-        return str(TextBlock([full_signature,
-                              mil,
-                              '{',
-                              content,
-                              '}']))
+        return str(TB([full_signature,
+                       mil,
+                       '{',
+                       content,
+                       '}']))
 
 
 @dataclass
 class Destructor:
-    """Destructor"""
+    """Dataclass representing a C++ destructor where its scope must be assigned to an existing
+    instance of a Struct or Class because that determines the name of the destructor function.
+    The contents for the destructor definition will be indented.
+
+    Example of a declaration:
+
+        ~MyToaster();
+
+        ~MyToaster() override = default;
+
+    Examples of a definition:
+
+        MyToaster::~MyToaster() {}
+
+        MyToaster::~MyToaster()
+        {
+            <contents>
+        }
+    """
     scope: Struct or Class
     override: bool = field(default=False)
     initialization: str = field(default='')
@@ -285,37 +459,62 @@ class Destructor:
         if not isinstance(self.scope, Class) and not isinstance(self.scope, Struct):
             raise CppGenError('scope must be a Class or Struct')
 
-    def __str__(self):
+    def __str__(self) -> str:
         raise CppGenError('instead of str(), access the properties as_decl or as_def')
 
     @property
     def as_decl(self) -> str:
-        """Return the constructor declaration textblock."""
+        """Return the destructor declaration as a multiline string."""
         override = ' override' if self.override else ''
         initialization = f' = {self.initialization}' if self.initialization else ''
         full_signature = f'~{self.scope.name}(){override}{initialization};'
-        return str(TextBlock(full_signature))
+        return str(TB(full_signature))
 
     @property
     def as_def(self) -> str:
-        """Return the constructor definition textblock."""
+        """Return the destructor definition as a multiline string."""
         if self.initialization:
             return ''  # no definition is generated when declared with initialization
 
         full_signature = f'{self.scope.name}::~{self.scope.name}()'
 
         if not self.contents:
-            return str(TextBlock(f'{full_signature} {{}}'))
+            return str(TB(f'{full_signature} {{}}'))
 
-        return str(TextBlock([full_signature,
-                              '{',
-                              TextBlock(self.contents).indent(),
-                              '}']))
+        return str(TB([full_signature,
+                       '{',
+                       TB(self.contents).indent(),
+                       '}']))
 
 
 @dataclass
 class Function:
-    """Function"""
+    """Dataclass representing a C++ function/method where its scope must be assigned to an existing
+    instance of a Struct or Class because that determines the scope name of the function.
+    The contents for the function definition will be indented.
+
+    Example of a declaration:
+
+        void Calculate(int x, size_t y = 123u);
+
+        static int Process(int x);
+
+        virtual void Calc() const = 0;
+
+    Examples of a definition:
+
+        void Calculate(int x, size_t y)
+        {
+            <content>
+        }
+
+        int Process(int x) {}
+
+        void Calc() const
+        {
+            <content>
+        }
+    """
     return_type: TypeDesc
     name: str
     params: List[Param] = field(default_factory=list)
@@ -339,12 +538,12 @@ class Function:
         if self.initialization.startswith('0') and not self.prefix == FunctionPrefix.VIRTUAL:
             raise CppGenError('missing prefix "virtual" when initializing with "=0"')
 
-    def __str__(self):
+    def __str__(self) -> str:
         raise CppGenError('instead of str(), access the properties as_decl or as_def')
 
     @property
     def as_decl(self) -> str:
-        """Create the function declaration textblock."""
+        """Return the function declaration as a multiline string."""
         prefix = f'{self.prefix.value} ' if self.prefix.value is not None else ''
         return_type = f'{self.return_type} ' if self.return_type else ''
         name = self.name
@@ -353,11 +552,11 @@ class Function:
         override = ' override' if self.override else ''
         initialization = f' = {self.initialization}' if self.initialization != '' else ''
         return str(
-            TextBlock(f'{prefix}{return_type}{name}({params}){cav}{override}{initialization};'))
+            TB(f'{prefix}{return_type}{name}({params}){cav}{override}{initialization};'))
 
     @property
     def as_def(self) -> str:
-        """Create the function definition textblock."""
+        """Return the function definition as a multiline string."""
         if self.initialization:
             return ''  # no definition is generated when declared with initialization
 
@@ -369,28 +568,34 @@ class Function:
         full_signature = f'{return_type}{scope}{name}({params}){cav}'
 
         if not self.contents:
-            return str(TextBlock(f'{full_signature} {{}}'))
+            return str(TB(f'{full_signature} {{}}'))
 
-        return str(TextBlock([full_signature,
-                              '{',
-                              TextBlock(self.contents).indent(),
-                              '}']))
+        return str(TB([full_signature,
+                       '{',
+                       TB(self.contents).indent(),
+                       '}']))
 
 
 @dataclass(frozen=True)
 class MemberVariable:
-    """Member Variable"""
+    """Dataclass representing a C++ member variable. Example:
+
+        My::ILedControl& myPort;
+
+        float m_someOtherNumber;
+    """
     type: TypeDesc
     name: str
 
     def __post_init__(self):
         """Postcheck the constructed data class members on validity."""
-        if not isinstance(self.type, TypeDesc):
-            raise TypeError('type of "type" must be TypeDesc')
-        if not isinstance(self.name, str) or not self.name:
+        assert_t(self.type, TypeDesc)
+        assert_t(self.name, str)
+        if not self.name:
             raise TypeError('name must be a non-empty string')
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the contents of this dataclass as a single string."""
         return f'{self.type} {self.name};'
 
 

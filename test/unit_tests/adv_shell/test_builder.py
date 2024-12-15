@@ -13,13 +13,13 @@ from typing import List
 from dznpy import ast
 from dznpy.adv_shell import PortSelect, PortWildcard, all_sts_all_mts, all_mts_all_sts, \
     all_mts_mixed_ts, all_sts_mixed_ts, all_mts, all_sts, Configuration, Builder, MultiClientPortCfg
-from dznpy.adv_shell.common import FacilitiesOrigin
+from dznpy.adv_shell.common import CodeGenResult, FacilitiesOrigin
 from dznpy.adv_shell.types import AdvShellError
-from dznpy.code_gen_common import GeneratedContent, CodeGenResult
+from dznpy.json_ast import DznJsonAst
 from dznpy.support_files import strict_port, ilog, misc_utils, meta_helpers, \
     multi_client_selector, mutex_wrapped
 from dznpy.scoping import ns_ids_t
-from dznpy.json_ast import DznJsonAst
+from dznpy.text_gen import GeneratedContent
 
 # test helpers
 from common.helpers import resolve
@@ -166,6 +166,21 @@ def test_generate_all_mts():
     result = Builder().build(cfg)
     assert get_filecontents('ToasterSystemAdvShell.hh', result) == HH_ALL_MTS
     assert get_filecontents('ToasterSystemAdvShell.cc', result) == CC_ALL_MTS
+    assert_all_default_support_files(result.files)
+
+
+def test_generate_all_sts():
+    """Test a system component with all STS provides and requires ports."""
+    cfg = Configuration(dezyne_filename=DZN_FILE2, ast_fc=get_fc(DZN_FILE2),
+                        output_basename_suffix='ImplComp',
+                        fqn_encapsulee_name=ns_ids_t('StoneAgeToaster'),
+                        ports_cfg=all_sts(),
+                        facilities_origin=FacilitiesOrigin.IMPORT,
+                        copyright=COPYRIGHT, creator_info=CREATOR_INFO, verbose=True)
+
+    result = Builder().build(cfg)
+    assert get_filecontents('StoneAgeToasterImplComp.hh', result) == HH_ALL_STS
+    assert get_filecontents('StoneAgeToasterImplComp.cc', result) == CC_ALL_STS
     assert_all_default_support_files(result.files)
 
 

@@ -10,6 +10,7 @@ import pytest
 
 # system-under-test
 import dznpy.text_gen
+from dznpy.scoping import ns_ids_t
 from dznpy.text_gen import *
 
 # test data
@@ -32,12 +33,23 @@ class RaiiOverrideDefaultIndentNrSpacesConstant:
         dznpy.text_gen.DEFAULT_INDENT_NR_SPACES = self._previous_value
 
 
+###############################################################################
+# Module constants
+#
+
 def test_module_constants_value():
     """Test the default values of the module constants."""
     assert dznpy.text_gen.EOL == '\n'
+    assert dznpy.text_gen.BLANK_LINE == '\n'
     assert dznpy.text_gen.SPACE == ' '
     assert dznpy.text_gen.TAB == '\t'
     assert dznpy.text_gen.DEFAULT_INDENT_NR_SPACES == 4
+    assert dznpy.text_gen.DO_NOT_MODIFY == 'This is generated content. DO NOT MODIFY manually.'
+
+
+###############################################################################
+# TextBlock type tests (includes some type creation functions)
+#
 
 
 def test_textblock_create_default():
@@ -337,3 +349,85 @@ def test_textblock_tab_type_creation_function_first_line_dash_only():
     where only the first line is prefixed with a dash (-) glyph."""
     assert str(TextBlock(content=SIMPLE_TB).indent(initial_dash_t(Indentor.TAB))) == \
            SIMPLE_TB_TAB_LISTBULLET_FIRST_ONLY
+
+
+def test_textblock_trimming():
+    """Test trimming of a textblock from empty lines at the start and at the end of the
+    current lines buffer."""
+    assert str(TextBlock(SIMPLE_TB).trim()) == str(TextBlock(SIMPLE_TB))
+    assert str(TextBlock(TRIMMABLE_TB).trim()) == str(TextBlock(SIMPLE_TB))
+    assert str(TextBlock(TRIMMABLE_TB).trim(end_only=True)) == str(TextBlock(END_TRIMMED_TB))
+
+
+def test_generated_content():
+    """Test creation with the mininum amount of arguments. Expect a hash calculated on
+    the contents."""
+    sut = GeneratedContent(filename='filename.txt', contents='Hi There\n')
+    assert sut.filename == 'filename.txt'
+    assert sut.contents == 'Hi There\n'
+    assert sut.namespace is None
+
+
+def test_generated_content_with_ns():
+    """Test creation with the extra specification of a namespace, that is expected to be
+    part in the dataclass as member."""
+    sut = GeneratedContent('filename.txt', 'Hi There\n', namespace=ns_ids_t('My.Project'))
+    assert sut.namespace == NamespaceIds(['My', 'Project'])
+
+
+###############################################################################
+# GeneratedContent type
+#
+
+
+def test_generatedcontent_class():
+    """Test the GeneratedContent dataclass on good and bad weather scenarios."""
+    contents = '// My single liner (comment ;-)'
+    expected_hash = 'd21aa5dc311a931886366b2212be2bbb'
+
+    assert GeneratedContent('Filename.cpp', contents).hash == expected_hash
+    assert GeneratedContent('Filename.cpp', contents, ns_ids_t('My.Inner.Space')).hash == expected_hash
+
+    with pytest.raises(TypeError) as exc:
+        GeneratedContent(123, contents)
+    assert """Value argument "123" is not equal to the expected type: <class 'str'>""" in str(exc.value)
+
+    with pytest.raises(TypeError) as exc:
+        GeneratedContent('Filename.cpp', 456)
+    assert """Value argument "456" is not equal to the expected type: <class 'str'>""" in str(exc.value)
+
+    with pytest.raises(TypeError) as exc:
+        GeneratedContent('Filename.cpp', contents, 789)
+    assert """Value argument "789" is not equal to the expected type: <class 'dznpy.scoping.NamespaceIds'>""" in str(exc.value)
+
+
+###############################################################################
+# Miscellaneous functions
+#
+
+def test_chunk():
+    """Test chunking content into content with a default and a custom appendix.
+    Note that the content must not be empty, otherwise None is returned."""
+    assert isinstance(chunk(SIMPLE_TB), TextBlock), 'The return type is a TextBlock'
+
+    assert str(chunk(SIMPLE_TB)) == CHUNKED_TB
+    assert str(chunk(SIMPLE_TB, appendix=['123', '456', '789'])) == CUSTOM_CHUNKED_TB
+    assert str(chunk(0)) == '0\n\n'
+
+    assert chunk('') is None
+    assert chunk(None) is None
+    assert chunk([]) is None
+    assert chunk({}) is None
+
+
+def test_cond_chunk():
+    """Test chunking content into content with a default and a custom appendix.
+    Note that the content must not be empty, otherwise None is returned."""
+    assert isinstance(cond_chunk('MyPreAmble', SIMPLE_TB, '<None>'), TextBlock), 'The return type is a TextBlock'
+    assert str(cond_chunk('', SIMPLE_TB, '')) == CHUNKED_TB, 'Same as calling just chunk()'
+
+    assert str(cond_chunk('MyPreAmble', SIMPLE_TB, '<None>')) == DEFAULT_COND_CHUNKED_TB
+    assert str(cond_chunk('MyPreAmble', None, '<None>')) == DEFAULT_COND_CHUNKED_TB_EMPTY_CONTENTS
+    assert str(cond_chunk('MyPreAmble', '', '<None>', appendix=['123', '456', '789'])) == CUSTOM_COND_CHUNKED_TB_EMPTY_CONTENTS
+    assert str(cond_chunk('MyPreAmble', {}, '<AllOrNothing>', all_or_nothing=True)) == ALL_OR_NOTHING_COND_CHUNKED_TB_EMPTY_CONTENTS
+    assert cond_chunk('MyPreAmble', None, None, all_or_nothing=True) is None
