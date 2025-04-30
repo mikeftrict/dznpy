@@ -2,4 +2,4 @@
 
 [Back to start](../ReferenceManual.md)
 
-TODO
+Constructor, Destructor and Function are types that inherit from 

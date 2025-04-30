@@ -85,15 +85,13 @@ class CppPortItf:
         """Get the name of the port"""
         return self.dzn_port_itf.multiclient is not None
 
-    @property
-    def accessor_as_decl(self) -> str:
+    def accessor_as_decl(self) -> TextBlock:
         """Generate the C++ declaration of the port accessor"""
-        return self.accessor_fn.as_decl
+        return self.accessor_fn.as_decl()
 
-    @property
-    def accessor_as_def(self) -> str:
+    def accessor_as_def(self) -> TextBlock:
         """Generate the C++ definition of the port accessor"""
-        return self.accessor_fn.as_def
+        return self.accessor_fn.as_def()
 
 
 class FacilitiesOrigin(enum.Enum):
@@ -151,7 +149,7 @@ class CppPorts:
             return TextBlock()
 
         comment = Comment(f'{self.direction} port {plural("accessor", self.ports)}')
-        accessors = [port.accessor_as_decl for port in
+        accessors = [str(port.accessor_as_decl()) for port in
                      self.ports] if self.ports else Comment('<none>')
 
         return TextBlock([comment, accessors])
@@ -162,7 +160,7 @@ class CppPorts:
         if not self.ports:
             return TextBlock()
 
-        return TextBlock(BLANK_LINE.join([port.accessor_as_def for port in self.ports]))
+        return TextBlock(BLANK_LINE.join([str(port.accessor_as_def()) for port in self.ports]))
 
     @property
     def rerouting_class_members(self) -> Optional[TextBlock]:
@@ -217,7 +215,7 @@ class CppHelperMethods:
     @staticmethod
     def _def(functions: List[Function]) -> Optional[TextBlock]:
         """Generate public C++ port helper definitions as a TextBlock."""
-        helpers = flatten_to_strlist([fn.as_def for fn in functions])
+        helpers = flatten_to_strlist([fn.as_def() for fn in functions])
         if not helpers:
             return None
 
@@ -225,7 +223,7 @@ class CppHelperMethods:
 
     def _decl(self, functions: List[Function]) -> Optional[TextBlock]:
         """Generate public C++ port helper declarations as a TextBlock."""
-        helpers = flatten_to_strlist([fn.as_decl for fn in functions])
+        helpers = flatten_to_strlist([fn.as_decl() for fn in functions])
         if not helpers:
             return None
 
@@ -269,7 +267,7 @@ class Facilities:
     def accessors_decl(self) -> TextBlock:
         """Create a C++ textblock with the declaration of the accessors."""
         accessor_fns = [fn for fn in [self.locator_accessor_fn] if fn is not None]
-        accessors = [fn.as_decl for fn in
+        accessors = [fn.as_decl() for fn in
                      accessor_fns] if accessor_fns else Comment('<none>')
 
         return TextBlock([Comment(f'Facility {plural("accessor", accessor_fns)}'), accessors])
@@ -278,7 +276,7 @@ class Facilities:
     def accessors_def(self) -> TextBlock:
         """Create a C++ textblock with the definition of the accessors."""
         accessor_fns = [fn for fn in [self.locator_accessor_fn] if fn is not None]
-        return TextBlock([fn.as_def for fn in accessor_fns]) if accessor_fns else None
+        return TextBlock([fn.as_def() for fn in accessor_fns]) if accessor_fns else None
 
     @property
     def member_variables(self) -> TextBlock:

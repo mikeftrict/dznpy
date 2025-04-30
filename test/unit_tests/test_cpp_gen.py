@@ -11,11 +11,18 @@ import pytest
 # system-under-test
 from dznpy.cpp_gen import *
 from dznpy.scoping import NamespaceIds, NamespaceIdsTypeError, ns_ids_t, namespaceids_t
-from dznpy.text_gen import EOL, TB
+from dznpy.text_gen import EOL, TB, TextBlock
 
 # test data
 from common.testdata import *
 from testdata_cpp_gen import *
+
+
+# test helpers
+def assert_str_eq(left: Any, right: Any):
+    """Assert two instances that will be stringified and compared for equal contents and allow
+    PyTest to elaborate a nice delta output on failures."""
+    assert str(left) == str(right)
 
 
 def test_comment_block():
@@ -109,7 +116,7 @@ def test_fqn_fail():
 def test_typedesc_ok():
     """Test valid examples of the TypeDesc class"""
     sut = TypeDesc(Fqn(ns_ids_t('My.Data')))
-    assert str(sut.fqn) == 'My::Data'
+    assert str(sut.fqname) == 'My::Data'
     assert sut.postfix == TypePostfix.NONE
     assert sut.default_value is None
     assert str(sut) == 'My::Data'
@@ -127,6 +134,13 @@ def test_typedesc_ok_with_template_arg():
     assert str(sut2) == 'My::Project<::Toaster>'
 
 
+def test_typedesc_fail_on_missing_fqname():
+    """Test incorrect examples of the TypeDesc class"""
+    with pytest.raises(CppGenError) as exc:
+        TypeDesc(fqn_t(''))
+    assert str(exc.value) == 'fqname must not be empty'
+
+
 def test_typedesc_fail_with_default_value():
     """Test incorrect examples of the TypeDesc class"""
     with pytest.raises(CppGenError) as exc:
@@ -135,7 +149,7 @@ def test_typedesc_fail_with_default_value():
 
 
 def test_typedesc_const():
-    sut = TypeDesc(fqn=fqn_t('My.Data'), const=True)
+    sut = TypeDesc(fqname=fqn_t('My.Data'), const=True)
     assert str(sut) == 'const My::Data'
 
 
@@ -219,137 +233,137 @@ def test_param_with_default1():
     type_desc = TypeDesc(fqn_t('int'), default_value='123')
     sut = Param(type_desc=type_desc, name='number')
     assert sut.name == 'number'
-    assert sut.as_decl == 'int number = 123'
-    assert sut.as_def == 'int number'
+    assert sut.as_decl() == 'int number = 123'
+    assert sut.as_def() == 'int number'
 
 
 def test_param_with_default2():
-    type_desc = TypeDesc(fqn=fqn_t(['std', 'string']), postfix=TypePostfix.REFERENCE,
+    type_desc = TypeDesc(fqname=fqn_t(['std', 'string']), postfix=TypePostfix.REFERENCE,
                          const=True, default_value='""')
     sut = Param(type_desc=type_desc, name='message')
     assert str(sut.type_desc) == 'const std::string&'
-    assert sut.as_decl == 'const std::string& message = ""'
-    assert sut.as_def == 'const std::string& message'
+    assert sut.as_decl() == 'const std::string& message = ""'
+    assert sut.as_def() == 'const std::string& message'
 
 
 def test_param_without_default():
-    type_desc = TypeDesc(fqn=fqn_t('MyType'), postfix=TypePostfix.POINTER, const=False)
+    type_desc = TypeDesc(fqname=fqn_t('MyType'), postfix=TypePostfix.POINTER, const=False)
     sut = Param(type_desc=type_desc, name='example')
     assert str(sut.type_desc) == 'MyType*'
-    assert sut.as_decl == 'MyType* example'
-    assert sut.as_def == 'MyType* example'
+    assert sut.as_decl() == 'MyType* example'
+    assert sut.as_def() == 'MyType* example'
 
 
 def test_param_str_fail():
     with pytest.raises(CppGenError) as exc:
         str(Param(type_desc=TypeDesc(fqn_t('int')), name='number'))
-    assert str(exc.value) == 'instead of str(), access the properties as_decl or as_def'
+    assert str(exc.value) == 'instead of str(), call as_decl() or as_def()'
 
 
 def test_constructor_fail():
     with pytest.raises(CppGenError) as exc:
-        str(Constructor(scope=Class('MySubClass')))
-    assert str(exc.value) == 'instead of str(), access the properties as_decl or as_def'
+        str(Constructor(parent=Class('MySubClass')))
+    assert str(exc.value) == 'instead of str(), call as_decl() or as_def()'
 
     with pytest.raises(CppGenError) as exc:
-        Constructor(scope=None)
-    assert str(exc.value) == 'scope must be a Class or Struct'
+        Constructor(parent=None)
+    assert str(exc.value) == 'parent must be either a Class or Struct'
 
     with pytest.raises(CppGenError) as exc:
-        Constructor(scope=Class('MyToaster'), initialization='default',
+        Constructor(parent=Class('MyToaster'), initialization='default',
                     member_initlist=['m_count(1)'])
     assert str(exc.value) == 'not allowed to have both a constructor initialization and ' \
                              'a member initializer list'
 
     with pytest.raises(CppGenError) as exc:
-        Constructor(scope=Class('MyToaster'), member_initlist=123)
+        Constructor(parent=Class('MyToaster'), member_initlist=123)
     assert str(exc.value) == 'the member initializer list must be a list of strings'
 
 
 def test_constructor_ok():
-    class_sut = Constructor(scope=Class('MyToaster'))
-    assert class_sut.as_decl == CONSTRUCTOR_DECL_MINIMAL
-    assert class_sut.as_def == CONSTRUCTOR_DEF_MINIMAL
+    class_sut = Constructor(parent=Class('MyToaster'))
+    assert_str_eq(class_sut.as_decl(), CONSTRUCTOR_DECL_MINIMAL)
+    assert_str_eq(class_sut.as_def(), CONSTRUCTOR_DEF_MINIMAL)
 
-    struct_sut = Constructor(scope=Struct('MyToaster'))
-    assert struct_sut.as_decl == CONSTRUCTOR_DECL_MINIMAL
-    assert struct_sut.as_def == CONSTRUCTOR_DEF_MINIMAL
+    struct_sut = Constructor(parent=Struct('MyToaster'))
+    assert_str_eq(struct_sut.as_decl(), CONSTRUCTOR_DECL_MINIMAL)
+    assert_str_eq(struct_sut.as_def(), CONSTRUCTOR_DEF_MINIMAL)
 
 
 def test_constructor_params_and_content_ok():
     param1 = param_t(fqn_t('int'), 'x')
     param2 = param_t(fqn_t('size_t'), 'y', '123u')
-    sut = Constructor(scope=Class('MyToaster'), params=[param1, param2],
+    sut = Constructor(parent=Class('MyToaster'), params=[param1, param2],
                       contents=CONTENTS_MULTI_LINE)
-    assert sut.as_decl == CONSTRUCTOR_PARAMS_DECL
-    assert sut.as_def == CONSTRUCTOR_PARAMS_DEF
+    assert_str_eq(sut.as_decl(), CONSTRUCTOR_PARAMS_DECL)
+    assert_str_eq(sut.as_def(), CONSTRUCTOR_PARAMS_DEF)
 
 
 def test_explicit_constructor_ok():
     param1 = param_t(fqn_t('int'), 'x')
     param2 = param_t(fqn_t('size_t'), 'y', '123u')
-    sut = Constructor(scope=Class('MyToaster'), explicit=True, params=[param1, param2],
+    sut = Constructor(parent=Class('MyToaster'), explicit=True, params=[param1, param2],
                       contents=CONTENTS_MULTI_LINE)
-    assert sut.as_decl == CONSTRUCTOR_EXPLICIT_DECL
-    assert sut.as_def == CONSTRUCTOR_PARAMS_DEF
+    assert_str_eq(sut.as_decl(), CONSTRUCTOR_EXPLICIT_DECL)
+    assert_str_eq(sut.as_def(), CONSTRUCTOR_PARAMS_DEF)
 
 
 def test_constructor_with_default_initialization():
-    sut = Constructor(scope=Class('MyToaster'), initialization='default')
-    assert sut.as_decl == CONSTRUCTOR_INITIALIZATION_DEFAULT_DECL
-    assert sut.as_def == NOTHING_GENERATED
+    sut = Constructor(parent=Class('MyToaster'), initialization='default')
+    assert_str_eq(sut.as_decl(), CONSTRUCTOR_INITIALIZATION_DEFAULT_DECL)
+    assert_str_eq(sut.as_def(), NOTHING_GENERATED)
 
 
 def test_constructor_with_member_initializer_list_single_item():
-    sut = Constructor(scope=Class('MyToaster'),
+    sut = Constructor(parent=Class('MyToaster'),
                       member_initlist=['m_number(1)'])
-    assert sut.as_decl == CONSTRUCTOR_DECL_MINIMAL
-    assert sut.as_def == CONSTRUCTOR_MEMBER_INITIALIZER_LIST_SIMPLE_DEF
+    assert_str_eq(sut.as_decl(), CONSTRUCTOR_DECL_MINIMAL)
+    assert_str_eq(sut.as_def(), CONSTRUCTOR_MEMBER_INITIALIZER_LIST_SIMPLE_DEF)
 
 
 def test_constructor_with_member_initializer_list_multiple_items():
-    sut = Constructor(scope=Class('MyToaster'),
+    sut = Constructor(parent=Class('MyToaster'),
                       member_initlist=['m_number(1)', 'm_two{2 }', 'm_xyz ("Two")'])
-    assert sut.as_decl == CONSTRUCTOR_DECL_MINIMAL
-    assert sut.as_def == CONSTRUCTOR_MEMBER_INITIALIZER_LIST_MULTIPLE_DEF
+    assert_str_eq(sut.as_decl(), CONSTRUCTOR_DECL_MINIMAL)
+    assert_str_eq(sut.as_def(), CONSTRUCTOR_MEMBER_INITIALIZER_LIST_MULTIPLE_DEF)
 
 
 def test_destructor_fail():
     with pytest.raises(CppGenError) as exc:
-        str(Destructor(scope=Class('MySubClass')))
-    assert str(exc.value) == 'instead of str(), access the properties as_decl or as_def'
+        str(Destructor(parent=Class('MySubClass')))
+    assert str(exc.value) == 'instead of str(), call as_decl() or as_def()'
 
     with pytest.raises(CppGenError) as exc:
-        Destructor(scope=None)
-    assert str(exc.value) == 'scope must be a Class or Struct'
+        Destructor(parent=None)
+    assert str(exc.value) == 'parent must be either a Class or Struct'
 
 
 def test_destructor_ok():
-    class_sut = Destructor(scope=Class('MyToaster'))
-    assert class_sut.as_decl == DESTRUCTOR_DECL_MINIMAL
-    assert class_sut.as_def == DESTRUCTOR_DEF_MINIMAL
+    class_sut = Destructor(parent=Class('MyToaster'))
+    assert_str_eq(class_sut.as_decl(), DESTRUCTOR_DECL_MINIMAL)
+    assert_str_eq(class_sut.as_def(), DESTRUCTOR_DEF_MINIMAL)
 
-    struct_sut = Destructor(scope=Struct('MyToaster'))
-    assert struct_sut.as_decl == DESTRUCTOR_DECL_MINIMAL
-    assert struct_sut.as_def == DESTRUCTOR_DEF_MINIMAL
+    struct_sut = Destructor(parent=Struct('MyToaster'))
+    assert_str_eq(struct_sut.as_decl(), DESTRUCTOR_DECL_MINIMAL)
+    assert_str_eq(struct_sut.as_def(), DESTRUCTOR_DEF_MINIMAL)
 
 
 def test_destructor_content_ok():
-    class_sut = Destructor(scope=Class('MyToaster'), contents=CONTENTS_MULTI_LINE)
-    assert class_sut.as_decl == DESTRUCTOR_DECL_MINIMAL
-    assert class_sut.as_def == DESTRUCTOR_CONTENT_DEF
+    class_sut = Destructor(parent=Class('MyToaster'), contents=CONTENTS_MULTI_LINE)
+    assert_str_eq(class_sut.as_decl(), DESTRUCTOR_DECL_MINIMAL)
+    assert_str_eq(class_sut.as_def(), DESTRUCTOR_CONTENT_DEF)
 
 
 def test_destructor_with_default_initialization():
-    sut = Destructor(scope=Class('MyToaster'), initialization='default')
-    assert sut.as_decl == DESTRUCTOR_INITIALIZATION_DEFAULT_DECL
-    assert sut.as_def == NOTHING_GENERATED
+    sut = Destructor(parent=Class('MyToaster'), initialization='default')
+    assert_str_eq(sut.as_decl(), DESTRUCTOR_INITIALIZATION_DEFAULT_DECL)
+    assert_str_eq(sut.as_def(), NOTHING_GENERATED)
 
 
 def test_destructor_with_default_initialization_and_override():
-    sut = Destructor(scope=Class('MyToaster'), override=True, initialization='default')
-    assert sut.as_decl == DESTRUCTOR_OVERRIDE_INITIALIZATION_DEFAULT_DECL
-    assert sut.as_def == NOTHING_GENERATED
+    sut = Destructor(parent=Class('MyToaster'), override=True, initialization='default')
+    assert_str_eq(sut.as_decl(), DESTRUCTOR_OVERRIDE_INITIALIZATION_DEFAULT_DECL)
+    assert_str_eq(sut.as_def(), NOTHING_GENERATED)
 
 
 def test_function_fail():
@@ -363,25 +377,29 @@ def test_function_fail():
 
     with pytest.raises(CppGenError) as exc:
         str(Function(return_type=void_t(), name='Calculate'))
-    assert str(exc.value) == 'instead of str(), access the properties as_decl or as_def'
+    assert str(exc.value) == 'instead of str(), call as_decl() or as_def()'
+
+    with pytest.raises(CppGenError) as exc:
+        Function(return_type=void_t(), name='Calculate', parent=123)
+    assert str(exc.value) == 'parent must be a Class, Struct or None'
 
 
 def test_function_minimal():
     sut = Function(return_type=void_t(), name='Calculate')
-    assert sut.as_decl == FUNCTION_DECL_MINIMAL
-    assert sut.as_def == FUNCTION_DEF_MINIMAL
+    assert_str_eq(sut.as_decl(), FUNCTION_DECL_MINIMAL)
+    assert_str_eq(sut.as_def(), FUNCTION_DEF_MINIMAL)
 
 
 def test_struct_member_function_minimal():
-    sut = Function(return_type=void_t(), name='Calculate', scope=Struct('MyStruct'))
-    assert sut.as_decl == FUNCTION_DECL_MINIMAL
-    assert sut.as_def == STRUCT_MEMBER_FUNCTION_DEF_MINIMAL
+    sut = Function(return_type=void_t(), name='Calculate', parent=Struct('MyStruct'))
+    assert_str_eq(sut.as_decl(), FUNCTION_DECL_MINIMAL)
+    assert_str_eq(sut.as_def(), STRUCT_MEMBER_FUNCTION_DEF_MINIMAL)
 
 
 def test_class_member_function_minimal():
-    sut = Function(return_type=void_t(), name='Calculate', scope=Struct('MyClass'))
-    assert sut.as_decl == FUNCTION_DECL_MINIMAL
-    assert sut.as_def == CLASS_MEMBER_FUNCTION_DEF_MINIMAL
+    sut = Function(return_type=void_t(), name='Calculate', parent=Struct('MyClass'))
+    assert_str_eq(sut.as_decl(), FUNCTION_DECL_MINIMAL)
+    assert_str_eq(sut.as_def(), CLASS_MEMBER_FUNCTION_DEF_MINIMAL)
 
 
 def test_function_params():
@@ -389,36 +407,36 @@ def test_function_params():
     param2 = param_t(fqn_t('size_t'), 'y', '123u')
     sut = Function(return_type=void_t(), name='Calculate', params=[param1, param2],
                    contents=CONTENTS_MULTI_LINE)
-    assert sut.as_decl == FUNCTION_PARAMS_DECL
-    assert sut.as_def == FUNCTION_PARAMS_DEF
+    assert_str_eq(sut.as_decl(), FUNCTION_PARAMS_DECL)
+    assert_str_eq(sut.as_def(), FUNCTION_PARAMS_DEF)
 
 
 def test_static_function():
     sut = Function(prefix=FunctionPrefix.STATIC, return_type=int_t(), name='Process',
                    params=[param_t(fqn_t('int'), 'x')])
-    assert sut.as_decl == STATIC_FUNCTION_DECL
-    assert sut.as_def == STATIC_FUNCTION_DEF
+    assert_str_eq(sut.as_decl(), STATIC_FUNCTION_DECL)
+    assert_str_eq(sut.as_def(), STATIC_FUNCTION_DEF)
 
 
 def test_static_member_function():
     sut = Function(prefix=FunctionPrefix.STATIC, return_type=int_t(), name='Process',
-                   params=[param_t(fqn_t('int'), 'x')], scope=Struct('MyStruct'))
-    assert sut.as_decl == STATIC_FUNCTION_DECL
-    assert sut.as_def == STATIC_MEMBER_FUNCTION_DEF
+                   params=[param_t(fqn_t('int'), 'x')], parent=Struct('MyStruct'))
+    assert_str_eq(sut.as_decl(), STATIC_FUNCTION_DECL)
+    assert_str_eq(sut.as_def(), STATIC_MEMBER_FUNCTION_DEF)
 
 
 def test_virtual_member_function_fail():
     with pytest.raises(CppGenError) as exc:
         Function(prefix=FunctionPrefix.VIRTUAL, return_type=float_t(), name='Calc')
-    assert str(exc.value) == 'missing scope for prefix "virtual"'
+    assert str(exc.value) == 'missing parent for prefix "virtual"'
 
 
 def test_virtual_member_function():
     sut = Function(prefix=FunctionPrefix.VIRTUAL, return_type=float_t(),
                    name='Calc', params=[param_t(fqn_t('float'), 'y')],
-                   scope=Class('MyClass'))
-    assert sut.as_decl == VIRTUAL_MEMBER_FUNCTION_DECL
-    assert sut.as_def == VIRTUAL_MEMBER_FUNCTION_DEF
+                   parent=Class('MyClass'))
+    assert_str_eq(sut.as_decl(), VIRTUAL_MEMBER_FUNCTION_DECL)
+    assert_str_eq(sut.as_def(), VIRTUAL_MEMBER_FUNCTION_DEF)
 
 
 def test_function_initialization_pure_virtual_fail():
@@ -429,34 +447,34 @@ def test_function_initialization_pure_virtual_fail():
     with pytest.raises(CppGenError) as exc:
         Function(prefix=FunctionPrefix.VIRTUAL, return_type=void_t(), name='Calc',
                  initialization='0')
-    assert str(exc.value) == 'missing scope for prefix "virtual"'
+    assert str(exc.value) == 'missing parent for prefix "virtual"'
 
 
 def test_function_initialization_pure_virtual():
     sut = Function(prefix=FunctionPrefix.VIRTUAL, return_type=void_t(),
-                   name='Calc', initialization='0', scope=Class('MyClass'))
-    assert sut.as_decl == PURE_VIRTUAL_MEMBER_FUNCTION_DECL
-    assert sut.as_def == NOTHING_GENERATED
+                   name='Calc', initialization='0', parent=Class('MyClass'))
+    assert_str_eq(sut.as_decl(), PURE_VIRTUAL_MEMBER_FUNCTION_DECL)
+    assert_str_eq(sut.as_def(), NOTHING_GENERATED)
 
 
 def test_function_const():
     sut = Function(return_type=void_t(), name='Calc', cav='const', contents=CONTENTS_MULTI_LINE)
-    assert sut.as_decl == FUNCTION_CONST_DECL
-    assert sut.as_def == FUNCTION_CONST_DEF
+    assert_str_eq(sut.as_decl(), FUNCTION_CONST_DECL)
+    assert_str_eq(sut.as_def(), FUNCTION_CONST_DEF)
 
 
 def test_member_function_const():
-    sut = Function(return_type=void_t(), name='Calc', cav='const', scope=Class('MyClass'))
-    assert sut.as_decl == FUNCTION_CONST_DECL
-    assert sut.as_def == MEMBER_FUNCTION_CONST_DEF
+    sut = Function(return_type=void_t(), name='Calc', cav='const', parent=Class('MyClass'))
+    assert_str_eq(sut.as_decl(), FUNCTION_CONST_DECL)
+    assert_str_eq(sut.as_def(), MEMBER_FUNCTION_CONST_DEF)
 
 
 def test_member_function_override():
     sut = Function(return_type=void_t(), name='Calc', override=True,
                    contents=CONTENTS_MULTI_LINE,
-                   scope=Class('MyClass'))
-    assert sut.as_decl == MEMBER_FUNCTION_OVERRIDE_DECL
-    assert sut.as_def == MEMBER_FUNCTION_OVERRIDE_DEF
+                   parent=Class('MyClass'))
+    assert_str_eq(sut.as_decl(), MEMBER_FUNCTION_OVERRIDE_DECL)
+    assert_str_eq(sut.as_def(), MEMBER_FUNCTION_OVERRIDE_DEF)
 
 
 def test_member_variable():
@@ -522,10 +540,10 @@ def test_fqn_t_fail():
 
 
 def test_typedesc_creator_functions():
-    assert void_t() == TypeDesc(fqn=Fqn(ns_ids_t('void')))
-    assert int_t() == TypeDesc(fqn=Fqn(ns_ids_t('int')))
-    assert float_t() == TypeDesc(fqn=Fqn(ns_ids_t('float')))
-    assert double_t() == TypeDesc(fqn=Fqn(ns_ids_t('double')))
+    assert void_t() == TypeDesc(fqname=Fqn(ns_ids_t('void')))
+    assert int_t() == TypeDesc(fqname=Fqn(ns_ids_t('int')))
+    assert float_t() == TypeDesc(fqname=Fqn(ns_ids_t('float')))
+    assert double_t() == TypeDesc(fqname=Fqn(ns_ids_t('double')))
 
 
 def test_decl_var_t_ok():
@@ -549,39 +567,39 @@ def test_decl_var_ptr_t_ok():
 def test_param_t_ok():
     sut = param_t(fqn_t('std.string'), 'message')
     assert isinstance(sut, Param)
-    assert sut.as_decl == 'std::string message'
-    assert sut.as_def == 'std::string message'
+    assert sut.as_decl() == 'std::string message'
+    assert sut.as_def() == 'std::string message'
 
 
 def test_param_t_ok_with_default():
     sut = param_t(fqn_t('std::string'), 'message', '"MyDefault"')
-    assert sut.as_decl == 'std::string message = "MyDefault"'
-    assert sut.as_def == 'std::string message'
+    assert sut.as_decl() == 'std::string message = "MyDefault"'
+    assert sut.as_def() == 'std::string message'
 
 
 def test_const_param_ref_t_ok():
     sut = const_param_ref_t(fqn_t('IBigStruct'), 'data')
     assert isinstance(sut, Param)
-    assert sut.as_decl == 'const IBigStruct& data'
-    assert sut.as_def == 'const IBigStruct& data'
+    assert sut.as_decl() == 'const IBigStruct& data'
+    assert sut.as_def() == 'const IBigStruct& data'
 
 
 def test_const_param_ref_t_ok_with_default():
     sut = const_param_ref_t(fqn_t('IBigStruct'), 'data', 'nullptr')
     assert isinstance(sut, Param)
-    assert sut.as_decl == 'const IBigStruct& data = nullptr'
-    assert sut.as_def == 'const IBigStruct& data'
+    assert sut.as_decl() == 'const IBigStruct& data = nullptr'
+    assert sut.as_def() == 'const IBigStruct& data'
 
 
 def test_const_param_ptr_t_ok():
     sut = const_param_ptr_t(fqn_t(['IBigStruct']), 'data')
     assert isinstance(sut, Param)
-    assert sut.as_decl == 'const IBigStruct* data'
-    assert sut.as_def == 'const IBigStruct* data'
+    assert sut.as_decl() == 'const IBigStruct* data'
+    assert sut.as_def() == 'const IBigStruct* data'
 
 
 def test_const_param_ptr_t_ok_with_default():
     sut = const_param_ptr_t(fqn_t(['IBigStruct']), 'data', 'nullptr')
     assert isinstance(sut, Param)
-    assert sut.as_decl == 'const IBigStruct* data = nullptr'
-    assert sut.as_def == 'const IBigStruct* data'
+    assert sut.as_decl() == 'const IBigStruct* data = nullptr'
+    assert sut.as_def() == 'const IBigStruct* data'
