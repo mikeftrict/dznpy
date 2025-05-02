@@ -8,7 +8,9 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system-under-test
 from dznpy.cpp_gen import Comment, Fqn, Namespace, Struct, Class, ProjectIncludes, SystemIncludes, \
-    AccessSpecifiedSection, AccessSpecifier, TypeDesc, TemplateArg, TypePostfix, fqn_t
+    AccessSpecifiedSection, AccessSpecifier, TypeDesc, TemplateArg, TypePostfix, fqn_t, \
+    TypeConstness, void_t, int_t, float_t, double_t, std_string_t, const_std_string_ref_t, Param, \
+    MemberVariable, Constructor, Function
 from dznpy.scoping import NamespaceIds, ns_ids_t
 from dznpy.text_gen import TextBlock, TB
 
@@ -66,6 +68,11 @@ def example_fqn():
     # prefix it with the '::' root namespace indication leading to '::My::Deeply::Nested::Project'
     cpprooted_fqn = fqn_t('My.Deeply.Nested.Project', prefix_root_ns=True)
     print(cpprooted_fqn)
+
+    # Type Creation Function
+    print(fqn_t('My.Project.Garage'))
+    print(fqn_t(ns_ids='My.Project.Garage.Door', prefix_root_ns=True))
+    print(fqn_t('My.Project.Garage.SideDoor', True))  # omit keywords
 
 
 def example_namespace():
@@ -148,13 +155,13 @@ def example_simple_struct_class_access_specification():
 
 
 def example_type_description():
-    """Example of using the TypeDesc, a frozen dataclass that describes the type by a
-    fully qualified name and optionally a prefix (e.g. '::', 'const') and/or
-    postfix (e.g. '&', '*', template argument).
+    """Example of using the TypeDesc, a dataclass that describes the type by a fully qualified
+    name and allows for various options like prefixing (e.g. '::', 'const') and/or
+    postfixing (e.g. 'const', '&', '*' '* const', template argument).
     This class depends on the Fqn type from the same cpp_gen module."""
 
     # A type description with a simple fully qualified name (without namespace)
-    type_simple = TypeDesc(fqname=fqn_t('Door'))
+    type_simple = TypeDesc(fqname=fqn_t('Door'))  # using fqn_t Type Creation Function
     print(type_simple)
 
     # A type description with a fully qualified name, without and with a root namespace indicator
@@ -163,10 +170,15 @@ def example_type_description():
     type_fqn_root_ns = TypeDesc(fqname=fqn_t('My.House.Door', prefix_root_ns=True))
     print(type_fqn_root_ns)
 
-    # A type description with a 'const' prefix
+    # A type description with a 'const' prefix (in the category 'matter of style')
     my_fqn = fqn_t('My.House.Door')
-    type_const = TypeDesc(my_fqn, const=True)
-    print(type_const)
+    type_const_prefix = TypeDesc(my_fqn, constness=TypeConstness.PREFIXED)
+    print(type_const_prefix)
+
+    # A type description with a 'const' postfix (in the category 'matter of style')
+    my_fqn = fqn_t('float')
+    type_const_postfix = TypeDesc(my_fqn, constness=TypeConstness.POSTFIXED)
+    print(type_const_postfix)
 
     # A type description with a Template Argument
     my_fqn = fqn_t('My.House.Door')
@@ -184,16 +196,95 @@ def example_type_description():
     type_ptr = TypeDesc(my_fqn, postfix=TypePostfix.POINTER)
     print(type_ptr)
 
+    # A type description with a 'const C pointer' postfix
+    my_fqn = fqn_t('int')
+    type_ptr_const = TypeDesc(my_fqn, postfix=TypePostfix.POINTER_CONST)
+    print(type_ptr_const)
+
+    # A type description showing all options
+    my_fqn = fqn_t('House.Frontdoor', prefix_root_ns=True)
+    type_full = TypeDesc(fqname=my_fqn,
+                         constness=TypeConstness.POSTFIXED,
+                         template_arg=TemplateArg(fqn_t(['Hal', 'IDoor'], prefix_root_ns=True)),
+                         postfix=TypePostfix.POINTER_CONST)
+    print(type_full)
+
+    # Type Creation Functions
+    print(void_t())
+    print(int_t())
+    print(float_t())
+    print(double_t())
+    print(std_string_t())
+    print(const_std_string_ref_t())
+
+
+def example_param():
+    """Example of using the Param dataclass that is to be used when dealing with parameters that
+    are part of functions, constructors and class methods. The dataclass can be asked to generate
+    a string for C++ declaration of C++ definition. They mainly differ at the point of C++
+    declaration where it is possible to specify a default value.
+    The Param dataclass consists of a TypeDesc, a name and optionally a default value."""
+
+    # A simple parameter without a default
+    param_double = Param(double_t(), 'number')  # Tip: use TypeDesc Type Creation Helper(s)
+    print(param_double.as_decl())
+    print(param_double.as_def())
+
+    # A parameter with a default
+    param_stdstring = Param(std_string_t(), 'message', '""')
+    print(param_stdstring.as_decl())
+    print(param_stdstring.as_def())
+
+    # Preview of how multiple parameters are typically part of a function (or constructor)
+    my_function = Function(return_type=void_t(),
+                           name="MyFunction",
+                           params=[param_double, param_stdstring],
+                           contents=TB(Comment("Hi there")))
+    print(my_function.as_decl())
+    print(my_function.as_def())
+
+
+def example_member_variable():
+    """Example of using MemberVariable. The textual output of this dataclass is typically part of
+    a Struct or Class contents. It is left to the developer's freedom to integrate this.
+    An example could be to include/assign the textual output of one or more MemberVariable
+    instances to the contents of a AccessSpecifiedSection.
+    Furthermore, a MemberVariable has much in common with Param. Hence, it is derived from it.
+    However, MemberVariable only supports as_decl(). The internal function str() will indirectly
+    call as_decl(). The reason there is no as_def() is because it's in the nature of MemberVariable
+    to be specified in the declaration of the Struct or Class; not in the definition clause."""
+
+    # A simple parameter without a default
+    mv_double = MemberVariable(double_t(), 'number')
+    print(mv_double.as_decl())
+    print(mv_double)  # also supporting str(), but note it post-ambles with a newline
+
+    # A parameter with a default
+    mv_stdstring = MemberVariable(std_string_t(), 'message', '"my default str"')
+    print(mv_stdstring.as_decl())
+    print(mv_stdstring)
+
+    # Preview of how a MemberVariable can be integrated into a Struct
+    my_struct = Struct(name='MyData')
+    my_struct.contents = TB([AccessSpecifiedSection(AccessSpecifier.ANONYMOUS,
+                                                    mv_double.as_decl()),
+                             AccessSpecifiedSection(AccessSpecifier.PRIVATE,
+                                                    mv_stdstring.as_decl())
+                             ])
+    print(my_struct)
+
 
 def main():
     """Convergence  """
+
     # example_includes()
     # example_fqn()
     # example_comment()
     # example_namespace()
     # example_simple_struct_class_access_specification()
-    example_type_description()
-
+    # example_type_description()
+    # example_param()
+    example_member_variable()
 
 if __name__ == "__main__":
     main()

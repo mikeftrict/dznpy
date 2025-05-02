@@ -47,6 +47,14 @@ class TypePostfix(enum.Enum):
     NONE = ''
     REFERENCE = '&'
     POINTER = '*'
+    POINTER_CONST = '* const'
+
+
+class TypeConstness(enum.Enum):
+    """Enum to indicate the constness of a type: none, prefixed or postfixed."""
+    NONE = ''
+    PREFIXED = 'const prefix'
+    POSTFIXED = 'const postfix'
 
 
 @dataclass(frozen=True)
@@ -124,32 +132,41 @@ class TemplateArg:
 @dataclass(frozen=True)
 class TypeDesc:
     """Dataclass representing a C++ type description and an optional default value that is used
-    by other cpp_gen types such as Param. Example:
+    by other cpp_gen types such as Param. Examples:
 
         My::Data
         My::Data&
         My::Data*
+        int* const
         ::My::Data<Hal::IHeater>
-        const My::Data
+        const float
+        float const
+        const int* const
+        int const* const
     """
     fqname: Fqn
-    template_arg: Optional[TemplateArg] = None
-    postfix: TypePostfix = TypePostfix.NONE
-    const: bool = False
-    default_value: str = None
+    constness: TypeConstness = field(default=TypeConstness.NONE)
+    template_arg: Optional[TemplateArg] = field(default=None)
+    postfix: TypePostfix = field(default=TypePostfix.NONE)
 
     def __post_init__(self):
         """Post check the constructed data class members on validity."""
         if not str(self.fqname):
             raise CppGenError('fqname must not be empty')
-
-        if self.default_value is not None and not isinstance(self.default_value, str):
-            raise CppGenError('default_value must be a string type')
+        assert_t(self.constness, TypeConstness)
+        assert_t_optional(self.template_arg, TemplateArg)
+        assert_t(self.postfix, TypePostfix)
 
     def __str__(self) -> str:
         template_arg = f'{self.template_arg}' if self.template_arg else ''
-        mandatory = f'{self.fqname}{template_arg}{self.postfix.value}'
-        return f'const {mandatory}' if self.const else mandatory
+
+        if self.constness == TypeConstness.PREFIXED:
+            return f'const {self.fqname}{template_arg}{self.postfix.value}'
+
+        if self.constness == TypeConstness.POSTFIXED:
+            return f'{self.fqname}{template_arg} const{self.postfix.value}'
+
+        return f'{self.fqname}{template_arg}{self.postfix.value}'
 
 
 @dataclass(frozen=True)
@@ -168,23 +185,62 @@ class Param:
         int number
         const std::string& message
         ::My::Data<Hal::IHeater>
+
+    Typically one or more Param instances form a list of parameters as part
+    of a Function or Constructor. See their respective classes.
     """
-    type_desc: TypeDesc
+    type: TypeDesc
     name: str
+    default_value: Optional[str] = field(default=None)
+
+    def __post_init__(self):
+        """Post check the constructed data class members on validity."""
+        assert_t(self.type, TypeDesc)
+        assert_t(self.name, str)
+        if not self.name:
+            raise TypeError('name must be a non-empty string')
+        assert_t_optional(self.default_value, str)
 
     def __str__(self) -> str:
         raise CppGenError('instead of str(), call as_decl() or as_def()')
 
     def as_decl(self) -> str:
         """Compose the parameter as used in a declaration."""
-        if self.type_desc.default_value:
-            return f'{self.type_desc} {self.name} = {self.type_desc.default_value}'
+        if self.default_value:
+            return f'{self.type} {self.name} = {self.default_value}'
 
         return self.as_def()
 
     def as_def(self) -> str:
         """Compose the parameter as used in a definition."""
-        return f'{self.type_desc} {self.name}'
+        return f'{self.type} {self.name}'
+
+
+@dataclass(frozen=True)
+class MemberVariable(Param):
+    """Dataclass representing a C++ member variable. Example of a declaration:
+
+        float m_someOtherNumber;
+        double m_someNumber = 0.123;
+
+    Note: that MemberVariable has no parent property. Instead, it is up to the developer's
+    freedom how to integrate it. An example can be to include it as contents as part of a
+    AccessSpecifiedSection.
+    """
+
+    def __str__(self) -> str:
+        return str(self.as_decl())
+
+    def as_decl(self) -> TextBlock:
+        """Compose the parameter as used in a declaration."""
+        if self.default_value:
+            return TB(f'{self.type} {self.name} = {self.default_value};')
+
+        return TB(f'{self.type} {self.name};')
+
+    def as_def(self) -> TextBlock:
+        """Compose the parameter as used in a definition."""
+        raise CppGenError('MemberVariable only supports calling as_decl()')
 
 
 class Struct:
@@ -620,29 +676,6 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
                    '}'])
 
 
-@dataclass(frozen=True)
-class MemberVariable:
-    """Dataclass representing a C++ member variable. Example:
-
-        My::ILedControl& myPort;
-
-        float m_someOtherNumber;
-    """
-    type: TypeDesc
-    name: str
-
-    def __post_init__(self):
-        """Post check the constructed data class members on validity."""
-        assert_t(self.type, TypeDesc)
-        assert_t(self.name, str)
-        if not self.name:
-            raise TypeError('name must be a non-empty string')
-
-    def __str__(self) -> str:
-        """Return the contents of this dataclass as a single string."""
-        return f'{self.type} {self.name};'
-
-
 ###############################################################################
 # Type creation functions
 #
@@ -680,6 +713,18 @@ def double_t() -> TypeDesc:
     return TypeDesc(fqname=fqn_t('double'))
 
 
+def std_string_t() -> TypeDesc:
+    """Shortcut helper to create a double TypeDesc"""
+    return TypeDesc(fqname=fqn_t('std.string'))
+
+
+def const_std_string_ref_t() -> TypeDesc:
+    """Shortcut helper to create a double TypeDesc"""
+    return TypeDesc(fqname=fqn_t('std.string'),
+                    constness=TypeConstness.PREFIXED,
+                    postfix=TypePostfix.REFERENCE)
+
+
 def decl_var_t(fqn: Fqn, name: str) -> MemberVariable:
     """Shortcut helper to create a member variable (without postfix like & or *)."""
     return MemberVariable(type=TypeDesc(fqname=fqn, postfix=TypePostfix.NONE), name=name)
@@ -697,20 +742,22 @@ def decl_var_ptr_t(fqn: Fqn, name: str) -> MemberVariable:
 
 def param_t(fqn: Fqn, name: str, default_value='') -> Param:
     """Shortcut helper to create a simple parameter with an optional default value."""
-    return Param(type_desc=TypeDesc(fqn, default_value=default_value), name=name)
+    return Param(type=TypeDesc(fqn), name=name, default_value=default_value)
 
 
 def const_param_ref_t(fqn: Fqn, name: str, default_value='') -> Param:
     """Shortcut helper to create a const reference parameter with an optional default value."""
-    return Param(type_desc=TypeDesc(fqname=fqn,
-                                    postfix=TypePostfix.REFERENCE,
-                                    const=True,
-                                    default_value=default_value), name=name)
+    return Param(type=TypeDesc(fqname=fqn,
+                               postfix=TypePostfix.REFERENCE,
+                               constness=TypeConstness.PREFIXED),
+                 name=name,
+                 default_value=default_value)
 
 
 def const_param_ptr_t(fqn: Fqn, name: str, default_value='') -> Param:
     """Shortcut helper to create a const pointer parameter with an optional default value."""
-    return Param(type_desc=TypeDesc(fqname=fqn,
-                                    postfix=TypePostfix.POINTER,
-                                    const=True,
-                                    default_value=default_value), name=name)
+    return Param(type=TypeDesc(fqname=fqn,
+                               postfix=TypePostfix.POINTER,
+                               constness=TypeConstness.PREFIXED),
+                 name=name,
+                 default_value=default_value)

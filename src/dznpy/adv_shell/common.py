@@ -270,7 +270,8 @@ class Facilities:
         accessors = [fn.as_decl() for fn in
                      accessor_fns] if accessor_fns else Comment('<none>')
 
-        return TextBlock([Comment(f'Facility {plural("accessor", accessor_fns)}'), accessors])
+        return TextBlock([Comment(f'Facility {plural("accessor", accessor_fns)}'),
+                          accessors])
 
     @property
     def accessors_def(self) -> TextBlock:
@@ -281,9 +282,9 @@ class Facilities:
     @property
     def member_variables(self) -> TextBlock:
         """Create a C++ textblock with the declaration of the facilities as member variables."""
-        member_vars = [str(mv) for mv in [self.runtime,
-                                          self.dispatcher,
-                                          self.locator] if mv is not None]
+        member_vars = [mv.as_decl() for mv in [self.runtime,
+                                               self.dispatcher,
+                                               self.locator] if mv is not None]
 
         return TextBlock([Comment('Facilities'), member_vars])
 

@@ -32,3 +32,28 @@ example output will look like:
     unit_tests\test_misc_utils.py ........................ [100%]
     
     ==================== 234 passed in 0.34s ====================
+
+To measure code coverage during unittesting, issue the command shown below. Besides the standard py.test output
+it will also print code coverage percentages per source file.
+
+    cd C:\SB\dznpy\test\
+    python -m pytest --cov=dznpy
+
+    ________________ coverage: platform win32, python 3.10.0-final-0 _________________
+    
+    Name                                                           Stmts   Miss  Cover
+    ----------------------------------------------------------------------------------
+    C:\SB\dznpy\src\dznpy\__init__.py                                  0      0   100%
+    C:\SB\dznpy\src\dznpy\adv_shell\__init__.py                      100      0   100%
+    C:\SB\dznpy\src\dznpy\ ...etc...
+           ...etc...       ...etc...
+    ----------------------------------------------------------------------------------
+    TOTAL                                                           1980     42    98%
+
+To explore the source files and to discover the missed statements, generate a HTML report like following:
+
+    cd C:\SB\dznpy\test\
+    python -m coverage html
+    
+    Wrote HTML report to htmlcov\index.html
+

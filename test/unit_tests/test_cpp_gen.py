@@ -117,12 +117,9 @@ def test_typedesc_ok():
     """Test valid examples of the TypeDesc class"""
     sut = TypeDesc(Fqn(ns_ids_t('My.Data')))
     assert str(sut.fqname) == 'My::Data'
+    assert sut.constness == TypeConstness.NONE
     assert sut.postfix == TypePostfix.NONE
-    assert sut.default_value is None
     assert str(sut) == 'My::Data'
-
-    # with default value specified
-    assert TypeDesc(fqn_t('My.Data'), default_value='123').default_value == '123'
 
 
 def test_typedesc_ok_with_template_arg():
@@ -130,7 +127,8 @@ def test_typedesc_ok_with_template_arg():
     sut1 = TypeDesc(fqn_t('My.Data', True), template_arg=TemplateArg(fqn_t('Hal.IHeater')))
     assert str(sut1) == '::My::Data<Hal::IHeater>'
 
-    sut2 = TypeDesc(fqn_t('My.Project'), TemplateArg(fqn_t('Toaster', True)))
+    sut2 = TypeDesc(fqname=fqn_t('My.Project'),
+                    template_arg=TemplateArg(fqn_t('Toaster', True)))
     assert str(sut2) == 'My::Project<::Toaster>'
 
 
@@ -141,23 +139,42 @@ def test_typedesc_fail_on_missing_fqname():
     assert str(exc.value) == 'fqname must not be empty'
 
 
-def test_typedesc_fail_with_default_value():
-    """Test incorrect examples of the TypeDesc class"""
-    with pytest.raises(CppGenError) as exc:
-        TypeDesc(Fqn(ns_ids_t('My.Data')), default_value=123.456)
-    assert str(exc.value) == 'default_value must be a string type'
-
-
-def test_typedesc_const():
-    sut = TypeDesc(fqname=fqn_t('My.Data'), const=True)
+def test_typedesc_constness():
+    sut = TypeDesc(fqname=fqn_t('My.Data'), constness=TypeConstness.PREFIXED)
     assert str(sut) == 'const My::Data'
+
+    sut = TypeDesc(fqname=fqn_t('float'), constness=TypeConstness.POSTFIXED)
+    assert str(sut) == 'float const'
+
+    sut = TypeDesc(fqname=fqn_t('double'), constness=TypeConstness.NONE)
+    assert str(sut) == 'double'
+
+
+def test_typedesc_constness_fail_wrong_type():
+    with pytest.raises(TypeError) as exc:
+        TypeDesc(fqname=fqn_t('int'), constness=123)
+    assert """Value argument "123" is not equal to the expected type: <enum 'TypeConstness'>""" in str(exc.value)
 
 
 def test_typedesc_other_postfices():
     assert str(TypeDesc(fqn_t('My.Data'), postfix=TypePostfix.REFERENCE)) == 'My::Data&'
     assert str(TypeDesc(fqn_t('My_Data_'), postfix=TypePostfix.POINTER)) == 'My_Data_*'
-    assert str(TypeDesc(fqn_t('My::Data', prefix_root_ns=True))) == '::My::Data'
-    assert str(TypeDesc(fqn_t('Number', True), const=True)) == 'const ::Number'
+    assert str(TypeDesc(fqn_t('float'), postfix=TypePostfix.POINTER_CONST)) == 'float* const'
+
+
+def test_typedesc_invalid_postfix():
+    with pytest.raises(TypeError) as exc:
+        TypeDesc(fqn_t('int'), postfix=123)
+    assert """Value argument "123" is not equal to the expected type: <enum 'TypePostfix'>""" in str(exc.value)
+
+
+def test_typedesc_helper_functions():
+    assert_str_eq(void_t(), 'void')
+    assert_str_eq(int_t(), 'int')
+    assert_str_eq(float_t(), 'float')
+    assert_str_eq(double_t(), 'double')
+    assert_str_eq(std_string_t(), 'std::string')
+    assert_str_eq(const_std_string_ref_t(), 'const std::string&')
 
 
 def test_struct_decl_without_contents():
@@ -230,34 +247,90 @@ def test_access_specified_section():
 
 
 def test_param_with_default1():
-    type_desc = TypeDesc(fqn_t('int'), default_value='123')
-    sut = Param(type_desc=type_desc, name='number')
+    sut = Param(type=int_t(), name='number', default_value='123')
     assert sut.name == 'number'
     assert sut.as_decl() == 'int number = 123'
     assert sut.as_def() == 'int number'
+    assert sut.default_value == '123'
 
 
 def test_param_with_default2():
-    type_desc = TypeDesc(fqname=fqn_t(['std', 'string']), postfix=TypePostfix.REFERENCE,
-                         const=True, default_value='""')
-    sut = Param(type_desc=type_desc, name='message')
-    assert str(sut.type_desc) == 'const std::string&'
+    sut = Param(type=const_std_string_ref_t(), name='message', default_value='""')
+    assert str(sut.type) == 'const std::string&'
     assert sut.as_decl() == 'const std::string& message = ""'
     assert sut.as_def() == 'const std::string& message'
+    assert sut.default_value == '""'
 
 
 def test_param_without_default():
-    type_desc = TypeDesc(fqname=fqn_t('MyType'), postfix=TypePostfix.POINTER, const=False)
-    sut = Param(type_desc=type_desc, name='example')
-    assert str(sut.type_desc) == 'MyType*'
+    type_desc = TypeDesc(fqname=fqn_t('MyType'), postfix=TypePostfix.POINTER)
+    sut = Param(type=type_desc, name='example')
+    assert str(sut.type) == 'MyType*'
     assert sut.as_decl() == 'MyType* example'
     assert sut.as_def() == 'MyType* example'
+    assert sut.default_value is None
+
+
+def test_param_fail():
+    """Test that exception occurs when providing incorrect data for type and name."""
+    with pytest.raises(TypeError) as exc:
+        Param(type=123, name=456)
+    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.cpp_gen.TypeDesc'>""" in str(exc.value)
+
+    with pytest.raises(TypeError) as exc:
+        Param(type=int_t(), name=123)
+    assert """Value argument "123" is not equal to the expected type: <class 'str'>""" in str(exc.value)
+
+    with pytest.raises(TypeError) as exc:
+        Param(type=int_t(), name='')
+    assert str(exc.value) == 'name must be a non-empty string'
 
 
 def test_param_str_fail():
+    """Test that an exception occurs when attempting str()."""
     with pytest.raises(CppGenError) as exc:
-        str(Param(type_desc=TypeDesc(fqn_t('int')), name='number'))
+        str(Param(type=int_t(), name='number'))
     assert str(exc.value) == 'instead of str(), call as_decl() or as_def()'
+
+
+def test_param_fail_with_invalid_default_value_type():
+    """Test incorrect examples of the TypeDesc class"""
+    with pytest.raises(TypeError) as exc:
+        Param(int_t(), name='number', default_value=123.456)
+    assert """Value argument "123.456" is not equal to the expected type: <class 'str'>""" in str(exc.value)
+
+
+def test_member_variable():
+    assert str(MemberVariable(type=float_t(),
+                              name='MyNumber')) == 'float MyNumber;\n'
+    assert_str_eq(MemberVariable(type=float_t(),
+                                 name='MyNumber',
+                                 default_value="3.14").as_decl(), 'float MyNumber = 3.14;\n')
+    assert str(MemberVariable(type=TypeDesc(fqn_t('My.ILedControl'), postfix=TypePostfix.REFERENCE),
+                              name='MyPort')) == 'My::ILedControl& MyPort;\n'
+
+
+def test_member_variable_fail():
+    """Test that exceptions occur when providing invalid data to type, name and default_value."""
+    with pytest.raises(TypeError) as exc:
+        MemberVariable(type=123, name='')
+    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.cpp_gen.TypeDesc'>""" in str(exc.value)
+
+    with pytest.raises(TypeError) as exc:
+        MemberVariable(type=void_t(), name=123)
+    assert """Value argument "123" is not equal to the expected type: <class 'str'>""" in str(exc.value)
+
+    with pytest.raises(TypeError) as exc:
+        MemberVariable(type=void_t(), name='')
+    assert str(exc.value) == 'name must be a non-empty string'
+
+    with pytest.raises(TypeError) as exc:
+        MemberVariable(type=int_t(), name='number', default_value=123.456)
+    assert """Value argument "123.456" is not equal to the expected type: <class 'str'>""" in str(exc.value)
+
+    with pytest.raises(CppGenError) as exc:
+        MemberVariable(type=int_t(), name='num').as_def()
+    assert str(exc.value) == 'MemberVariable only supports calling as_decl()'
 
 
 def test_constructor_fail():
@@ -477,27 +550,6 @@ def test_member_function_override():
     assert_str_eq(sut.as_def(), MEMBER_FUNCTION_OVERRIDE_DEF)
 
 
-def test_member_variable():
-    assert str(MemberVariable(type=float_t(), name='MyNumber')) == 'float MyNumber;'
-    assert str(
-        MemberVariable(type=TypeDesc(Fqn(ns_ids_t('My.ILedControl')), postfix=TypePostfix.REFERENCE),
-                       name='MyPort')) == 'My::ILedControl& MyPort;'
-
-
-def test_member_variable_fail():
-    with pytest.raises(TypeError) as exc:
-        MemberVariable(type=123, name='')
-    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.cpp_gen.TypeDesc'>""" in str(exc.value)
-
-    with pytest.raises(TypeError) as exc:
-        MemberVariable(type=void_t(), name=123)
-    assert """Value argument "123" is not equal to the expected type: <class 'str'>""" in str(exc.value)
-
-    with pytest.raises(TypeError) as exc:
-        MemberVariable(type=void_t(), name='')
-    assert str(exc.value) == 'name must be a non-empty string'
-
-
 ###############################################################################
 # Test the type creation functions
 #
@@ -549,19 +601,22 @@ def test_typedesc_creator_functions():
 def test_decl_var_t_ok():
     sut = decl_var_t(fqn_t('My.Type'), 'm_data')
     assert isinstance(sut, MemberVariable)
-    assert str(sut) == 'My::Type m_data;'
+    assert_str_eq(sut.as_decl(), 'My::Type m_data;\n')
+    assert str(sut) == 'My::Type m_data;\n'
 
 
 def test_decl_var_ref_t_ok():
     sut = decl_var_ref_t(fqn_t(['My', 'Type']), 'm_data')
     assert isinstance(sut, MemberVariable)
-    assert str(sut) == 'My::Type& m_data;'
+    assert_str_eq(sut.as_decl(), 'My::Type& m_data;\n')
+    assert str(sut) == 'My::Type& m_data;\n'
 
 
 def test_decl_var_ptr_t_ok():
     sut = decl_var_ptr_t(fqn_t('My::Type'), 'm_data')
     assert isinstance(sut, MemberVariable)
-    assert str(sut) == 'My::Type* m_data;'
+    assert_str_eq(sut.as_decl(), 'My::Type* m_data;\n')
+    assert str(sut) == 'My::Type* m_data;\n'
 
 
 def test_param_t_ok():
