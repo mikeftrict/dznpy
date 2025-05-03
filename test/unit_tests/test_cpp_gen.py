@@ -183,16 +183,16 @@ def test_struct_decl_without_contents():
 
 def test_struct_decl():
     assert str(Struct(name='MyStruct',
-                      contents=TB(CONTENTS_SINGLE_LINE))) == STRUCT_DECL_CONTENTS
+                      decl_contents=TB(CONTENTS_SINGLE_LINE))) == STRUCT_DECL_CONTENTS
 
 
 def test_struct_with_post_contents():
-    sut = Struct(name='MyStruct', contents=TB(456))
-    sut.contents = TB(CONTENTS_SINGLE_LINE)
+    sut = Struct(name='MyStruct', decl_contents=TB(456))
+    sut.decl_contents = TB(CONTENTS_SINGLE_LINE)
     assert str(sut) == STRUCT_DECL_CONTENTS
 
     with pytest.raises(TypeError) as exc:
-        sut.contents = 123
+        sut.decl_contents = 123
     assert """Value argument "123" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
 
 
@@ -202,7 +202,7 @@ def test_struct_decl_fail():
     assert str(exc.value) == 'name must not be empty'
 
     with pytest.raises(TypeError) as exc:
-        Struct(name='MyStruct', contents=123)
+        Struct(name='MyStruct', decl_contents=123)
     assert """Value argument "123" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
 
 
@@ -212,16 +212,16 @@ def test_class_decl_without_contents():
 
 def test_class_decl():
     assert str(Class(name='MyClass',
-                     contents=TB(CONTENTS_MULTI_LINE))) == CLASS_DECL_CONTENTS
+                     decl_contents=TB(CONTENTS_MULTI_LINE))) == CLASS_DECL_CONTENTS
 
 
 def test_class_with_post_contents():
-    sut = Class(name='MyClass', contents=TB(789))
-    sut.contents = TB(CONTENTS_MULTI_LINE)
+    sut = Class(name='MyClass', decl_contents=TB(789))
+    sut.decl_contents = TB(CONTENTS_MULTI_LINE)
     assert str(sut) == CLASS_DECL_CONTENTS
 
     with pytest.raises(TypeError) as exc:
-        sut.contents = 303
+        sut.decl_contents = 303
     assert """Value argument "303" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
 
 
@@ -231,7 +231,7 @@ def test_class_decl_fail():
     assert str(exc.value) == 'name must not be empty'
 
     with pytest.raises(TypeError) as exc:
-        Class(name='MyClass', contents=[123])
+        Class(name='MyClass', decl_contents=[123])
     assert """Value argument "[123]" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
 
 
@@ -382,8 +382,14 @@ def test_explicit_constructor_ok():
 
 
 def test_constructor_with_default_initialization():
-    sut = Constructor(parent=Class('MyToaster'), initialization='default')
+    sut = Constructor(parent=Class('MyToaster'), initialization=FunctionInitialization.DEFAULT)
     assert_str_eq(sut.as_decl(), CONSTRUCTOR_INITIALIZATION_DEFAULT_DECL)
+    assert_str_eq(sut.as_def(), NOTHING_GENERATED)
+
+
+def test_constructor_with_delete_initialization():
+    sut = Constructor(parent=Class('MyToaster'), initialization=FunctionInitialization.DELETE)
+    assert_str_eq(sut.as_decl(), CONSTRUCTOR_INITIALIZATION_DELETE_DECL)
     assert_str_eq(sut.as_def(), NOTHING_GENERATED)
 
 
@@ -428,13 +434,16 @@ def test_destructor_content_ok():
 
 
 def test_destructor_with_default_initialization():
-    sut = Destructor(parent=Class('MyToaster'), initialization='default')
+    sut = Destructor(parent=Class('MyToaster'),
+                     initialization=FunctionInitialization.DEFAULT)
     assert_str_eq(sut.as_decl(), DESTRUCTOR_INITIALIZATION_DEFAULT_DECL)
     assert_str_eq(sut.as_def(), NOTHING_GENERATED)
 
 
 def test_destructor_with_default_initialization_and_override():
-    sut = Destructor(parent=Class('MyToaster'), override=True, initialization='default')
+    sut = Destructor(parent=Class('MyToaster'),
+                     override=True,
+                     initialization=FunctionInitialization.DEFAULT)
     assert_str_eq(sut.as_decl(), DESTRUCTOR_OVERRIDE_INITIALIZATION_DEFAULT_DECL)
     assert_str_eq(sut.as_def(), NOTHING_GENERATED)
 
@@ -514,18 +523,25 @@ def test_virtual_member_function():
 
 def test_function_initialization_pure_virtual_fail():
     with pytest.raises(CppGenError) as exc:
-        Function(return_type=void_t(), name='Calc', initialization='0')
+        Function(return_type=void_t(),
+                 name='Calc',
+                 initialization=FunctionInitialization.PURE_VIRTUAL)
     assert str(exc.value) == 'missing prefix "virtual" when initializing with "=0"'
 
     with pytest.raises(CppGenError) as exc:
-        Function(prefix=FunctionPrefix.VIRTUAL, return_type=void_t(), name='Calc',
-                 initialization='0')
+        Function(prefix=FunctionPrefix.VIRTUAL,
+                 return_type=void_t(),
+                 name='Calc',
+                 initialization=FunctionInitialization.PURE_VIRTUAL)
     assert str(exc.value) == 'missing parent for prefix "virtual"'
 
 
 def test_function_initialization_pure_virtual():
-    sut = Function(prefix=FunctionPrefix.VIRTUAL, return_type=void_t(),
-                   name='Calc', initialization='0', parent=Class('MyClass'))
+    sut = Function(prefix=FunctionPrefix.VIRTUAL,
+                   return_type=void_t(),
+                   name='Calc',
+                   initialization=FunctionInitialization.PURE_VIRTUAL,
+                   parent=Class('MyClass'))
     assert_str_eq(sut.as_decl(), PURE_VIRTUAL_MEMBER_FUNCTION_DECL)
     assert_str_eq(sut.as_def(), NOTHING_GENERATED)
 

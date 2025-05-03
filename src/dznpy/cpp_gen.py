@@ -57,6 +57,14 @@ class TypeConstness(enum.Enum):
     POSTFIXED = 'const postfix'
 
 
+class FunctionInitialization(enum.Enum):
+    """Enum to indicate the initialization of a constructor, destructor or function."""
+    NONE = ''
+    DEFAULT = ' = default'
+    DELETE = ' = delete'
+    PURE_VIRTUAL = ' = 0'
+
+
 @dataclass(frozen=True)
 class Fqn:
     """Dataclass representing a C++ fully-qualified name by wrapping the NamespaceIds type and
@@ -253,27 +261,26 @@ class Struct:
         <contents>
         };
     """
-    _name: str
-    _contents: TextBlock
+    __slots__ = ['_name', '_decl_contents', '_struct_or_class']
 
-    def __init__(self, name: str, contents: Optional[TextBlock] = None):
+    def __init__(self, name: str, decl_contents: Optional[TextBlock] = None):
         """Initialize with a name and optional initial content."""
         assert_t(name, str)
-        assert_t_optional(contents, TextBlock)
+        assert_t_optional(decl_contents, TextBlock)
         if not name:
             raise CppGenError('name must not be empty')
 
         self._name = name
-        self._contents = contents if contents else TextBlock()
-        self._struct_class = StructOrClass.STRUCT
+        self._decl_contents = decl_contents if decl_contents else TextBlock()
+        self._struct_or_class = StructOrClass.STRUCT
 
     def __str__(self) -> str:
         """Return the contents of this dataclass as a multiline string."""
-        if self.contents.lines:
+        if self.decl_contents.lines:
             return str(
-                TB([f'{self._struct_class.value} {self.name}', '{', self.contents, '};']))
+                TB([f'{self._struct_or_class.value} {self.name}', '{', self.decl_contents, '};']))
 
-        return str(TB([f'{self._struct_class.value} {self.name}', '{', '};']))
+        return str(TB([f'{self._struct_or_class.value} {self.name}', '{', '};']))
 
     @property
     def name(self) -> str:
@@ -281,15 +288,15 @@ class Struct:
         return self._name
 
     @property
-    def contents(self) -> TextBlock:
+    def decl_contents(self) -> TextBlock:
         """Get the current contents."""
-        return self._contents
+        return self._decl_contents
 
-    @contents.setter
-    def contents(self, value: TextBlock):
+    @decl_contents.setter
+    def decl_contents(self, value: TextBlock):
         """Set new contents that must be a TextBlock."""
         assert_t(value, TextBlock)
-        self._contents = value
+        self._decl_contents = value
 
 
 @dataclass
@@ -304,10 +311,10 @@ class Class(Struct):
         };
     """
 
-    def __init__(self, name: str, contents: Optional[TextBlock] = None):
+    def __init__(self, name: str, decl_contents: Optional[TextBlock] = None):
         """Initialize with a name and optional initial content."""
-        super().__init__(name, contents)
-        self._struct_class = StructOrClass.CLASS
+        super().__init__(name, decl_contents)
+        self._struct_or_class = StructOrClass.CLASS
 
 
 @dataclass(frozen=True)
@@ -437,6 +444,7 @@ class ParentAndContents:
     on creation."""
     parent: Optional[Struct or Class] = field(default=None)
     contents: Optional[TextBlock] = field(default=None)
+    initialization: FunctionInitialization = field(default=FunctionInitialization.NONE)
 
     def __post_init__(self):
         """Post check the constructed data class members on validity."""
@@ -477,15 +485,14 @@ class Constructor(ParentAndContents):
 
         MyToaster::MyToaster()
             : m_number(1)
-            , m_two{2 }
-            , m_xyz ("Two")
+            , m_two{2}
+            , m_xyz("Two")
         {
             <contents>
         }
     """
     explicit: bool = field(default=False)
     params: List[Param] = field(default_factory=list)
-    initialization: str = field(default='')
     member_initlist: List[str] = field(default_factory=list)
 
     def __post_init__(self):
@@ -494,7 +501,7 @@ class Constructor(ParentAndContents):
         if not isinstance(self.parent, Class) and not isinstance(self.parent, Struct):
             raise CppGenError('parent must be either a Class or Struct')
 
-        if self.initialization and self.member_initlist:
+        if self.initialization != FunctionInitialization.NONE and self.member_initlist:
             raise CppGenError('not allowed to have both a constructor initialization and a '
                               'member initializer list')
 
@@ -508,13 +515,12 @@ class Constructor(ParentAndContents):
         """Return the constructor declaration as a multiline string."""
         explicit = 'explicit ' if self.explicit else ''
         params = ', '.join([p.as_decl() for p in self.params if p])
-        initialization = f' = {self.initialization}' if self.initialization else ''
-        full_signature = f'{explicit}{self.parent.name}({params}){initialization};'
+        full_signature = f'{explicit}{self.parent.name}({params}){self.initialization.value};'
         return TB(full_signature)
 
     def as_def(self) -> TextBlock:
         """Return the constructor definition as a multiline string."""
-        if self.initialization:
+        if self.initialization != FunctionInitialization.NONE:
             return TextBlock()  # no definition is generated when declared with initialization
 
         params = ', '.join([p.as_def() for p in self.params if p])
@@ -555,7 +561,6 @@ class Destructor(ParentAndContents):
         }
     """
     override: bool = field(default=False)
-    initialization: str = field(default='')
 
     def __post_init__(self):
         """Post check the constructed data class members on validity."""
@@ -569,13 +574,12 @@ class Destructor(ParentAndContents):
     def as_decl(self) -> TextBlock:
         """Return the destructor declaration as a multiline string."""
         override = ' override' if self.override else ''
-        initialization = f' = {self.initialization}' if self.initialization else ''
-        full_signature = f'~{self.parent.name}(){override}{initialization};'
+        full_signature = f'~{self.parent.name}(){override}{self.initialization.value};'
         return TB(full_signature)
 
     def as_def(self) -> TextBlock:
         """Return the destructor definition as a multiline string."""
-        if self.initialization:
+        if self.initialization != FunctionInitialization.NONE:
             return TextBlock()  # no definition is generated when declared with initialization
 
         full_signature = f'{self.parent.name}::~{self.parent.name}()'
@@ -593,7 +597,7 @@ class Destructor(ParentAndContents):
 class Function(ParentAndContents):  # pylint: disable=too-many-instance-attributes
     """Dataclass representing a single C++ function. The contents for the function definition will
     be indented.
-    In case it needs to be a class method then a parent (Struct or Class) must be assigned that
+    In case it needs to be a class method, then a parent (Struct or Class) must be assigned that
     will determine the scope name of the method.
 
     Example of a declaration:
@@ -624,7 +628,6 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
     params: List[Param] = field(default_factory=list)
     cav: str = field(default='')  # = const and volatile type qualifiers
     override: bool = field(default=False)
-    initialization: str = field(default='')
 
     def __post_init__(self):
         """Post check the constructed data class members on validity."""
@@ -638,7 +641,8 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
         if self.prefix == FunctionPrefix.VIRTUAL and self.parent is None:
             raise CppGenError('missing parent for prefix "virtual"')
 
-        if self.initialization.startswith('0') and not self.prefix == FunctionPrefix.VIRTUAL:
+        if self.initialization == FunctionInitialization.PURE_VIRTUAL \
+                and not self.prefix == FunctionPrefix.VIRTUAL:
             raise CppGenError('missing prefix "virtual" when initializing with "=0"')
 
     def __str__(self) -> str:
@@ -652,12 +656,12 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
         params = ', '.join([p.as_decl() for p in self.params])
         cav = f' {self.cav}' if self.cav != '' else ''
         override = ' override' if self.override else ''
-        initialization = f' = {self.initialization}' if self.initialization != '' else ''
+        initialization = self.initialization.value
         return TB(f'{prefix}{return_type}{name}({params}){cav}{override}{initialization};')
 
     def as_def(self) -> TextBlock:
         """Return the function definition as a multiline string."""
-        if self.initialization:
+        if self.initialization != FunctionInitialization.NONE:
             return TextBlock()  # no definition is generated when declared with initialization
 
         return_type = f'{self.return_type} ' if self.return_type else ''

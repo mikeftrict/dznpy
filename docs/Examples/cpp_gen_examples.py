@@ -10,7 +10,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from dznpy.cpp_gen import Comment, Fqn, Namespace, Struct, Class, ProjectIncludes, SystemIncludes, \
     AccessSpecifiedSection, AccessSpecifier, TypeDesc, TemplateArg, TypePostfix, fqn_t, \
     TypeConstness, void_t, int_t, float_t, double_t, std_string_t, const_std_string_ref_t, Param, \
-    MemberVariable, Constructor, Function
+    MemberVariable, Constructor, FunctionInitialization, Function, Destructor
 from dznpy.scoping import NamespaceIds, ns_ids_t
 from dznpy.text_gen import TextBlock, TB
 
@@ -63,6 +63,7 @@ def example_fqn():
     # Example of a worthy NamespaceIds leading to 'My::Project'
     simple_fqn = Fqn(NamespaceIds(['My', 'Project']))
     print(simple_fqn)
+    print(simple_fqn.ns_ids)  # directly access and print a NamespaceIds, note it is dot-delimited!
 
     # Example of a Type Creation Function for NamespaceIds and the specification to
     # prefix it with the '::' root namespace indication leading to '::My::Deeply::Nested::Project'
@@ -101,6 +102,7 @@ def example_namespace():
     my_namespace = Namespace(ns_ids=ns_ids_t('My.Name.Space'))  # using a Type Creation Function
     my_namespace.contents = TB(Struct(name='CalculationData'))  # see alias TB instead of TextBlock
     print(my_namespace)
+    print(my_namespace.ns_ids)  # directly access and print, note that one is dot-delimited!
 
 
 def example_simple_struct_class_access_specification():
@@ -136,21 +138,21 @@ def example_simple_struct_class_access_specification():
     print(anonynmous_access)
 
     # A struct with contents right from the start
-    struct = Struct(name='MyData', contents=TB(anonynmous_access))
+    struct = Struct(name='MyData', decl_contents=TB(anonynmous_access))
     print(struct)
 
     # A struct with contents right from the start
-    cls = Class(name='MyClass', contents=TB(public_access))
+    cls = Class(name='MyClass', decl_contents=TB(public_access))
     print(cls)
 
     # A struct with post assigning contents
     struct = Struct('MyDataCollection')
-    struct.contents = TB(private_access)
+    struct.decl_contents = TB(private_access)
     print(struct)
 
     # A class with post assigning contents
     cls = Struct('SomeFunctionality')
-    cls.contents = TB(protected_access)
+    cls.decl_contents = TB(protected_access)
     print(cls)
 
 
@@ -266,25 +268,90 @@ def example_member_variable():
 
     # Preview of how a MemberVariable can be integrated into a Struct
     my_struct = Struct(name='MyData')
-    my_struct.contents = TB([AccessSpecifiedSection(AccessSpecifier.ANONYMOUS,
-                                                    mv_double.as_decl()),
-                             AccessSpecifiedSection(AccessSpecifier.PRIVATE,
-                                                    mv_stdstring.as_decl())
-                             ])
+    my_struct.decl_contents = TB([AccessSpecifiedSection(AccessSpecifier.ANONYMOUS,
+                                                         mv_double.as_decl()),
+                                  AccessSpecifiedSection(AccessSpecifier.PRIVATE,
+                                                         mv_stdstring.as_decl())
+                                  ])
     print(my_struct)
 
 
-def main():
-    """Convergence  """
+def example_constructor_destructor():
+    """Example of using the Constructor and Destructor, in combination with a Class or Struct."""
 
-    # example_includes()
-    # example_fqn()
-    # example_comment()
-    # example_namespace()
-    # example_simple_struct_class_access_specification()
-    # example_type_description()
-    # example_param()
+    # Most basic constructor and destructor for a class.
+    # Note: to prevent 'chicken-and-egg',
+    # 1. first the class with a name shall be made known, it acts as the 'parent'
+    # 2. Constructor and Destructor depend on this name from the 'parent'
+    # 3. class declaration contents can now be filled with Constructor and Destructor
+    cls = Class('MyClass')
+    constr = Constructor(parent=cls)
+    destr = Destructor(parent=cls)
+    cls.decl_contents = TB([constr.as_decl(), destr.as_decl()])
+
+    print(cls)  # for in the C++ headerfile
+    print(constr.as_def())  # C++ sourcefile
+    print(destr.as_def())  # C++ sourcefile
+
+    # Explicit marked constructor
+    cls = Class('GarageDoor')
+    constr = Constructor(parent=cls, explicit=True)
+    cls.decl_contents = TB(constr.as_decl())
+    print(cls)  # for in the C++ headerfile
+    print(constr.as_def())  # C++ sourcefile
+
+    # Constructor parameters
+    param_int = Param(int_t(), 'number')
+    param_float = Param(float_t(), 'fract')
+    cls = Struct('DoorData')
+    constr = Constructor(parent=cls, params=[param_int, param_float])
+    cls.decl_contents = TB(constr.as_decl())
+    print(cls)  # for in the C++ headerfile
+    print(constr.as_def())  # C++ sourcefile
+
+    # Constructor with a member initialization list
+    # Note: in this case the developer must manually provide the member initialization
+    #       and ensure it can be compiled. There is no intelligent logic at this moment
+    #       to refer to class member variables
+    constr = Constructor(parent=cls,
+                         params=[param_int],
+                         member_initlist=['m_number(number)', 'm_pi{3.14}'])
+    mv_number = MemberVariable(int_t(), 'm_number')  # example class member variable (1)
+    mv_double = MemberVariable(double_t(), 'm_pi')  # example class member variable (2)
+    cls.decl_contents = TB([constr.as_decl(), mv_number, mv_double])
+    print(cls)  # for in the C++ headerfile
+    print(constr.as_def())  # C++ sourcefile
+
+    # Constructor initialization
+    struct = Struct('Doorbell')
+    constr = Constructor(parent=struct, initialization=FunctionInitialization.DEFAULT)
+    struct.decl_contents = TB(constr.as_decl())
+    print(struct)  # for in the C++ headerfile
+    print(constr.as_def())  # No sourcecode, because of '= default/delete' initialization
+
+    # Destructor initialization and override
+    cls = Struct('HouseDoor')
+    destr = Destructor(parent=cls,
+                       override=True,
+                       initialization=FunctionInitialization.DEFAULT)
+    cls.decl_contents = TB(destr.as_decl())
+    print(cls)  # for in the C++ headerfile
+    print(destr.as_def())  # No sourcecode, because of '= default' initialization
+
+
+def main():
+    """Convergence point of executing all example code for the cpp_gen module."""
+
+    example_includes()
+    example_fqn()
+    example_comment()
+    example_namespace()
+    example_simple_struct_class_access_specification()
+    example_type_description()
+    example_param()
     example_member_variable()
+    example_constructor_destructor()
+
 
 if __name__ == "__main__":
     main()

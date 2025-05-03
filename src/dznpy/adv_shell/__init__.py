@@ -227,7 +227,7 @@ class Builder:
                            ]
 
         # fill the struct declaration with the public and private sections
-        cpp.struct.contents = TextBlock([
+        cpp.struct.decl_contents = TextBlock([
             cpp_gen.AccessSpecifiedSection(
                 access_specifier=AccessSpecifier.ANONYMOUS,
                 contents=TextBlock(public_section)),
