@@ -7,13 +7,13 @@ namespace My { namespace Project { namespace Hal {
 interface IPowerCord
 {
 // Lifecycle operations
-in void Initialize();
-in void Uninitialize();
+in Result Initialize(in string label);
+in void Uninitialize(out PResultInfo info);
 
 // PowerCord operations
 in bool IsConnectedToOutlet();
 out void Connected();
-out void Disconnected(MyType exampleParameter);
+out void Disconnected(in MyLongNamedType exampleParameter);
 
 behavior
 {
@@ -28,7 +28,11 @@ behavior
 
     [s.Uninitialized]
     {
-        on Initialize: s = State.ObservingPowercord;
+        on Initialize:
+        {
+            reply(Result.Ok);
+            s = State.ObservingPowercord;
+        } 
     }
 
     [s.ObservingPowercord]

@@ -142,7 +142,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& locator, const 
     m_rpCord.out.Connected = [&] {
         return m_dispatcher([&] { return m_encapsulee.cord.out.Connected(); });
     };
-    m_rpCord.out.Disconnected = [&](Sub::MyLongNamedType exampleParameter) {
+    m_rpCord.out.Disconnected = [&](My::Project::Hal::Sub::MyLongNamedType exampleParameter) {
         return m_dispatcher([&, exampleParameter] { return m_encapsulee.cord.out.Disconnected(exampleParameter); });
     };
     m_rpLed.out.GlitchOccurred = [&] {
@@ -325,7 +325,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_ppApi.in.GetTime = [&](size_t& toastingTime) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.GetTime(toastingTime); });
     };
-    m_ppApi.in.Toast = [&](std::string motd, PResultInfo& info) {
+    m_ppApi.in.Toast = [&](std::string motd, std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
     };
     m_ppApi.in.Cancel = [&] {
@@ -522,7 +522,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_ppApi.in.GetTime = [&](size_t& toastingTime) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.GetTime(toastingTime); });
     };
-    m_ppApi.in.Toast = [&](std::string motd, PResultInfo& info) {
+    m_ppApi.in.Toast = [&](std::string motd, std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
     };
     m_ppApi.in.Cancel = [&] {
@@ -544,7 +544,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_rpCord.out.Connected = [&] {
         return m_dispatcher([&] { return m_encapsulee.cord.out.Connected(); });
     };
-    m_rpCord.out.Disconnected = [&](Sub::MyLongNamedType exampleParameter) {
+    m_rpCord.out.Disconnected = [&](My::Project::Hal::Sub::MyLongNamedType exampleParameter) {
         return m_dispatcher([&, exampleParameter] { return m_encapsulee.cord.out.Disconnected(exampleParameter); });
     };
 
@@ -898,7 +898,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_ppApi.in.GetTime = [&](size_t& toastingTime) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.GetTime(toastingTime); });
     };
-    m_ppApi.in.Toast = [&](std::string motd, PResultInfo& info) {
+    m_ppApi.in.Toast = [&](std::string motd, std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
     };
     m_ppApi.in.Cancel = [&] {
@@ -920,7 +920,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_rpCord.out.Connected = [&] {
         return m_dispatcher([&] { return m_encapsulee.cord.out.Connected(); });
     };
-    m_rpCord.out.Disconnected = [&](Sub::MyLongNamedType exampleParameter) {
+    m_rpCord.out.Disconnected = [&](My::Project::Hal::Sub::MyLongNamedType exampleParameter) {
         return m_dispatcher([&, exampleParameter] { return m_encapsulee.cord.out.Disconnected(exampleParameter); });
     };
     m_rpLed.out.GlitchOccurred = [&] {
@@ -1264,21 +1264,21 @@ ExclusiveToasterAdvShell::ExclusiveToasterAdvShell(const dzn::locator& prototype
     // ---------------------------------------------
 
     // Reroute in-events of boundary provides ports (MTS) via the dispatcher to the encapsulee
-    m_ppLifecycle.in.Initialize = [&](PResultInfo& info) {
+    m_ppLifecycle.in.Initialize = [&](std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.lifecycle.in.Initialize(info); });
     };
-    m_ppLifecycle.in.Uninitialize = [&](PResultInfo& info) {
+    m_ppLifecycle.in.Uninitialize = [&](std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.lifecycle.in.Uninitialize(info); });
     };
 
     // Reroute in-events of the internal arbitered multiclient port via the dispatcher to the encapsulee
-    m_ppApi().in.Claim = [&](PResultInfo& info) {
+    m_ppApi().in.Claim = [&](std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Claim(info); });
     };
     m_ppApi().in.Release = [&](std::string& goodbye) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Release(goodbye); });
     };
-    m_ppApi().in.Toast = [&](std::string motd, PResultInfo& info) {
+    m_ppApi().in.Toast = [&](std::string motd, std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
     };
     m_ppApi().in.Cancel = [&] {
@@ -1290,7 +1290,7 @@ ExclusiveToasterAdvShell::ExclusiveToasterAdvShell(const dzn::locator& prototype
         auto lockAndData = m_ppApi.CurrentClient();
         if (lockAndData->has_value()) lockAndData->value().get().dznPort.out.Ok();
     };
-    m_ppApi().out.Fail = [&](PResultInfo info) {
+    m_ppApi().out.Fail = [&](std::shared_ptr<ResultInfo> info) {
         auto lockAndData = m_ppApi.CurrentClient();
         if (lockAndData->has_value()) lockAndData->value().get().dznPort.out.Fail(info);
     };
@@ -1306,7 +1306,7 @@ ExclusiveToasterAdvShell::ExclusiveToasterAdvShell(const dzn::locator& prototype
     m_rpCord.out.Connected = [&] {
         return m_dispatcher([&] { return m_encapsulee.cord.out.Connected(); });
     };
-    m_rpCord.out.Disconnected = [&](Sub::MyLongNamedType exampleParameter) {
+    m_rpCord.out.Disconnected = [&](My::Project::Hal::Sub::MyLongNamedType exampleParameter) {
         return m_dispatcher([&, exampleParameter] { return m_encapsulee.cord.out.Disconnected(exampleParameter); });
     };
     m_rpTimer.out.Timeout = [&] {
@@ -1380,7 +1380,7 @@ std::vector<::Dzn::ClientIdentifier> ExclusiveToasterAdvShell::GetApiClientIdent
 {
     auto port(::Dzn::CreatePort<::My::IExclusiveToaster>("api", "arbiterApi"));
 
-    port.in.Claim = [&, identifier](PResultInfo& info) {
+    port.in.Claim = [&, identifier](std::shared_ptr<ResultInfo>& info) {
         const auto r = m_ppApi.Arbitered().in.Claim(info);
         if (r == ::My::Result::Ok) m_ppApi.Select(identifier);
         return r;
@@ -1516,21 +1516,21 @@ DummyExclusiveToasterAdvShell::DummyExclusiveToasterAdvShell(const dzn::locator&
     // ---------------------------------------------
 
     // Reroute in-events of boundary provides ports (MTS) via the dispatcher to the encapsulee
-    m_ppLifecycle.in.Initialize = [&](PResultInfo& info) {
+    m_ppLifecycle.in.Initialize = [&](std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.lifecycle.in.Initialize(info); });
     };
-    m_ppLifecycle.in.Uninitialize = [&](PResultInfo& info) {
+    m_ppLifecycle.in.Uninitialize = [&](std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.lifecycle.in.Uninitialize(info); });
     };
 
     // Reroute in-events of the internal arbitered multiclient port via the dispatcher to the encapsulee
-    m_ppApi().in.Claim = [&](PResultInfo& info) {
+    m_ppApi().in.Claim = [&](std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Claim(info); });
     };
     m_ppApi().in.Release = [&](std::string& goodbye) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.Release(goodbye); });
     };
-    m_ppApi().in.Toast = [&](std::string motd, PResultInfo& info) {
+    m_ppApi().in.Toast = [&](std::string motd, std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
     };
     m_ppApi().in.Cancel = [&] {
@@ -1542,7 +1542,7 @@ DummyExclusiveToasterAdvShell::DummyExclusiveToasterAdvShell(const dzn::locator&
         auto lockAndData = m_ppApi.CurrentClient();
         if (lockAndData->has_value()) lockAndData->value().get().dznPort.out.Ok();
     };
-    m_ppApi().out.Fail = [&](PResultInfo info) {
+    m_ppApi().out.Fail = [&](std::shared_ptr<ResultInfo> info) {
         auto lockAndData = m_ppApi.CurrentClient();
         if (lockAndData->has_value()) lockAndData->value().get().dznPort.out.Fail(info);
     };
@@ -1594,7 +1594,7 @@ std::vector<::Dzn::ClientIdentifier> DummyExclusiveToasterAdvShell::GetApiClient
 {
     auto port(::Dzn::CreatePort<::My::IExclusiveToaster>("api", "arbiterApi"));
 
-    port.in.Claim = [&, identifier](PResultInfo& info) {
+    port.in.Claim = [&, identifier](std::shared_ptr<ResultInfo>& info) {
         const auto r = m_ppApi.Arbitered().in.Claim(info);
         if (r == ::My::Result::Ok) m_ppApi.Select(identifier);
         return r;
@@ -1726,7 +1726,7 @@ DummyToasterAdvShell::DummyToasterAdvShell(const dzn::locator& prototypeLocator,
     m_ppApi.in.GetTime = [&](size_t& toastingTime) {
         return dzn::shell(m_dispatcher, [&] { return m_encapsulee.api.in.GetTime(toastingTime); });
     };
-    m_ppApi.in.Toast = [&](std::string motd, PResultInfo& info) {
+    m_ppApi.in.Toast = [&](std::string motd, std::shared_ptr<ResultInfo>& info) {
         return dzn::shell(m_dispatcher, [&, motd] { return m_encapsulee.api.in.Toast(motd, info); });
     };
     m_ppApi.in.Cancel = [&] {

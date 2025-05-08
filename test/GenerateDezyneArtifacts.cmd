@@ -33,6 +33,10 @@ ECHO Starting processing
 CD %modelsroot%
 DEL /Q %genfolder%\* >nul 2> nul
 
+CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ..\shared\Facilities\FCTimer.dzn
+CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ..\shared\Facilities\IConfiguration.dzn
+CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ..\shared\Facilities\ITimer.dzn
+CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ..\shared\Facilities\Types.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IPowerCord.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IHeaterElement.dzn
 CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\ILed.dzn

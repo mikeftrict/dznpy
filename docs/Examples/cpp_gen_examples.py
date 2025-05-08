@@ -10,7 +10,8 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from dznpy.cpp_gen import Comment, Fqn, Namespace, Struct, Class, ProjectIncludes, SystemIncludes, \
     AccessSpecifiedSection, AccessSpecifier, TypeDesc, TemplateArg, TypePostfix, fqn_t, \
     TypeConstness, void_t, int_t, float_t, double_t, std_string_t, const_std_string_ref_t, Param, \
-    MemberVariable, Constructor, FunctionInitialization, Function, Destructor
+    MemberVariable, Constructor, FunctionInitialization, Function, Destructor, decl_var_t, \
+    decl_var_ref_t, decl_var_ptr_t
 from dznpy.scoping import NamespaceIds, ns_ids_t
 from dznpy.text_gen import TextBlock, TB
 
@@ -275,6 +276,11 @@ def example_member_variable():
                                   ])
     print(my_struct)
 
+    # Type Creation Functions
+    print(decl_var_t(fqn_t('int'), 'number'))
+    print(decl_var_ref_t(fqn_t('std.string'), 'message'))
+    print(decl_var_ptr_t(fqn_t('double'), 'fract'))
+
 
 def example_constructor_destructor():
     """Example of using the Constructor and Destructor, in combination with a Class or Struct."""
@@ -339,18 +345,30 @@ def example_constructor_destructor():
     print(destr.as_def())  # No sourcecode, because of '= default' initialization
 
 
+def example_function():
+    """Example of using a Function, separately or in combination with a Class or Struct."""
+
+    # An individual function
+    func = Function(parent=None,
+                    return_type=int_t(),
+                    name='Calculate')
+    print(func.as_decl())
+    print(func.as_def())
+
+
 def main():
     """Convergence point of executing all example code for the cpp_gen module."""
 
-    example_includes()
-    example_fqn()
-    example_comment()
-    example_namespace()
-    example_simple_struct_class_access_specification()
-    example_type_description()
-    example_param()
-    example_member_variable()
-    example_constructor_destructor()
+    # example_includes()
+    # example_fqn()
+    # example_comment()
+    # example_namespace()
+    # example_simple_struct_class_access_specification()
+    # example_type_description()
+    # example_param()
+    # example_member_variable()
+    # example_constructor_destructor()
+    example_function()
 
 
 if __name__ == "__main__":

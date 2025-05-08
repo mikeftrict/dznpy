@@ -1,7 +1,13 @@
 """
-Module providing helpers for generating c++ source and header files
+Module providing helpers for generating c++ source and header files.
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+The helpers provide for 'building blocks' in which 'content' can be inserted to finally generate
+c++ code the developer intents to compile. Important to know: this cpp_gen module takes no
+responsibility that the produced text can be compiled. It attempts to closely match C++ conventions
+with the 'building blocks'. Since the developer needs to insert content manually, this cpp_gen
+module can not guarantee that the final total generated text is compilable.
+
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 import abc
@@ -729,21 +735,6 @@ def const_std_string_ref_t() -> TypeDesc:
                     postfix=TypePostfix.REFERENCE)
 
 
-def decl_var_t(fqn: Fqn, name: str) -> MemberVariable:
-    """Shortcut helper to create a member variable (without postfix like & or *)."""
-    return MemberVariable(type=TypeDesc(fqname=fqn, postfix=TypePostfix.NONE), name=name)
-
-
-def decl_var_ref_t(fqn: Fqn, name: str) -> MemberVariable:
-    """Shortcut helper to create a member variable with a reference postfix."""
-    return MemberVariable(type=TypeDesc(fqname=fqn, postfix=TypePostfix.REFERENCE), name=name)
-
-
-def decl_var_ptr_t(fqn: Fqn, name: str) -> MemberVariable:
-    """Shortcut helper to create a member variable with a pointer postfix."""
-    return MemberVariable(type=TypeDesc(fqname=fqn, postfix=TypePostfix.POINTER), name=name)
-
-
 def param_t(fqn: Fqn, name: str, default_value='') -> Param:
     """Shortcut helper to create a simple parameter with an optional default value."""
     return Param(type=TypeDesc(fqn), name=name, default_value=default_value)
@@ -765,3 +756,18 @@ def const_param_ptr_t(fqn: Fqn, name: str, default_value='') -> Param:
                                constness=TypeConstness.PREFIXED),
                  name=name,
                  default_value=default_value)
+
+
+def decl_var_t(fqn: Fqn, name: str) -> MemberVariable:
+    """Shortcut helper to create a member variable (without postfix like & or *)."""
+    return MemberVariable(type=TypeDesc(fqname=fqn, postfix=TypePostfix.NONE), name=name)
+
+
+def decl_var_ref_t(fqn: Fqn, name: str) -> MemberVariable:
+    """Shortcut helper to create a member variable with a reference postfix."""
+    return MemberVariable(type=TypeDesc(fqname=fqn, postfix=TypePostfix.REFERENCE), name=name)
+
+
+def decl_var_ptr_t(fqn: Fqn, name: str) -> MemberVariable:
+    """Shortcut helper to create a member variable with a pointer postfix."""
+    return MemberVariable(type=TypeDesc(fqname=fqn, postfix=TypePostfix.POINTER), name=name)
