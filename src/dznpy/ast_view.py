@@ -7,14 +7,14 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional, Set, List
 
 # dznpy modules
 from .misc_utils import assert_t
 from .ast import FileContents, PortDirection, Ports, assert_filecontents_t, Component, Enum, \
-    Extern, Foreign, Interface, SubInt, System
-from .scoping import NamespaceIds, scope_resolution_order
+    Extern, Foreign, Interface, SubInt, System, Event, EventDirection, FormalDirection, ScopeName
+from .scoping import NamespaceIds, scope_resolution_order, ns_ids_t
 
 
 ###############################################################################
@@ -154,3 +154,25 @@ def find_any(fct: FileContents, endswith_ids: NamespaceIds) -> FindResult:
                 result.append(element)
 
     return FindResult(items=result)
+
+
+def get_in_events(itf: Interface) -> List[Event]:
+    """TODO"""
+    assert_t(itf, Interface)
+    return [evt for evt in itf.events.elements if evt.direction == EventDirection.IN]
+
+
+def get_out_events(itf: Interface) -> List[Event]:
+    """TODO"""
+    assert_t(itf, Interface)
+    return [evt for evt in itf.events.elements if evt.direction == EventDirection.OUT]
+
+
+def get_itf_name(itf: Interface) -> str:
+    """TODO"""
+    assert_t(itf, Interface)
+    result = str(itf.name.value)
+    if len(itf.name.value.items) > 1:
+        raise NameError(f'Interface name "{result}" should be a single identifier')
+    return result
+

@@ -275,7 +275,8 @@ def test_param_fail():
     """Test that exception occurs when providing incorrect data for type and name."""
     with pytest.raises(TypeError) as exc:
         Param(type=123, name=456)
-    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.cpp_gen.TypeDesc'>""" in str(exc.value)
+    assert """Value argument "123" is not equal to any expected types: ["<class 'dznpy.cpp_gen.TypeDesc'>", "<class 'dznpy.cpp_gen.TypeAsIs'>"].""" in str(
+        exc.value)
 
     with pytest.raises(TypeError) as exc:
         Param(type=int_t(), name=123)
@@ -314,7 +315,8 @@ def test_member_variable_fail():
     """Test that exceptions occur when providing invalid data to type, name and default_value."""
     with pytest.raises(TypeError) as exc:
         MemberVariable(type=123, name='')
-    assert """Value argument "123" is not equal to the expected type: <class 'dznpy.cpp_gen.TypeDesc'>""" in str(exc.value)
+    assert """Value argument "123" is not equal to any expected types: ["<class 'dznpy.cpp_gen.TypeDesc'>", "<class 'dznpy.cpp_gen.TypeAsIs'>"].""" in str(
+        exc.value)
 
     with pytest.raises(TypeError) as exc:
         MemberVariable(type=void_t(), name=123)
@@ -449,9 +451,10 @@ def test_destructor_with_default_initialization_and_override():
 
 
 def test_function_fail():
-    with pytest.raises(CppGenError) as exc:
+    with pytest.raises(TypeError) as exc:
         Function(return_type='invalid', name='')
-    assert str(exc.value) == 'return_type must be TypeDesc'
+    assert """Value argument "invalid" is not equal to any expected types: ["<class 'dznpy.cpp_gen.TypeDesc'>", "<class 'dznpy.cpp_gen.TypeAsIs'>"].""" in str(
+        exc.value)
 
     with pytest.raises(CppGenError) as exc:
         Function(return_type=void_t(), name='')

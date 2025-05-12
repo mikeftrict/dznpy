@@ -346,7 +346,7 @@ def cond_chunk(preamble: Any, content: Any, empty_response: Any, appendix: Any =
 
     <end>
 
-    <start (where contents has values, and acustom 2 liner appendix)>
+    <start (where contents has values, and a custom 2 liner appendix)>
     My Preamble:
     Line 1
     Line 2

@@ -157,6 +157,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& locator, const 
     m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
     m_encapsulee.cord.in.Uninitialize = std::ref(m_rpCord.in.Uninitialize);
     m_encapsulee.cord.in.IsConnectedToOutlet = std::ref(m_rpCord.in.IsConnectedToOutlet);
+    m_encapsulee.cord.in.GetVoltage = std::ref(m_rpCord.in.GetVoltage);
     m_encapsulee.led.in.Initialize = std::ref(m_rpLed.in.Initialize);
     m_encapsulee.led.in.Uninitialize = std::ref(m_rpLed.in.Uninitialize);
 }
@@ -556,6 +557,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
     m_encapsulee.cord.in.Uninitialize = std::ref(m_rpCord.in.Uninitialize);
     m_encapsulee.cord.in.IsConnectedToOutlet = std::ref(m_rpCord.in.IsConnectedToOutlet);
+    m_encapsulee.cord.in.GetVoltage = std::ref(m_rpCord.in.GetVoltage);
 }
 
 void ToasterSystemAdvShell::FinalConstruct(const dzn::meta* parentComponentMeta)
@@ -935,6 +937,7 @@ ToasterSystemAdvShell::ToasterSystemAdvShell(const dzn::locator& prototypeLocato
     m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
     m_encapsulee.cord.in.Uninitialize = std::ref(m_rpCord.in.Uninitialize);
     m_encapsulee.cord.in.IsConnectedToOutlet = std::ref(m_rpCord.in.IsConnectedToOutlet);
+    m_encapsulee.cord.in.GetVoltage = std::ref(m_rpCord.in.GetVoltage);
     m_encapsulee.led.in.Initialize = std::ref(m_rpLed.in.Initialize);
     m_encapsulee.led.in.Uninitialize = std::ref(m_rpLed.in.Uninitialize);
 }
@@ -1321,6 +1324,7 @@ ExclusiveToasterAdvShell::ExclusiveToasterAdvShell(const dzn::locator& prototype
     m_encapsulee.cord.in.Initialize = std::ref(m_rpCord.in.Initialize);
     m_encapsulee.cord.in.Uninitialize = std::ref(m_rpCord.in.Uninitialize);
     m_encapsulee.cord.in.IsConnectedToOutlet = std::ref(m_rpCord.in.IsConnectedToOutlet);
+    m_encapsulee.cord.in.GetVoltage = std::ref(m_rpCord.in.GetVoltage);
     m_encapsulee.timer.in.Create = std::ref(m_rpTimer.in.Create);
     m_encapsulee.timer.in.Cancel = std::ref(m_rpTimer.in.Cancel);
 }

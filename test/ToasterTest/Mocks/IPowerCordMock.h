@@ -20,7 +20,7 @@ public:
         };
 
         port.in.Uninitialize = [this](std::shared_ptr<ResultInfo>& info) {
-            Uninitialize(info);
+            return Uninitialize(info);
         };
 
         port.in.IsConnectedToOutlet = [this] {

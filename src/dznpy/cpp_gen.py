@@ -18,7 +18,7 @@ import enum
 from typing import List, Any, Optional
 
 # dznpy modules
-from .misc_utils import assert_t, assert_t_optional, is_strlist_instance, plural
+from .misc_utils import assert_t, assert_t_optional, is_strlist_instance, plural, assert_union_t
 from .scoping import NamespaceIds, ns_ids_t
 from .text_gen import Indentizer, BulletList, TB, TextBlock
 
@@ -144,6 +144,20 @@ class TemplateArg:
 
 
 @dataclass(frozen=True)
+class TypeAsIs:
+    """Dataclass TODO
+    """
+    value: str
+
+    def __post_init__(self):
+        """Post check the constructed data class members on validity."""
+        assert_t(self.value, str)
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@dataclass(frozen=True)
 class TypeDesc:
     """Dataclass representing a C++ type description and an optional default value that is used
     by other cpp_gen types such as Param. Examples:
@@ -203,13 +217,13 @@ class Param:
     Typically one or more Param instances form a list of parameters as part
     of a Function or Constructor. See their respective classes.
     """
-    type: TypeDesc
+    type: TypeDesc or TypeAsIs
     name: str
     default_value: Optional[str] = field(default=None)
 
     def __post_init__(self):
         """Post check the constructed data class members on validity."""
-        assert_t(self.type, TypeDesc)
+        assert_union_t(self.type, [TypeDesc, TypeAsIs])
         assert_t(self.name, str)
         if not self.name:
             raise TypeError('name must be a non-empty string')
@@ -629,7 +643,7 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
         }
     """
     prefix: FunctionPrefix = field(default=FunctionPrefix.MEMBER_FUNCTION)
-    return_type: TypeDesc
+    return_type: TypeDesc or TypeAsIs
     name: str
     params: List[Param] = field(default_factory=list)
     cav: str = field(default='')  # = const and volatile type qualifiers
@@ -638,8 +652,7 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
     def __post_init__(self):
         """Post check the constructed data class members on validity."""
         ParentAndContents.__post_init__(self)
-        if not isinstance(self.return_type, TypeDesc):
-            raise CppGenError('return_type must be TypeDesc')
+        assert_union_t(self.return_type, [TypeDesc, TypeAsIs])
 
         if not self.name:
             raise CppGenError('name must not be empty')
@@ -655,7 +668,7 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
         raise CppGenError('instead of str(), call as_decl() or as_def()')
 
     def as_decl(self) -> TextBlock:
-        """Return the function declaration as a multiline string."""
+        """Return the function declaration as a multiline TextBlock."""
         prefix = f'{self.prefix.value} ' if self.prefix.value is not None else ''
         return_type = f'{self.return_type} ' if self.return_type else ''
         name = self.name
@@ -665,13 +678,17 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
         initialization = self.initialization.value
         return TB(f'{prefix}{return_type}{name}({params}){cav}{override}{initialization};')
 
-    def as_def(self) -> TextBlock:
-        """Return the function definition as a multiline string."""
+    def as_def(self, imf=False) -> TextBlock:
+        """Return the function definition as a multiline TextBlock. The optional argument
+        'imf' (inline member function) can be set to True to omit specifying the scope name of
+        the class/struct.
+        ."""
         if self.initialization != FunctionInitialization.NONE:
             return TextBlock()  # no definition is generated when declared with initialization
 
         return_type = f'{self.return_type} ' if self.return_type else ''
         parent = f'{self.parent.name}::' if self.parent is not None else ''
+        parent = '' if imf else parent  # override in case a 'inline member function'
         name = self.name
         params = ', '.join([p.as_def() for p in self.params])
         cav = f' {self.cav}' if self.cav != '' else ''
@@ -738,6 +755,13 @@ def const_std_string_ref_t() -> TypeDesc:
 def param_t(fqn: Fqn, name: str, default_value='') -> Param:
     """Shortcut helper to create a simple parameter with an optional default value."""
     return Param(type=TypeDesc(fqn), name=name, default_value=default_value)
+
+
+def param_ref_t(fqn: Fqn, name: str) -> Param:
+    """Shortcut helper to create a referenced parameter."""
+    return Param(type=TypeDesc(fqname=fqn,
+                               postfix=TypePostfix.REFERENCE),
+                 name=name)
 
 
 def const_param_ref_t(fqn: Fqn, name: str, default_value='') -> Param:

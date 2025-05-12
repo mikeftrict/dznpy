@@ -12,6 +12,7 @@ in void Uninitialize(out PResultInfo info);
 
 // PowerCord operations
 in bool IsConnectedToOutlet();
+in MediumInt GetVoltage();
 out void Connected();
 out void Disconnected(in MyLongNamedType exampleParameter);
 
@@ -39,6 +40,8 @@ behavior
     {
         on IsConnectedToOutlet: reply(true);
         on IsConnectedToOutlet: reply(false);
+        on GetVoltage: reply(110);
+        on GetVoltage: reply(230);
 
         on optional: Connected;
         on optional: Disconnected;

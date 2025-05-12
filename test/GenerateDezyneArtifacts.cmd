@@ -21,6 +21,7 @@ ECHO  - callerroot    = %callerroot%
 ECHO  - scriptroot    = %scriptroot%
 ECHO  - modelsroot    = %modelsroot%
 ECHO  - genfolder     = %genfolder%
+ECHO  - includes      = %includes%
 ECHO.
 
 IF NOT EXIST %dzncmd_abs% (
@@ -33,28 +34,29 @@ ECHO Starting processing
 CD %modelsroot%
 DEL /Q %genfolder%\* >nul 2> nul
 
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ..\shared\Facilities\FCTimer.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ..\shared\Facilities\IConfiguration.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ..\shared\Facilities\ITimer.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ..\shared\Facilities\Types.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IPowerCord.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IHeaterElement.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Hardware\Interfaces\ILed.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ IExclusiveToaster.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ IToaster.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ DummyToaster.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ DummyExclusiveToaster.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ ExclusiveToaster.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ StoneAgeToaster.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ Toaster.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ -s ToasterOne TwoToasters.dzn
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l c++ -s My.Project.ToasterSystem ToasterSystem.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ ..\shared\Facilities\FCTimer.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ ..\shared\Facilities\IConfiguration.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ ..\shared\Facilities\ITimer.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ ..\shared\Facilities\Types.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IPowerCord.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ Hardware\Interfaces\IHeaterElement.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ Hardware\Interfaces\ILed.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ IExclusiveToaster.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ IToaster.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ DummyToaster.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ DummyExclusiveToaster.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ ExclusiveToaster.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ StoneAgeToaster.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ Toaster.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ -s ToasterOne TwoToasters.dzn
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l c++ -s My.Project.ToasterSystem ToasterSystem.dzn
 
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l json DummyToaster.dzn > %genfolder%\DummyToaster.json
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l json DummyExclusiveToaster.dzn > %genfolder%\DummyExclusiveToaster.json
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l json ExclusiveToaster.dzn > %genfolder%\ExclusiveToaster.json
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l json ToasterSystem.dzn > %genfolder%\ToasterSystem.json
-CALL %dzncmd_abs% -v -p code %includes% -o %genfolder% -l json StoneAgeToaster.dzn > %genfolder%\StoneAgeToaster.json
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l json DummyToaster.dzn > %genfolder%\DummyToaster.json
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l json DummyExclusiveToaster.dzn > %genfolder%\DummyExclusiveToaster.json
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l json ExclusiveToaster.dzn > %genfolder%\ExclusiveToaster.json
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l json Hardware\Interfaces\IPowerCord.dzn > %genfolder%\IPowerCord.json
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l json ToasterSystem.dzn > %genfolder%\ToasterSystem.json
+CALL %dzncmd_abs% -v code %includes% -o %genfolder% -l json StoneAgeToaster.dzn > %genfolder%\StoneAgeToaster.json
 
 ECHO Finished
 CD %callerroot%
