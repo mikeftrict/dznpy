@@ -55,13 +55,13 @@ class BulletList:
 
 @dataclass
 class Indentizer:
-    """Class containing indentation configuration and funtionality to process contents."""
+    """Class containing indentation configuration and functionality to process contents."""
     indentor: Indentor = field(default=Indentor.SPACES)
     spaces_count: int = field(default_factory=fetch_default_indent_nr_spaces)
     bullet_list: Optional[BulletList] = field(default=None)
 
     def __post_init__(self):
-        """Postcheck the constructed data class members on validity and configure internal
+        """Post check the constructed data class members on validity and configure internal
         data members."""
         if self.indentor is Indentor.SPACES:
             self._whitespace = SPACE * self.spaces_count
@@ -117,25 +117,33 @@ class Indentizer:
 
 
 class TextBlock:
-    """"A class to store, extend, indent and stringify and collection of string lines that
+    """A class to store, extend, indent and stringify a collection of string lines that
     together form a logical text block."""
     _header: List[str]
     _lines: List[str]
     _indentizer: Indentizer
+    _chunk_spaces: List[str]
+    _cfg_chunk_spacing: Optional[str]
 
-    def __init__(self, content: Optional[Any] = None, header: Optional[Any] = None):
-        """Initialize with content (e.g. an other TextBlock or other types) that will be
+    def __init__(self,
+                 content: Optional[Any] = None,
+                 header: Optional[Any] = None,
+                 chunk_spacing: Optional[str] = None):
+        """Initialize with optional content (e.g. another TextBlock or other types) that will be
         flattened first to a stringized 1-dimensional list where each individual string item is
         split into substrings on presence of newlines.
-        As an option a header can be specified that will be flattened first and prepended
+        As a second option a header can be specified that will be flattened first and prepended
         to the stringized output of the TextBlock. It is skipped from indentation."""
         self._header = TextBlock(header).lines if header else []
         self._lines = []
-        self.append(content)
         self._indentizer = Indentizer()
+        assert_t_optional(chunk_spacing, str)
+        self._cfg_chunk_spacing = chunk_spacing
+        self._chunk_spaces = chunk_spacing.splitlines() if chunk_spacing is not None else []
+        self.append(content)
 
     def __str__(self) -> str:
-        """"Stringify the lines to an EOL delimited and an EOL-ending string."""
+        """Stringify the lines to an EOL delimited and an EOL-ending string."""
         combined = self._header + self._lines if self._header else self._lines
         if not combined:
             return ''  # empty textblock
@@ -144,13 +152,26 @@ class TextBlock:
 
     def __add__(self, other: Any) -> Self:
         """Add the contents of this and the other instance into a new instance."""
-        other_tb = TextBlock(other)
-        return TextBlock(self.lines + other_tb.lines)
+        result = TextBlock(self.lines, self._header, self._cfg_chunk_spacing)
+        result += TextBlock(other)
+        return result
 
     def __iadd__(self, other: Any) -> Self:
         """In-place operator to add something else to the contents of this (self) instance."""
         self.append(other)
         return self
+
+    def _extend_lines(self, content: List[str]):
+        """Private method to extend the lines buffer, accounting for chunk spacing."""
+        if self.lines and self._chunk_spaces and content:
+            self.lines.extend(self._chunk_spaces)
+
+        self.lines.extend(content)
+
+    @property
+    def is_chunk_spacing(self) -> bool:
+        """Probe whether chunk spacing is active for this textblock instance."""
+        return True if self._chunk_spaces else False
 
     @property
     def lines(self) -> List[str]:
@@ -160,19 +181,19 @@ class TextBlock:
 
     @lines.setter
     def lines(self, value: List[str]):
-        """Set (aka overwrite) the internal lines buffer with a deepcopy of an other
+        """Set (aka overwrite) the internal lines buffer with a deepcopy of another
         list of strings."""
         if not is_strlist_instance(value):
             raise TypeError('Argument must be a list of strings')
         self._lines = deepcopy(value)
 
     def append(self, content: Any) -> Self:
-        """Append more content with either an other TextBlock or other types of content that will
+        """Append more content with either another TextBlock or other types of content that will
         be flattened first to a stringized 1-dimensional list where each individual string item is
         split into substrings on presence of newlines.
         As return value a self reference is returned (see Fluent Interface)."""
         if isinstance(content, TextBlock):
-            self.lines.extend(content.lines)
+            self._extend_lines(content.lines)
         else:
             split_lines_list = []
             for stritem in flatten_to_strlist(content, skip_empty_strings=False):
@@ -181,7 +202,7 @@ class TextBlock:
                 else:
                     split_lines_list.append(stritem)
 
-            self.lines.extend(flatten_to_strlist(split_lines_list, skip_empty_strings=False))
+            self._extend_lines(flatten_to_strlist(split_lines_list, skip_empty_strings=False))
 
         return self
 

@@ -1,5 +1,9 @@
+// Generated GoogleMock C++ sourcecode from JSON file: ../../test/dezyne_models/generated/IPowerCord.json
+// Note: do not modify manually afterwards
+
 #pragma once
-// System include
+
+// System includes
 #include <functional>
 #include <optional>
 #include <sstream>
@@ -23,8 +27,12 @@ public:
             return Uninitialize(info);
         };
 
-        port.in.IsConnectedToOutlet = [this] {
+        port.in.IsConnectedToOutlet = [this]() {
             return IsConnectedToOutlet();
+        };
+
+        port.in.GetVoltage = [this]() {
+            return GetVoltage();
         };
 
         port.check_bindings();
@@ -39,14 +47,15 @@ public:
 
     void TriggerDisconnected(My::Project::Hal::Sub::MyLongNamedType exampleParameter)
     {
-        if (!m_peerPort.has_value()) throw std::runtime_error("Dezyne port not set up");
+        if (!m_peerPort.has_value()) throw std::runtime_error("Dezyne peer port not set up");
         m_peerPort.value().get().out.Disconnected(exampleParameter);
     }
 
-    // Method mocks, programmable by test
-    MOCK_METHOD(::My::Result, Initialize, (std::string & label));
+    // Method mocks, expectations programmable by test
+    MOCK_METHOD(::My::Result, Initialize, (std::string label));
     MOCK_METHOD(void, Uninitialize, (std::shared_ptr<ResultInfo> & info));
     MOCK_METHOD(bool, IsConnectedToOutlet, ());
+    MOCK_METHOD(int, GetVoltage, ());
 
 private:
     std::optional<std::reference_wrapper<My::Project::Hal::IPowerCord>> m_peerPort;
