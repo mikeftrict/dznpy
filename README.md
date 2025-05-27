@@ -1,6 +1,6 @@
 # dznpy
 
-Python modules to support in developing software with [Dezyne](https://dezyne.org/).
+Python modules to support in developing C++ software with [Dezyne](https://dezyne.org/).
 
 ## Installation
 
@@ -15,9 +15,10 @@ By default, the tests and data preparation scripts have been configured to an in
 
     C:\SB\dezyne-2.17.8\dzn.cmd
 
-Of course this installation path can be suited to your situation. Edit and correct the following script(s):
+Of course this installation path can be suited to your situation. Edit and correct the following script, which anyhow needs
+to be run at least once after downloading dznpy from GitHub. Don't forget to read test/README.md:
 
-    - test\GenerateDezyneArtifacts.cmd
+    - test\process_dezyne_models.py
 
 Then, install the required Python packages `dznpy` relies on. PyCharm will automatically recognise and process the requirements.txt file.
 In other cases, install the dependencies manually by typing 

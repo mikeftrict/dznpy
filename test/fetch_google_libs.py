@@ -7,6 +7,26 @@ from pathlib import Path
 from urllib.request import urlretrieve
 
 
+def main():
+    """The main function that orchestrates the functionality of the script."""
+
+    # Prepare pinpointing the current working directory
+    cwd = Path('.').absolute()
+    toaster_test_base = Path('ToasterTest/')
+    if not toaster_test_base.is_dir():
+        raise RuntimeError(f'Directory {toaster_test_base} is absent in {cwd}, ensure dznpy has been '
+                           'completely fetched and this script is run in the test/ directory.')
+
+    print(f'ToasterTest directory found: {toaster_test_base.absolute()}\n')
+
+    # Copy the required GoogleTest/GoogleMock v1.17 files into the ToasterTest project
+    # FYI origin of the GitHub project = https://github.com/google/googletest
+    tgt_google_dir = toaster_test_base / 'google'
+    fetch_google_test(tgt_google_dir)
+    fetch_google_mock(tgt_google_dir)
+    print('\nFinished')
+
+
 def fetch_file(filename: str, https_src_dir: str, tgt_dir: Path):
     """Fetch a file from an HTTPS source URL/directory and copy it to the target
     directory. The target directory will be created (recursively) when necessary."""
@@ -64,26 +84,6 @@ def fetch_google_mock(tgt_google_dir: Path):
     for filename in ['gmock-generated-actions.h', 'gmock-matchers.h', 'gmock-port.h']:
         fetch_file(filename, f'{github}include/gmock/internal/custom/',
                    tgt_google_dir / 'include/gmock/internal/custom/')
-
-
-def main():
-    """TODO."""
-
-    # Prepare pinpointing the current working directory
-    cwd = Path('.').absolute()
-    toaster_test_base = Path('ToasterTest/')
-    if not toaster_test_base.is_dir():
-        raise RuntimeError(f'Directory {toaster_test_base} is absent in {cwd}, ensure dznpy has been '
-                           'completely fetched and this script is run in the test/ directory.')
-
-    print(f'ToasterTest directory found: {toaster_test_base.absolute()}')
-
-    # Copy the required GoogleTest/GoogleMock v1.17 files into the ToasterTest project
-    # FYI origin of the GitHub project = https://github.com/google/googletest
-    tgt_google_dir = toaster_test_base / 'google'
-    fetch_google_test(tgt_google_dir)
-    fetch_google_mock(tgt_google_dir)
-    print('Finished')
 
 
 if __name__ == "__main__":
