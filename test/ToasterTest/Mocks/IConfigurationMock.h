@@ -15,7 +15,7 @@ public:
             GetToastingTime(toastingTime);
         };
 
-        m_port.check_bindings();
+        //dzn::check_bindings(m_port.dzn_meta);
     }
 
     // Getter to retrieve the peer-end of the Mock for injection into the Dezyne locator

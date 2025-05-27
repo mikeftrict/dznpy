@@ -50,7 +50,7 @@ public:
             m_traceFn("ILedMock::Uninitialize() <-");
         };
 
-        port.check_bindings();
+        //dzn::check_bindings(port);
     }
 
     // Method mocks, programmable by test

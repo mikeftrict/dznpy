@@ -25,9 +25,9 @@ namespace My { namespace Project {
 component Toaster
 {
 provides IToaster api;
-requires Some.Vendor.IHeaterElement heater;
+requires external Some.Vendor.IHeaterElement heater;
 requires Hal.IPowerCord cord;
-requires ILed led;
+requires external ILed led;
 requires ITimer timer;
 requires injected IConfiguration cfg;
 
@@ -49,7 +49,7 @@ behavior
     MyLongNamedType m_storeSomething;
 
     // Event-based handling:
-    on led.GlitchOccurred(): {} // consume because it is not interesting
+    //on led.GlitchOccurred(): {} // consume because it is not interesting
 
     // State-based handling:
     [s.Uninitialized]

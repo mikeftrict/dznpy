@@ -5,6 +5,7 @@
 
 // Contained component(s)
 import Toaster.dzn;
+import Hardware/Interfaces/PowerCordArmor.dzn;
 
 // Facilities
 import FCTimer.dzn;
@@ -14,23 +15,25 @@ namespace My { namespace Project {
 component ToasterSystem
 {
 provides IToaster api;
-requires Some.Vendor.IHeaterElement heaterElement;
-requires Hal.IPowerCord cord;
-requires My.ILed led;
+requires external Some.Vendor.IHeaterElement heaterElement;
+requires external Hal.IExtPowerCord cord;
+requires external My.ILed led;
 
 system
 {
     // Connect the ports on the public boundary
     api <=> sut.api;
     heaterElement <=> sut.heater;
-    cord <=> sut.cord;
+    cord <=> powerCordArmor.ext;
     led <=> sut.led;
 
     // Connect the private/internal ports
+    sut.cord <=> powerCordArmor.api;
     sut.timer <=> t1.api;
 
     // Build instances of internal components
     Toaster sut;
+    My.Project.PowerCordArmor powerCordArmor;    
     Facilities.Timer t1;
 
 } // system

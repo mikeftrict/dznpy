@@ -11,13 +11,13 @@ interface ILed
 // Lifecycle operations
 in void Initialize();
 in void Uninitialize();
-out void GlitchOccurred();
+//out void GlitchOccurred();
 
 behavior
 {
     on Initialize, Uninitialize: {}
 
-    on optional: GlitchOccurred;
+  //  on optional: GlitchOccurred;
 } // behaviour
 } // interface
 } // end namespace My

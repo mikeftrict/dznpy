@@ -32,7 +32,7 @@ public:
             Off();
         };
 
-        port.check_bindings();
+        //dzn::check_bindings(port);
     }
 
     // Method mocks, programmable by test

@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)google/include;$(ProjectDir)google;$(ProjectDir)..\dezyne_models\generated;C:\SB\dezyne-2.17.8\runtime\c++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)google/include;$(ProjectDir)google;$(ProjectDir)..\dezyne_models\generated;C:\SB\dezyne-2.18.3\runtime\c++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ForcedIncludeFiles>MyExternalTypes.h</ForcedIncludeFiles>
@@ -94,7 +94,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)google/include;$(ProjectDir)google;$(ProjectDir)..\dezyne_models\generated;C:\SB\dezyne-2.17.8\runtime\c++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)google/include;$(ProjectDir)google;$(ProjectDir)..\dezyne_models\generated;C:\SB\dezyne-2.18.3\runtime\c++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ForcedIncludeFiles>MyExternalTypes.h</ForcedIncludeFiles>
@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)google/include;$(ProjectDir)google;$(ProjectDir)..\dezyne_models\generated;C:\SB\dezyne-2.17.8\runtime\c++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)google/include;$(ProjectDir)google;$(ProjectDir)..\dezyne_models\generated;C:\SB\dezyne-2.18.3\runtime\c++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ForcedIncludeFiles>MyExternalTypes.h</ForcedIncludeFiles>
@@ -130,7 +130,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)google/include;$(ProjectDir)google;$(ProjectDir)..\dezyne_models\generated;C:\SB\dezyne-2.17.8\runtime\c++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)google/include;$(ProjectDir)google;$(ProjectDir)..\dezyne_models\generated;C:\SB\dezyne-2.18.3\runtime\c++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ForcedIncludeFiles>MyExternalTypes.h</ForcedIncludeFiles>
@@ -143,11 +143,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\dezyne-2.17.8\runtime\c++\pump.cc" />
-    <ClCompile Include="..\..\..\dezyne-2.17.8\runtime\c++\runtime.cc" />
+    <ClCompile Include="..\..\..\dezyne-2.18.3\runtime\c++\coroutine.cc" />
+    <ClCompile Include="..\..\..\dezyne-2.18.3\runtime\c++\pump.cc" />
+    <ClCompile Include="..\..\..\dezyne-2.18.3\runtime\c++\runtime.cc" />
+    <ClCompile Include="..\..\..\dezyne-2.18.3\runtime\c++\std-async.cc" />
     <ClCompile Include="..\dezyne_models\generated\FCTimer.cc" />
+    <ClCompile Include="..\dezyne_models\generated\IConfiguration.cc" />
+    <ClCompile Include="..\dezyne_models\generated\IExclusiveToaster.cc" />
+    <ClCompile Include="..\dezyne_models\generated\IExtPowerCord.cc" />
+    <ClCompile Include="..\dezyne_models\generated\IHeaterElement.cc" />
+    <ClCompile Include="..\dezyne_models\generated\ILed.cc" />
+    <ClCompile Include="..\dezyne_models\generated\IPowerCord.cc" />
+    <ClCompile Include="..\dezyne_models\generated\ITimer.cc" />
+    <ClCompile Include="..\dezyne_models\generated\IToaster.cc" />
+    <ClCompile Include="..\dezyne_models\generated\PowerCordArmor.cc" />
     <ClCompile Include="..\dezyne_models\generated\Toaster.cc" />
     <ClCompile Include="..\dezyne_models\generated\ToasterSystem.cc" />
+    <ClCompile Include="..\dezyne_models\generated\TwoToasters.cc" />
+    <ClCompile Include="..\dezyne_models\generated\Types.cc" />
     <ClCompile Include="Facilities_Timer.cpp" />
     <ClCompile Include="google\src\gmock-all.cc" />
     <ClCompile Include="google\src\gtest-all.cc" />
@@ -155,15 +168,18 @@
     <ClCompile Include="tests\ToasterTests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\container.hh" />
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\context.hh" />
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\coroutine.hh" />
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\locator.hh" />
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\meta.hh" />
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\pump.hh" />
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\runtime.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\config.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\container.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\context.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\coroutine.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\locator.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\meta.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\pump.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\runtime.hh" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\std-async.hh" />
     <ClInclude Include="Facilities_Timer.hh" />
     <ClInclude Include="Mocks\IConfigurationMock.h" />
+    <ClInclude Include="Mocks\IExtPowerCordMock.h" />
     <ClInclude Include="Mocks\IHeaterElementMock.h" />
     <ClInclude Include="Mocks\ILedMock.h" />
     <ClInclude Include="Mocks\IPowerCordMock.h" />

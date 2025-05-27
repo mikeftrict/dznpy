@@ -1,4 +1,4 @@
-// Generated GoogleMock C++ sourcecode from JSON file: ../../test/dezyne_models/generated/IPowerCord.json
+// Generated GoogleMock C++ sourcecode from JSON file: ../../test/dezyne_models/generated/IExtPowerCord.json
 // Note: do not modify manually afterwards
 
 #pragma once
@@ -10,30 +10,34 @@
 
 // Project includes
 #include "gmock/gmock.h"
-#include "IPowerCord.hh"
+#include "IExtPowerCord.hh"
 
-class IPowerCordMock
+class IExtPowerCordMock
 {
 public:
-    void SetupPeerPort(My::Project::Hal::IPowerCord& port)
+    void SetupPeerPort(My::Project::Hal::IExtPowerCord& port)
     {
         m_peerPort = port;
 
         port.in.Initialize = [this](std::string label) {
             return Initialize(label);
-        };
+            };
 
         port.in.Uninitialize = [this](std::shared_ptr<ResultInfo>& info) {
             return Uninitialize(info);
-        };
+            };
+
+        port.in.AllowNextSpontaneousEvent = [this]() {
+            return AllowNextSpontaneousEvent();
+            };
 
         port.in.IsConnectedToOutlet = [this]() {
             return IsConnectedToOutlet();
-        };
+            };
 
         port.in.GetVoltage = [this]() {
             return GetVoltage();
-        };
+            };
 
         //dzn::check_bindings(port);
     }
@@ -53,10 +57,12 @@ public:
 
     // Method mocks, expectations programmable by test
     MOCK_METHOD(::My::Result, Initialize, (std::string label));
-    MOCK_METHOD(void, Uninitialize, (std::shared_ptr<ResultInfo> & info));
+    MOCK_METHOD(void, Uninitialize, (std::shared_ptr<ResultInfo>& info));
+    MOCK_METHOD(void, AllowNextSpontaneousEvent, ());
     MOCK_METHOD(bool, IsConnectedToOutlet, ());
     MOCK_METHOD(int, GetVoltage, ());
 
 private:
-    std::optional<std::reference_wrapper<My::Project::Hal::IPowerCord>> m_peerPort;
+    std::optional<std::reference_wrapper<My::Project::Hal::IExtPowerCord>> m_peerPort;
 };
+

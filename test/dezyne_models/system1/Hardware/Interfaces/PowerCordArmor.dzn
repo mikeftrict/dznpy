@@ -1,0 +1,53 @@
+import IPowerCord.dzn;
+import IExtPowerCord.dzn;
+
+namespace My { namespace Project {
+
+component PowerCordArmor
+{
+provides Hal.IPowerCord api;
+requires external Hal.IExtPowerCord ext;
+
+behavior
+{
+    enum State
+    {
+        Uninitialized,
+        ObservingPowercord
+    };
+    State s = State.Uninitialized; // initial state
+
+    on api.Uninitialize(info):
+    {
+        ext.Uninitialize(info);
+        s = State.Uninitialized;
+    }
+
+    [s.Uninitialized]
+    {
+        on api.Initialize(label):
+        {
+            s = State.ObservingPowercord;
+            reply(ext.Initialize(label));
+        }
+
+        on ext.Connected(), ext.Disconnected(_): { ext.AllowNextSpontaneousEvent(); } // Consume in this state
+    }
+
+    [s.ObservingPowercord]
+    {
+        on api.IsConnectedToOutlet(): reply(ext.IsConnectedToOutlet());
+        on api.GetVoltage(): reply(ext.GetVoltage());
+
+        on ext.Connected(): { api.Connected(); ext.AllowNextSpontaneousEvent(); }
+        on ext.Disconnected(exampleParameter):
+        {
+            api.Disconnected(exampleParameter);
+            ext.AllowNextSpontaneousEvent(); 
+        }
+    }
+
+} // behavior
+} // component
+}} // end namespace My::Project
+

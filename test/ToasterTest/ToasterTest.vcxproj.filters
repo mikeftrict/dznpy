@@ -34,12 +34,6 @@
     <ClCompile Include="..\dezyne_models\generated\ToasterSystem.cc">
       <Filter>Dezyne generated</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\dezyne-2.17.8\runtime\c++\pump.cc">
-      <Filter>Dezyne runtime</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\dezyne-2.17.8\runtime\c++\runtime.cc">
-      <Filter>Dezyne runtime</Filter>
-    </ClCompile>
     <ClCompile Include="Facilities_Timer.cpp">
       <Filter>Dezyne handwritten</Filter>
     </ClCompile>
@@ -49,29 +43,53 @@
     <ClCompile Include="..\dezyne_models\generated\Toaster.cc">
       <Filter>Dezyne generated</Filter>
     </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\PowerCordArmor.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\dezyne-2.18.3\runtime\c++\coroutine.cc">
+      <Filter>Dezyne runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\dezyne-2.18.3\runtime\c++\pump.cc">
+      <Filter>Dezyne runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\dezyne-2.18.3\runtime\c++\runtime.cc">
+      <Filter>Dezyne runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\dezyne-2.18.3\runtime\c++\std-async.cc">
+      <Filter>Dezyne runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\IConfiguration.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\IExclusiveToaster.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\IExtPowerCord.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\IHeaterElement.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\ILed.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\IPowerCord.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\ITimer.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\IToaster.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\TwoToasters.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dezyne_models\generated\Types.cc">
+      <Filter>Dezyne generated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\container.hh">
-      <Filter>Dezyne runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\context.hh">
-      <Filter>Dezyne runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\coroutine.hh">
-      <Filter>Dezyne runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\locator.hh">
-      <Filter>Dezyne runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\meta.hh">
-      <Filter>Dezyne runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\pump.hh">
-      <Filter>Dezyne runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\runtime.hh">
-      <Filter>Dezyne runtime</Filter>
-    </ClInclude>
     <ClInclude Include="MyExternalTypes.h" />
     <ClInclude Include="Facilities_Timer.hh">
       <Filter>Dezyne handwritten</Filter>
@@ -89,5 +107,35 @@
       <Filter>Mocks</Filter>
     </ClInclude>
     <ClInclude Include="SignalHelper.h" />
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\config.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\container.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\context.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\coroutine.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\locator.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\meta.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\pump.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\runtime.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dezyne-2.18.3\runtime\c++\dzn\std-async.hh">
+      <Filter>Dezyne runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="Mocks\IExtPowerCordMock.h">
+      <Filter>Mocks</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

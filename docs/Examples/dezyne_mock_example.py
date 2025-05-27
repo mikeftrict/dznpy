@@ -2,12 +2,12 @@
 Example of generating a GoogleMock struct for a Dezyne interface (non-injectable).
 
 Recipe steps:
-1. Read in the Dezyne interface model that was exported as JSON (file IPowerCord.json)
-2. Select the interface model IPowerCord in the namespace My.Project.Hal
+1. Read in the Dezyne interface model that was exported as JSON (file IExtPowerCord.json)
+2. Select the interface model IExtPowerCord in the namespace My.Project.Hal
 3. Retrieve all in-events and out-events (names, parameter signature)
 4. C++ generate information header
 5. C++ generate the system and project includes
-6. C++ generate the class IPowerCordMock
+6. C++ generate the class IExtPowerCordMock
   a. Generate the SetupPeerPort() class method, that installs functors for each in-event
   b. Generate TriggerNNN() class methods for each out-event
   c. Generate the MOCK_METHOD GoogleMock statements with an equivalent for each in-event
@@ -18,7 +18,7 @@ Recipe steps:
 
 EXAMPLE OUTPUT:
 
-// Generated GoogleMock C++ sourcecode from JSON file: ../../test/dezyne_models/generated/IPowerCord.json
+// Generated GoogleMock C++ sourcecode from JSON file: ../../test/dezyne_models/generated/IExtPowerCord.json
 // Note: do not modify manually afterwards
 
 #pragma once
@@ -30,12 +30,12 @@ EXAMPLE OUTPUT:
 
 // Project includes
 #include "gmock/gmock.h"
-#include "IPowerCord.hh"
+#include "IExtPowerCord.hh"
 
-class IPowerCordMock
+class IExtPowerCordMock
 {
 public:
-    void SetupPeerPort(My::Project::Hal::IPowerCord& port)
+    void SetupPeerPort(My::Project::Hal::IExtPowerCord& port)
     {
         m_peerPort = port;
 
@@ -78,7 +78,7 @@ public:
     MOCK_METHOD(int, GetVoltage, ());
 
 private:
-    std::optional<std::reference_wrapper<My::Project::Hal::IPowerCord>> m_peerPort;
+    std::optional<std::reference_wrapper<My::Project::Hal::IExtPowerCord>> m_peerPort;
 };
 
 
@@ -100,16 +100,16 @@ from dznpy.text_gen import TextBlock, TB, EOL
 def main():
     """Convergence point of executing all example code for the cpp_gen module."""
 
-    json_file_name = '../../test/dezyne_models/generated/IPowerCord.json'
+    json_file_name = '../../test/dezyne_models/generated/IExtPowerCord.json'
 
-    # 1. Read in the Dezyne interface model (file IPowerCord.dzn)
+    # 1. Read in the Dezyne interface model (file IExtPowerCord.dzn)
     dzn_json_ast = DznJsonAst(verbose=True)
     dzn_json_ast.load_file(json_file_name)
     file_contents = dzn_json_ast.process()
     # print(file_contents)
 
-    # 2. Select the interface model IPowerCord in the namespace My.Project.Hal
-    find_result = find_fqn(file_contents, ns_ids_t('IPowerCord'), ns_ids_t('My.Project.Hal'))
+    # 2. Select the interface model IExtPowerCord in the namespace My.Project.Hal
+    find_result = find_fqn(file_contents, ns_ids_t('IExtPowerCord'), ns_ids_t('My.Project.Hal'))
     # print(f'Has one instance = {find_result.has_one_instance(Interface)}')  # must be True
     itf: Interface = find_result.get_single_instance(Interface)
 
@@ -128,7 +128,7 @@ def main():
                      SystemIncludes(['functional', 'optional', 'sstream']) + \
                      ProjectIncludes(['gmock/gmock.h', f'{itf.name}.hh'])
 
-    # 6. C++ generate the class IPowerCordMock
+    # 6. C++ generate the class IExtPowerCordMock
     mock_class = Class(f'{get_itf_name(itf)}Mock')
 
     # 6.a. Generate the SetupPeerPort() class method, that installs functors for each in-event

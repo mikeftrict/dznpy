@@ -17,7 +17,7 @@ import subprocess
 from typing import List, Tuple
 
 # User configurable items
-CFG_DZN_CMD = 'C:\SB\dezyne-2.17.8\dzn.cmd'
+CFG_DZN_CMD = 'C:\SB\dezyne-2.18.3\dzn.cmd'
 
 
 # Data class containing the final configuration
@@ -65,14 +65,15 @@ def main():
     # First verify models (in parallel)
     with RaiiCd(models_root):
         multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn', 'ExclusiveToaster.dzn',
-                           'StoneAgeToaster.dzn', 'Toaster.dzn'],
+                           'Hardware\Interfaces\PowerCordArmor.dzn', 'StoneAgeToaster.dzn', 'Toaster.dzn'],
                           verify, (cfg,))
 
         multicore_execute(['..\shared\Facilities\FCTimer.dzn', '..\shared\Facilities\IConfiguration.dzn',
                            '..\shared\Facilities\ITimer.dzn', '..\shared\Facilities\Types.dzn',
-                           'Hardware\Interfaces\IPowerCord.dzn', 'Hardware\Interfaces\IHeaterElement.dzn',
-                           'Hardware\Interfaces\ILed.dzn', 'IExclusiveToaster.dzn',
-                           'IToaster.dzn', 'DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
+                           'Hardware\Interfaces\IPowerCord.dzn', 'Hardware\Interfaces\IExtPowerCord.dzn',
+                           'Hardware\Interfaces\IHeaterElement.dzn', 'Hardware\Interfaces\ILed.dzn',
+                           'Hardware\Interfaces\PowerCordArmor.dzn', 'IExclusiveToaster.dzn', 'IToaster.dzn',
+                           'DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
                            'ExclusiveToaster.dzn', 'StoneAgeToaster.dzn', 'Toaster.dzn'
                            ],
                           generate_cpp, (cfg,))
@@ -81,7 +82,7 @@ def main():
         multicore_execute(['ToasterSystem.dzn'], generate_tss, ('My.Project.ToasterSystem', cfg))
 
         multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
-                           'ExclusiveToaster.dzn', 'Hardware\Interfaces\IPowerCord.dzn',
+                           'ExclusiveToaster.dzn', 'Hardware\Interfaces\IPowerCord.dzn', 'Hardware\Interfaces\IExtPowerCord.dzn',
                            'ToasterSystem.dzn', 'StoneAgeToaster.dzn'],
                           generate_json, (cfg,))
 
@@ -145,12 +146,9 @@ def generate_json(model_filename: Path, cfg: Configuration):
     print(f'Generating a JSON Abstract Syntax Tree file: {model_filename}')
     exe_args = ([cfg.dzn_cmd.absolute(), 'code', '-l', 'json',
                  '-o', cfg.gen_folder.absolute()] + cfg.includes + [model_filename])
-    result = subprocess.run(exe_args, capture_output=True)
+    result = subprocess.run(exe_args)
     if result.returncode > 0:
         raise RuntimeError(f'Code generation error on model {model_filename}')
-
-    with open(cfg.gen_folder / f'{Path(model_filename).stem}.json', "wb") as file:
-        file.write(result.stdout)
 
 
 @contextmanager

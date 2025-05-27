@@ -1,0 +1,60 @@
+// ExtIPowerCord
+//
+import Types.dzn;
+
+namespace My { namespace Project { namespace Hal {
+
+interface IExtPowerCord
+{
+// Lifecycle operations
+in Result Initialize(in string label);
+in void Uninitialize(out PResultInfo info);
+
+// Spontaneous events flow control
+in void AllowNextSpontaneousEvent();
+
+// PowerCord operations
+in bool IsConnectedToOutlet();
+in MediumInt GetVoltage();
+out void Connected();
+out void Disconnected(in MyLongNamedType exampleParameter);
+
+behavior
+{
+    enum State
+    {
+        Uninitialized,
+        ObservingPowercord
+    };
+    State s = State.Uninitialized; // initial state
+    bool next = true; // Next Spontaneous Event allowed
+
+    on Uninitialize: s = State.Uninitialized;
+    on AllowNextSpontaneousEvent: next = true;
+
+    [s.Uninitialized]
+    {
+        on Initialize:
+        {
+            reply(Result.Ok);
+            s = State.ObservingPowercord;
+        } 
+    }
+
+    [s.ObservingPowercord]
+    {
+        on IsConnectedToOutlet: reply(true);
+        on IsConnectedToOutlet: reply(false);
+        on GetVoltage: reply(110);
+        on GetVoltage: reply(230);
+
+        [next]
+        {
+            on optional: { Connected; next = false; }
+            on optional: { Disconnected; next = false; }
+        }
+    }
+
+} // behavior
+} // interface
+}}} // end namespace My::Project::Hal

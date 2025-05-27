@@ -17,7 +17,7 @@
 // Mock includes
 #include "Mocks/IConfigurationMock.h"
 #include "Mocks/IHeaterElementMock.h"
-#include "Mocks/IPowerCordMock.h"
+#include "Mocks/IExtPowerCordMock.h"
 #include "Mocks/ILedMock.h"
 
 using namespace std::chrono_literals;
@@ -58,7 +58,7 @@ struct ToasterTest : public Test
         ledMock.SetupPeerPort(sut->led);
 
         // Final checks
-        sut->check_bindings();
+        //dzn::check_bindings(*sut);
     }
 
     dzn::locator dzn_locator;
@@ -66,7 +66,7 @@ struct ToasterTest : public Test
 
     IConfigurationMock configurationMock;
     IHeaterElementMock heaterElementMock;
-    IPowerCordMock powerCordMock;
+    IExtPowerCordMock powerCordMock;
     ILedMock ledMock;
 
     std::unique_ptr<My::Project::ToasterSystem> sut;
@@ -103,8 +103,9 @@ TEST_F(ToasterTest, Roundtrip)
     // Exercise (2)
     std::shared_ptr<ResultInfo> resultInfo;
     auto r = sut->api.in.Toast("My sandwich", resultInfo);
-    // Uncomment next line to induce a spontaneous failure
-    //powerCordMock.TriggerDisconnected(My::Project::Hal::Sub::MyLongNamedType{123});
+    // Uncomment next two lines to induce a spontaneous failure
+    //EXPECT_CALL(powerCordMock, AllowNextSpontaneousEvent);
+    powerCordMock.TriggerDisconnected(My::Project::Hal::Sub::MyLongNamedType{123});
     std::this_thread::sleep_for(3s); // Delay test, longer than what we set with SetTime()
 
     // Arrange (3): Uninitialization
