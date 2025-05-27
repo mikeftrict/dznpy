@@ -1,11 +1,11 @@
 // System includes
 #include <chrono>
-#include <future>
 #include <thread>
 
-// GoogleTest/Mock includes
+// Testing helpers
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "SignalHelper.h"
 
 // Dezyne runtime includes
 #include "dzn/locator.hh"
@@ -19,44 +19,6 @@
 #include "Mocks/IHeaterElementMock.h"
 #include "Mocks/IPowerCordMock.h"
 #include "Mocks/ILedMock.h"
-
-namespace testing {
-
-struct Signal
-{
-    Signal() { Reset(); }
-
-    void Reset()
-    {
-        m_promise = std::promise<void>();
-        m_future = m_promise.get_future();
-    }
-
-    void Trigger() { m_promise.set_value(); }
-
-    template <class R, class P>
-    [[nodiscard]] testing::AssertionResult AwaitTriggerred(const std::chrono::duration<R, P>& timeout)
-    {
-        auto s = m_future.wait_for(timeout);
-        switch (s)
-        {
-        case std::future_status::timeout:
-            return testing::AssertionFailure() << "Time out (" << timeout.count() << ") waiting on promise";
-
-        case std::future_status::ready:
-            Reset();
-            return testing::AssertionSuccess();
-        default:
-            return testing::AssertionFailure() << "Invalid future status when waiting on promise";
-        }
-    }
-
-private:
-    std::promise<void> m_promise;
-    std::future<void> m_future;
-};
-
-} // namespace testing
 
 using namespace std::chrono_literals;
 using namespace testing;
@@ -118,11 +80,11 @@ TEST_F(ToasterTest, Roundtrip)
 {
     InSequence strict_order;
 
-    // Prepare initialization
+    // Arrange (1): Initialization
     EXPECT_CALL(heaterElementMock, Initialize);
     EXPECT_CALL(powerCordMock, Initialize(_));
     EXPECT_CALL(ledMock, Initialize);
-    EXPECT_CALL(configurationMock, GetToastingTime).WillOnce(SetArgReferee<0>(10000)); // equals 10 seconds
+    EXPECT_CALL(configurationMock, GetToastingTime).WillOnce(SetArgReferee<0>(10000)); // Note: milliseconds
 
     // Exercise (1)
     sut->api.in.Initialize();
@@ -133,7 +95,7 @@ TEST_F(ToasterTest, Roundtrip)
     EXPECT_EQ(10 * 1000u, previousToastingTime);
     sut->api.in.SetTime(2000u); // equals 2 seconds
 
-    // Prepare switch on and off the toaster
+    // Arrange (2): Switch on and off the toaster
     EXPECT_CALL(powerCordMock, IsConnectedToOutlet).WillOnce(Return(true));
     EXPECT_CALL(heaterElementMock, On);
     EXPECT_CALL(heaterElementMock, Off);
@@ -143,31 +105,31 @@ TEST_F(ToasterTest, Roundtrip)
     auto r = sut->api.in.Toast("My sandwich", resultInfo);
     // Uncomment next line to induce a spontaneous failure
     //powerCordMock.TriggerDisconnected(My::Project::Hal::Sub::MyLongNamedType{123});
-    std::this_thread::sleep_for(3s); // Delay test for a few seconds (> 2 seconds configuration)
+    std::this_thread::sleep_for(3s); // Delay test, longer than what we set with SetTime()
 
-    // Prepare uninitialization
+    // Arrange (3): Uninitialization
     EXPECT_CALL(heaterElementMock, Uninitialize);
     EXPECT_CALL(powerCordMock, Uninitialize);
     EXPECT_CALL(ledMock, Uninitialize);
 
-    // Exercise (2)
+    // Exercise (3)
     sut->api.in.Uninitialize();
 }
 
-TEST_F(ToasterTest, AsyncBehaviour)
+TEST_F(ToasterTest, AsynchronousBehaviour)
 {
     InSequence strict_order;
 
-    // Prepare initialization
+    // Arrange (1): Initialization
     EXPECT_CALL(heaterElementMock, Initialize);
     EXPECT_CALL(powerCordMock, Initialize(_));
     EXPECT_CALL(ledMock, Initialize);
-    EXPECT_CALL(configurationMock, GetToastingTime).WillOnce(SetArgReferee<0>(2500)); // equals 1.5 seconds
+    EXPECT_CALL(configurationMock, GetToastingTime).WillOnce(SetArgReferee<0>(2500)); // Note: milliseconds
 
     // Exercise (1)
     sut->api.in.Initialize();
 
-    // Prepare switch on and off the toaster
+    // Arrange (2): Switch on and off the toaster
     EXPECT_CALL(powerCordMock, IsConnectedToOutlet).WillOnce(Return(true));
     EXPECT_CALL(heaterElementMock, On);
     EXPECT_CALL(heaterElementMock, Off);
@@ -175,13 +137,13 @@ TEST_F(ToasterTest, AsyncBehaviour)
     // Exercise (2)
     std::shared_ptr<ResultInfo> resultInfo;
     auto r = sut->api.in.Toast("My sandwich", resultInfo);
-    ASSERT_TRUE(signalOk.AwaitTriggerred(5s));
+    ASSERT_TRUE(signalOk.AwaitTriggerred(5s)); // Note: wait on the asynchronous Ok() with a timeout
 
-    // Prepare uninitialization
+    // Arrange (3): Uninitialization
     EXPECT_CALL(heaterElementMock, Uninitialize);
     EXPECT_CALL(powerCordMock, Uninitialize);
     EXPECT_CALL(ledMock, Uninitialize);
 
-    // Exercise (2)
+    // Exercise (3)
     sut->api.in.Uninitialize();
 }

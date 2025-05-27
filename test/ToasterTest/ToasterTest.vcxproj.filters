@@ -88,5 +88,6 @@
     <ClInclude Include="Mocks\ILedMock.h">
       <Filter>Mocks</Filter>
     </ClInclude>
+    <ClInclude Include="SignalHelper.h" />
   </ItemGroup>
 </Project>

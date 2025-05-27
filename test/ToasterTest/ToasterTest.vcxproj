@@ -168,6 +168,7 @@
     <ClInclude Include="Mocks\ILedMock.h" />
     <ClInclude Include="Mocks\IPowerCordMock.h" />
     <ClInclude Include="MyExternalTypes.h" />
+    <ClInclude Include="SignalHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
