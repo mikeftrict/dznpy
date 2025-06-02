@@ -2,7 +2,7 @@
 Module containing classes for selecting ports and their runtime semantics of Dezyne systems
 and components.
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 

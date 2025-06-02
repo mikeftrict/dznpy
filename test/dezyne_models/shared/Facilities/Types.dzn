@@ -15,8 +15,9 @@ extern string $std::string$;
 
 namespace My { namespace Project {
 
-extern MyType $Sub::MyLongNamedType$;
-extern PResultInfo $PResultInfo$;
+extern MyLongNamedType $My::Project::Hal::Sub::MyLongNamedType$;
+extern PResultInfo $std::shared_ptr<ResultInfo>$;
+
 subint MediumInt { 0 .. 1023};
 enum CountingUp
 {

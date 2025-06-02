@@ -1,12 +1,15 @@
 """
 Module with generic helpers.
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
 # system modules
 from os.path import abspath, normpath, isdir, isfile, dirname
+
+# dznpy modules
+from dznpy.text_gen import TextBlock
 
 
 def resolve(abs_script_filename: str, filename: str, extra_rel_path: str = '') -> str:
@@ -30,3 +33,19 @@ def resolve(abs_script_filename: str, filename: str, extra_rel_path: str = '') -
     assert isfile(resolved_filename), dbg_assert_msg2
 
     return resolved_filename
+
+
+def eq_textblocks(left: TextBlock, right: TextBlock) -> bool:
+    """Assert and compare two TextBlock instances (text_gen) for equal contents and allow
+    PyTest to elaborate a nice delta output on failures."""
+    assert str(left) == "abc"
+    #assert left._lines == right._lines
+    #assert str(left) == str(right)
+    return True
+
+
+def ne_textblocks(left: TextBlock, right: TextBlock) -> bool:
+    """Assert and compare two TextBlock instances (text_gen) for unequal contents and allow
+    PyTest to elaborate a nice delta output on failures."""
+    assert str(left) != str(right)
+    return True

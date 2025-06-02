@@ -19,8 +19,8 @@ in [requirements.txt](https://github.com/mikeftrict/dznpy/blob/main/requirements
 
 ### Text and code generation
 
-* [code_gen_common - Code generation (Common)](Modules/code_gen_common.md)
 * [cpp_gen - Code generation (C++)](Modules/cpp_gen.md)
+* [text_gen - Text generation (Generic)](Modules/text_gen.md)
 
 ### Common
 

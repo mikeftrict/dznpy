@@ -1,6 +1,50 @@
 # Changelog
 
-## Changes in 1.0 (DEV) since 0.5
+## Changes in 1.1 (20250602) since 1.0
+
+### Breaking changes
+
+- Python 3.10 will be the version required as of now to allow usage of newer features since 3.8.
+- In cpp_gen: `Function`, `Constructor` and `Destructor` have been revisited. They inherit from a shared base class to
+  reduce redundancy and follow linting feedback. The formerly provided attributes `as_decl` and `as_def` have now been
+  replaced with true functions with similar names. Also, they return `TextBlock`.
+
+### Noteworthy additions and changes
+
+- In `requirements.txt` added 3 dependencies on `pylint` and `flake` (intentionally selected versions that are a bit
+  more naggy to match the industry). And `pytest-cov` for measuring code coverage.
+- Added a documentation how to run and inspect python `code coverage` together with the unit tests of dznpy. Initially
+  revealed is that the current code coverage scores reasonable. But it also indicates room for code coverage
+  improvements in the near future.
+- New module `ast_cpp_view`: that provides helper functions to work on the Dezyne AST and produce results targeted at
+  C++ source code generation.
+- Extended module `ast_view`: with handy getters for Dezyne events and Interface name. More helpers will be added in the
+  future to make dznpy-user-code more simple and straightforward (to read and maintain). Mainly what is being observed
+  right now is that a dznpy-user-developer has to deep dive into the AST. Ofcourse he/she has this liberty, but common
+  tasks need no reinvention.
+- Extended `TextBlock` in `text_gen`: with a `chunk_spacing` in which added content is automatically being preambled by
+  spacing. An EOL by default and configurable. This is often used when producing chunks of C++ code where it is desired
+  to have some white spacing in between for readability.
+- New type `TypeAsIs` in `cpp_gen`: used in conjunction with `ast_cpp_view` helpers where types are expanded to C++
+  namespacing where the developer wants to use it with `cpp_gen` constructs.
+- Fixed a bug in `cpp_gen` class `Comment`, where it would lose the `indentor` when passing it around as `TextBlock`.
+- In `cpp_gen` at the `Function` type, added te optional parameter `imf` (=inline member function) to the `as_def()`
+  function meaning it produces C++ definition code that is meant to be included directly in a struct or class
+  declaration. See the GoogleMock code generation example where it only concerns a C++ header file (with 'all code').
+- Added two helper in `misc_utils`: `assert_union_t` and `assert_union_t_optional`
+- Added an example C++ Unit test project `ToasterTest` for VS2022 in combination with GoogleTest/Mock. Note: first the
+  new script `fetch_google_libs.py` must be run before building the C++ project.
+- Replaced the `GenerateDezyneArtifacts.cmd` Windows shell script with a python script `process_dezyne_models.py` to
+  improve maintainability, future expansions and to allow for multicore processing of the files.
+- Added documentation in `docs/Examples/cpp_gen_examples.py` to explain and show by programming example houw the
+  `cpp_gen` module is to be used.
+- Added a how-to-use-dznpy example in `docs/Examples/dezyne_mock_example.py` to explain and show how to generate a C++
+  GoogleMock from a Dezyne interface. The output is even being used in the ToasterTest Unit test project.
+- Enriched various example Dezyne models a bit with more parameters and types being used. This is meant for the
+  `ToasterTest` C++ project. And to show how to generate a GoogleMock from a Dezyne interface where it is interesting to
+  see how to handle and forward event parameters.
+
+## Changes in 1.0 (20241208) since 0.5
 
 This is the official first release that is considered stable.
 

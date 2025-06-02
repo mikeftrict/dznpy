@@ -15,24 +15,24 @@ import Types.dzn;
 
 interface ITimer
 {
-in void Create(MilliSeconds waitingTimeMs);
+in void Create(in MilliSeconds waitingTimeMs);
 in void Cancel();
 out void Timeout();
 
 behavior
 {
-    bool pending = false;
+    bool running = false;
 
-    [!pending]
+    [!running]
     {
-        on Create: pending = true;
+        on Create: running = true;
         on Cancel: {}
     }
 
-    [pending]
+    [running]
     {
-        on Cancel: pending = false;
-        on inevitable: { Timeout; pending = false; }
+        on Cancel: running = false;
+        on inevitable: { Timeout; running = false; }
     }
 
 } // behaviour

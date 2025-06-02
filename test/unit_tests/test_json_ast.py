@@ -1,7 +1,7 @@
 """
 Testsuite validating the json_ast module
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -838,7 +838,7 @@ class LoadFileTest(DznTestCase):
         assert_items_name_on_fqn(fc.enums, expected_enums)
 
         expected_externs = ['MilliSeconds', 'string',
-                            'My.Project.MyType', 'My.Project.PResultInfo']
+                            'My.Project.MyLongNamedType', 'My.Project.PResultInfo']
         assert_items_name_on_fqn(fc.externs, expected_externs)
 
         expected_filenames = ['./Toaster.dzn', '../shared/Facilities/FCTimer.dzn',
@@ -854,8 +854,8 @@ class LoadFileTest(DznTestCase):
         assert_items_name_on_fqn(fc.foreigns, expected_foreign_fqns)
 
         expected_imports = ['IToaster.dzn', 'Hardware/Interfaces/IHeaterElement.dzn',
-                            'Hardware/Interfaces/ILed.dzn', 'Hardware/Interfaces/IPowerCord.dzn',
-                            'ITimer.dzn', 'IConfiguration.dzn', 'ITimer.dzn', 'Types.dzn',
+                            'Hardware/Interfaces/IPowerCord.dzn', 'Hardware/Interfaces/ILed.dzn',
+                            'ITimer.dzn', 'IConfiguration.dzn', 'Types.dzn', 'ITimer.dzn', 'Types.dzn',
                             'Types.dzn', 'Types.dzn', 'Types.dzn', 'Types.dzn', 'Toaster.dzn',
                             'FCTimer.dzn']
         assert_items_name_on_str(fc.imports, expected_imports)

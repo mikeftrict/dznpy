@@ -1,7 +1,7 @@
 """
 Testsuite validating the ast_view module
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -58,7 +58,7 @@ def fc2() -> ast.FileContents:
     assert len(fc.externs) == 4
     assert len(fc.filenames) == 10
     assert len(fc.foreigns) == 1
-    assert len(fc.imports) == 14
+    assert len(fc.imports) == 15
     assert len(fc.interfaces) == 8
     assert len(fc.subints) == 3
     assert len(fc.systems) == 1

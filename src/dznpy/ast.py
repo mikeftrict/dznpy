@@ -1,7 +1,7 @@
 """
 Module representing the Abstract Syntax Tree (AST) and Elements of a Dezyne model
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -302,9 +302,3 @@ def assert_filecontents_t(value: Any):
     """Assert the specified argument equals the FileContents type. Otherwise, raise a TypeError."""
     if not isinstance(value, FileContents):
         raise TypeError(f'Value "{value}" is not a FileContents type')
-
-
-def assert_ports_t(value: Any):
-    """Assert the specified argument equals the Ports type. Otherwise, raise a TypeError."""
-    if not isinstance(value, FileContents):
-        raise TypeError(f'Value "{value}" is not a Ports type')

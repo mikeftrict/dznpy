@@ -1,7 +1,7 @@
 """
 Test data for validating the generated output by the cpp_gen module.
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -163,6 +163,10 @@ explicit MyToaster(int x, size_t y = 123u);
 
 CONSTRUCTOR_INITIALIZATION_DEFAULT_DECL = '''\
 MyToaster() = default;
+'''
+
+CONSTRUCTOR_INITIALIZATION_DELETE_DECL = '''\
+MyToaster() = delete;
 '''
 
 CONSTRUCTOR_MEMBER_INITIALIZER_LIST_SIMPLE_DEF = '''\

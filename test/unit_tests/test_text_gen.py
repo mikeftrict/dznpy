@@ -1,7 +1,7 @@
 """
 Testsuite validating the misc_utils module
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -105,14 +105,14 @@ def test_textblock_create_with_random_content():
 
 
 def test_textblock_add_other_textblock():
-    """Test the in-place operator with adding an other TextBlock."""
+    """Test the in-place operator with adding another TextBlock."""
     tb = TextBlock('First') + TextBlock('Second')
     assert len(tb.lines) == 2
     assert tb.lines == ['First', 'Second']
 
 
 def test_textblock_inplace_add_other_textblock():
-    """Test the in-place operator with adding an other TextBlock."""
+    """Test the in-place operator with adding another TextBlock."""
     tb = TextBlock('First')
     tb += TextBlock('Second')
     assert len(tb.lines) == 2
@@ -200,7 +200,7 @@ def test_textblock_indent_default():
     assert tb.indent() == tb, "ident() returns its own class instance a la Fluent interface"
 
 
-def test_textblock_indent_default_but_overriden_module_default():
+def test_textblock_indent_default_but_overridden_module_default():
     """Test the 'default' indentation with overriding the module constant. This feature can
     be handy when a using project prefers and installs a default from the very beginning with
     the intention to project it onto all further use."""
@@ -211,14 +211,14 @@ def test_textblock_indent_default_but_overriden_module_default():
 
 def test_textblock_indent_strip_trailing_whitespace():
     """Test explicitly that an empty line will not get indented with spaces as it would yield
-    unncessary trailing whitespace."""
+    unnecessary trailing whitespace."""
     tb = TextBlock(content=['line 1', '']).indent()
     assert str(tb) == '    line 1\n\n'
 
 
 def test_textblock_indent_with_custom_nr_spaces():
     """Test spaces indentation with a custom Indentizer configuration.
-    Also the set_indentor() needs to return Self."""
+    Also, the set_indentor() needs to return Self."""
     tb = TextBlock(content=['Hello', 'There'])
     assert tb.set_indentor(Indentizer(spaces_count=2)) == tb, "set_indentor() returns its own class instance a la Fluent interface"
     assert str(tb.indent()) == '  Hello\n  There\n'
@@ -359,8 +359,35 @@ def test_textblock_trimming():
     assert str(TextBlock(TRIMMABLE_TB).trim(end_only=True)) == str(TextBlock(END_TRIMMED_TB))
 
 
+def test_textblock_chunk_spacing_add():
+    """Test the chunk_spacing mode of TextBlock where added content will be preambled with
+    spacing (EOL by default). Final result will be chunks of text with spacing in between."""
+    tb1 = TextBlock(content='line 1\nline 2', header=None, chunk_spacing=EOL)
+    assert str(tb1) == 'line 1\nline 2\n'
+    tb2 = TextBlock(content='line 3\nline 4')
+    tb3 = tb1 + tb2
+    assert tb3.is_chunk_spacing == True, 'Final TB took over chunk spacing'
+    assert str(tb3) == CHUNK_SPACED_TB
+
+    # when altering the original textblocks, the new one stays unaffected
+    tb1 += 'extra'
+    assert str(tb3) == CHUNK_SPACED_TB
+    tb2 += 'addition'
+    assert str(tb3) == CHUNK_SPACED_TB
+
+
+def test_textblock_chunk_spacing_iadd():
+    """Test the chunk_spacing mode of TextBlock where inline added content will be preambled with
+    spacing (EOL by default). Final result will be chunks of text with spacing in between."""
+    tb = TextBlock(content=None, header=None, chunk_spacing=EOL)
+    tb += 'Line 1\nLine 2'
+    assert str(tb) == 'Line 1\nLine 2\n'
+    tb += 'Line 3'
+    assert str(tb) == 'Line 1\nLine 2\n\nLine 3\n'
+
+
 def test_generated_content():
-    """Test creation with the mininum amount of arguments. Expect a hash calculated on
+    """Test creation with the minimum amount of arguments. Expect a hash calculated on
     the contents."""
     sut = GeneratedContent(filename='filename.txt', contents='Hi There\n')
     assert sut.filename == 'filename.txt'
@@ -380,7 +407,7 @@ def test_generated_content_with_ns():
 #
 
 
-def test_generatedcontent_class():
+def test_generated_content_class():
     """Test the GeneratedContent dataclass on good and bad weather scenarios."""
     contents = '// My single liner (comment ;-)'
     expected_hash = 'd21aa5dc311a931886366b2212be2bbb'

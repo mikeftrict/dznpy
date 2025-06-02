@@ -1,7 +1,7 @@
 """
 Module providing miscellaneous simple utility functions.
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -33,6 +33,29 @@ def assert_t_optional(value: Any, expected_type: Any):
     if value is None:
         return
     assert_t(value, expected_type)
+
+
+def assert_union_t(value: Any, valid_types: List[Any]):
+    """Assert the user specified value has a type that equals (or is a subclass of) one of
+    the specified types in the valid_types list argument. Otherwise, a TypeError exception
+    is raised. ValueError exceptions are raised when the function arguments are invalid."""
+    if value is None:
+        raise ValueError('Value argument is None and therefore it can not be asserted.')
+
+    if not valid_types:
+        raise ValueError('No valid types specified and therefore assertion is impossible.')
+
+    if not any(isinstance(value, valid_type) for valid_type in valid_types):
+        raise TypeError(f'Value argument "{value}" is not equal to any expected types: '
+                        f'{flatten_to_strlist(valid_types)}.')
+
+
+def assert_union_t_optional(value: Any, valid_types: List[Any]):
+    """Same as assert_union_t, but value is allowed to indicate None, meaning it is optional.
+    """
+    if value is None:
+        return
+    assert_union_t(value, valid_types)
 
 
 def flatten_to_strlist(value: Any, skip_empty_strings: bool = True) -> List[str]:

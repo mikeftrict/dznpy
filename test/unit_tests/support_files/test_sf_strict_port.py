@@ -1,7 +1,7 @@
 """
 Testsuite validating the output of generated support file: StrictPort.
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -55,7 +55,7 @@ def template_hh(ns_prefix: str) -> str:
 //
 // This is generated content. DO NOT MODIFY manually.
 //
-// Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+// Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 // This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 namespace """ f'{ns_prefix}' """Dzn {

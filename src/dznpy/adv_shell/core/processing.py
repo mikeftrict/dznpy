@@ -1,7 +1,7 @@
 """
 Module implementing the core processing of advanced shell.
 
-Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 # system modules
@@ -15,7 +15,7 @@ from ...cpp_gen import Comment, Constructor, Function, FunctionPrefix, Fqn, fqn_
     TypeDesc, TypePostfix, const_param_ref_t, const_param_ptr_t, void_t, TemplateArg
 from ...misc_utils import flatten_to_strlist, assert_t_optional, plural
 from ...scoping import NamespaceIds, ns_ids_t
-from ...text_gen import BLANK_LINE, chunk, cond_chunk, TextBlock
+from ...text_gen import BLANK_LINE, chunk, cond_chunk, TextBlock, TB
 
 # own modules
 from ..common import Configuration, CppPortItf, DznPortItf, \
@@ -118,11 +118,13 @@ def create_facilities(origin: FacilitiesOrigin, scope) -> Facilities:
         dispatcher_mv = cpp_gen.decl_var_t(fqn_t('dzn.pump'), 'm_dispatcher')
         runtime_mv = cpp_gen.decl_var_t(fqn_t('dzn.runtime'), 'm_runtime')
         locator_t = TypeDesc(fqn_t('dzn.locator'))
-        locator_mv = cpp_gen.decl_var_t(locator_t.fqn, 'm_locator')
+        locator_mv = cpp_gen.decl_var_t(locator_t.fqname, 'm_locator')
 
-        locator_accessor_fn = Function(TypeDesc(locator_t.fqn, postfix=TypePostfix.REFERENCE),
-                                       'Locator', scope=scope,
-                                       contents=f'return {locator_mv.name};')
+        locator_accessor_fn = Function(
+            return_type=TypeDesc(locator_t.fqname, postfix=TypePostfix.REFERENCE),
+            name='Locator',
+            parent=scope,
+            contents=TB(f'return {locator_mv.name};'))
 
         return Facilities(origin, dispatcher_mv, runtime_mv, locator_mv, locator_accessor_fn)
 
@@ -140,10 +142,12 @@ def create_cpp_port_helpers(label: str, cpp_ports: CppPorts, support_files_ns: N
             """Create the public GetClientIdentifiers() helper function."""
 
             ci_fqn = Fqn(support_files_ns + ns_ids_t('ClientIdentifier'), True)
-            return Function(return_type=TypeDesc(Fqn(ns_ids_t('std.vector')), TemplateArg(ci_fqn)),
+            return Function(return_type=TypeDesc(fqname=Fqn(ns_ids_t('std.vector')),
+                                                 template_arg=TemplateArg(ci_fqn)),
                             name=f'Get{cpp_port.cap_name}ClientIdentifiers',
-                            scope=scope,
-                            contents=f'return {cpp_port.accessor_target}.GetClientIdentifiers();',
+                            parent=scope,
+                            contents=TB(
+                                f'return {cpp_port.accessor_target}.GetClientIdentifiers();'),
                             cav='const')
 
         def initialize_port_fn(cpp_port: CppPortItf):
@@ -151,13 +155,13 @@ def create_cpp_port_helpers(label: str, cpp_ports: CppPorts, support_files_ns: N
             dzn = cpp_port.dzn_port_itf
             return_type = TypeDesc(Fqn(dzn.interface.fqn, True))
 
-            return Function(return_type=TypeDesc(return_type.fqn),
+            return Function(return_type=TypeDesc(return_type.fqname),
                             name=f'InitializePort{cpp_port.cap_name}',
                             params=[const_param_ref_t(
                                 fqn_t(support_files_ns + ns_ids_t('ClientIdentifier'),
                                       prefix_root_ns=True), 'identifier')],
-                            scope=scope,
-                            contents=str(initialize_port_impl(cpp_port, support_files_ns, fct)))
+                            parent=scope,
+                            contents=initialize_port_impl(cpp_port, support_files_ns, fct))
 
         if port.dzn_port_itf.multiclient:
             public_fns.append(client_identifiers_fn(port))
@@ -175,38 +179,47 @@ def create_cpp_portitf(dzn: DznPortItf, scope: cpp_gen.Struct, support_files_ns:
 
     def sts():
         # pass-through mode
-        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Sts'), True), TemplateArg(typ.fqn))
+        strict_port_type = TypeDesc(fqname=Fqn(support_files_ns + ns_ids_t('Sts'), True),
+                                    template_arg=TemplateArg(typ.fqname))
         member_var = None
         accessor_target = f'{encapsulee.member_var.name}.{dzn.port.name}'
-        accessor_fn = Function(strict_port, f'{fn_prefix}{cap_name}', scope=scope,
-                               contents=f'return {{{accessor_target}}};')
+        accessor_fn = Function(return_type=strict_port_type,
+                               name=f'{fn_prefix}{cap_name}',
+                               parent=scope,
+                               contents=TB(f'return {{{accessor_target}}};'))
         return CppPortItf(dzn, typ, accessor_fn, accessor_target, member_var)
 
     def mts_plain():
         # reroute mode, requires an own port instance
-        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Mts'), True), TemplateArg(typ.fqn))
+        strict_port_type = TypeDesc(fqname=Fqn(support_files_ns + ns_ids_t('Mts'), True),
+                                    template_arg=TemplateArg(typ.fqname))
         mv_prefix = 'm_pp' if dzn.port.direction == ast.PortDirection.PROVIDES else 'm_rp'
         member_var = MemberVariable(typ, f'{mv_prefix}{cap_name}')
         accessor_target = f'{member_var.name}'
-        accessor_fn = Function(strict_port, f'{fn_prefix}{cap_name}', scope=scope,
-                               contents=f'return {{{accessor_target}}};')
+        accessor_fn = Function(return_type=strict_port_type,
+                               name=f'{fn_prefix}{cap_name}',
+                               parent=scope,
+                               contents=TB(f'return {{{accessor_target}}};'))
         return CppPortItf(dzn, typ, accessor_fn, accessor_target, member_var)
 
     def mts_with_multiclient_selector():
         # multiclient reroute mode, requires an own port instance including the multiclient selector
-        mc_t = TypeDesc(Fqn(support_files_ns + ns_ids_t('MultiClientSelector'), True),
+        mc_t = TypeDesc(fqname=Fqn(support_files_ns + ns_ids_t('MultiClientSelector'), True),
                         template_arg=TemplateArg(Fqn(dzn.interface.fqn, True)))
-        strict_port = TypeDesc(Fqn(support_files_ns + ns_ids_t('Mts'), True), TemplateArg(typ.fqn))
+        strict_port_type = TypeDesc(fqname=Fqn(support_files_ns + ns_ids_t('Mts'), True),
+                                    template_arg=TemplateArg(typ.fqname))
         mv_prefix = 'm_pp'  # only provides ports can be multiclient
         member_var = MemberVariable(mc_t, f'{mv_prefix}{cap_name}')
         accessor_target = f'{member_var.name}'
-        accessor_fn = Function(return_type=strict_port,
-                               name=f'{fn_prefix}MultiClient{cap_name}',
-                               params=[const_param_ref_t(
-                                   fqn_t(sfs.multi_client_selector.namespace + ns_ids_t(
-                                       'ClientIdentifier'), prefix_root_ns=True), 'identifier')],
-                               scope=scope,
-                               contents=f'return {{{accessor_target}.Index(identifier).dznPort}};')
+        accessor_fn = \
+            Function(return_type=strict_port_type,
+                     name=f'{fn_prefix}MultiClient{cap_name}',
+                     params=[const_param_ref_t(
+                         fqn_t(sfs.multi_client_selector.namespace + ns_ids_t(
+                             'ClientIdentifier'), prefix_root_ns=True), 'identifier')],
+                     parent=scope,
+                     contents=TB(
+                         f'return {{{accessor_target}.Index(identifier).dznPort}};'))
 
         return CppPortItf(dzn, typ, accessor_fn, accessor_target, member_var)
 
@@ -605,8 +618,10 @@ def create_constructor(scope, facilities: Facilities,
 
     ])
 
-    return Constructor(scope, params=[p_locator, p_opt_multiclient_log, p_shell_name],
-                       member_initlist=mil, contents=str(contents.trim()))
+    return Constructor(parent=scope,
+                       params=[p_locator, p_opt_multiclient_log, p_shell_name],
+                       member_initlist=mil,
+                       contents=contents.trim())
 
 
 def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
@@ -614,7 +629,7 @@ def create_final_construct_fn(scope: cpp_gen.Struct, provides_ports: CppPorts,
     """Create c++ code for the FinalConstruct method."""
     param = const_param_ptr_t(fqn_t('dzn.meta'), 'parentComponentMeta', 'nullptr')
     fnc = Function(return_type=void_t(), name='FinalConstruct',
-                   scope=scope, params=[param])
+                   parent=scope, params=[param])
 
     all_pp = provides_ports.ports
     all_rp = requires_ports.ports
@@ -648,8 +663,8 @@ def create_facilities_check_fn(scope: cpp_gen.Struct,
                                facilities_origin: FacilitiesOrigin) -> Function:
     """Create c++ code for the FacilitiesCheck() method."""
     param = const_param_ref_t(fqn_t('dzn.locator'), 'locator')
-    fnc = Function(return_type=param.type_desc, name='FacilitiesCheck', params=[param],
-                   prefix=FunctionPrefix.STATIC, scope=scope)
+    fnc = Function(return_type=param.type, name='FacilitiesCheck', params=[param],
+                   prefix=FunctionPrefix.STATIC, parent=scope)
 
     if facilities_origin == FacilitiesOrigin.CREATE:
         fnc.contents = TextBlock([

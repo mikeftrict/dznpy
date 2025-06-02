@@ -20,7 +20,7 @@ Example configurations:
 - All provides and requires ports MTS (like dzn code --shell)
 """
 
-# Copyright (c) 2023-2024 Michael van de Ven <michael@ftr-ict.com>
+# Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 # This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 
@@ -210,8 +210,8 @@ class Builder:
                   cpp_gen.ProjectIncludes(project_includes_list),
                   BLANK_LINE]
 
-        public_section = [chunk([cpp.constructor.as_decl,
-                                 cpp.final_construct_fn.as_decl]),
+        public_section = [chunk([cpp.constructor.as_decl(),
+                                 cpp.final_construct_fn.as_decl()]),
                           chunk(cpp.facilities.accessors_decl),
                           chunk(cpp.provides_ports.accessors_decl),
                           chunk(cpp.provides_port_helpers.public_decl),
@@ -219,7 +219,7 @@ class Builder:
                           ]
 
         private_section = [chunk([cpp.facilities.member_variables,
-                                  cpp.facilities_check_fn.as_decl]),
+                                  cpp.facilities_check_fn.as_decl()]),
                            chunk(cpp.encapsulee),
                            chunk(cpp.provides_ports.rerouting_class_members),
                            chunk(cpp.provides_port_helpers.private_decl),
@@ -227,7 +227,7 @@ class Builder:
                            ]
 
         # fill the struct declaration with the public and private sections
-        cpp.struct.contents = TextBlock([
+        cpp.struct.decl_contents = TextBlock([
             cpp_gen.AccessSpecifiedSection(
                 access_specifier=AccessSpecifier.ANONYMOUS,
                 contents=TextBlock(public_section)),
@@ -264,9 +264,9 @@ class Builder:
 
         # fill the struct declaration with the public and private sections
         cpp.namespace.contents = TB([BLANK_LINE,
-                                     chunk(cpp.facilities_check_fn.as_def),
-                                     chunk(cpp.constructor.as_def),
-                                     chunk(cpp.final_construct_fn.as_def),
+                                     chunk(cpp.facilities_check_fn.as_def()),
+                                     chunk(cpp.constructor.as_def()),
+                                     chunk(cpp.final_construct_fn.as_def()),
                                      chunk(cpp.facilities.accessors_def),
                                      chunk(cpp.provides_ports.accessors_def),
                                      chunk(cpp.provides_port_helpers.public_def),

@@ -50,7 +50,7 @@ behavior
         [s.Uninitialized]
         {
             heater.Initialize();
-            cord.Initialize();
+            Result r = cord.Initialize($"CableWith230VoltPlug"$); // ignore reply, always Ok (at this point in time)
             cfg.GetToastingTime(m_toastingTime);
             s = State.Unclaimed;
             lifecycle.reply(Result.Ok);
@@ -67,7 +67,8 @@ behavior
         [s.Uninitialized || s.Unclaimed]
         {
             heater.Uninitialize();
-            cord.Uninitialize();
+            PResultInfo infoIgnoredForNow;
+            cord.Uninitialize(infoIgnoredForNow);
             s = State.Uninitialized;
             lifecycle.reply(Result.Ok);
         }
