@@ -165,6 +165,10 @@ CONSTRUCTOR_INITIALIZATION_DEFAULT_DECL = '''\
 MyToaster() = default;
 '''
 
+CONSTRUCTOR_INITIALIZATION_DELETE_DECL = '''\
+MyToaster() = delete;
+'''
+
 CONSTRUCTOR_MEMBER_INITIALIZER_LIST_SIMPLE_DEF = '''\
 MyToaster::MyToaster()
     : m_number(1)

@@ -18,6 +18,7 @@ import Hardware/Interfaces/ILed.dzn;
 // Facilities
 import ITimer.dzn;
 import IConfiguration.dzn;
+import Types.dzn;
 
 namespace My { namespace Project {
 
@@ -45,7 +46,7 @@ behavior
 
     // Data variable(s)
     MilliSeconds m_toastingTime; // alternative is to hardcode with $30 * 1000$; // default: 30 seconds
-    MyType m_storeSomething;
+    MyLongNamedType m_storeSomething;
 
     // Event-based handling:
     on led.GlitchOccurred(): {} // consume because it is not interesting
@@ -127,7 +128,8 @@ behavior
     void Initialize()
     {
         heater.Initialize();
-        cord.Initialize();
+        Result r = cord.Initialize($"CableWith230VoltPlug"$); // ignore reply, always Ok (at this point in time)
+        led.Initialize();
         cfg.GetToastingTime(m_toastingTime);
         s = State.Idle;
     }
@@ -135,7 +137,9 @@ behavior
     void Uninitialize()
     {
         heater.Uninitialize();
-        cord.Uninitialize();
+        PResultInfo infoIgnoredForNow;
+        cord.Uninitialize(infoIgnoredForNow);
+        led.Uninitialize();
         s = State.Uninitialized;
     }
 

@@ -13,7 +13,7 @@ from typing import Any, Optional, Set, List
 # dznpy modules
 from .misc_utils import assert_t
 from .ast import FileContents, PortDirection, Ports, assert_filecontents_t, Component, Enum, \
-    Extern, Foreign, Interface, SubInt, System
+    Extern, Foreign, Interface, SubInt, System, Event, EventDirection
 from .scoping import NamespaceIds, scope_resolution_order
 
 
@@ -154,3 +154,24 @@ def find_any(fct: FileContents, endswith_ids: NamespaceIds) -> FindResult:
                 result.append(element)
 
     return FindResult(items=result)
+
+
+def get_in_events(itf: Interface) -> List[Event]:
+    """Helper function to get all in-direction-ed events of a Dezyne interface."""
+    assert_t(itf, Interface)
+    return [evt for evt in itf.events.elements if evt.direction == EventDirection.IN]
+
+
+def get_out_events(itf: Interface) -> List[Event]:
+    """Helper function to get all out-direction-ed events of a Dezyne interface."""
+    assert_t(itf, Interface)
+    return [evt for evt in itf.events.elements if evt.direction == EventDirection.OUT]
+
+
+def get_itf_name(itf: Interface) -> str:
+    """Helper function to get the name of a Dezyne interface."""
+    assert_t(itf, Interface)
+    result = str(itf.name.value)
+    if len(itf.name.value.items) > 1:
+        raise NameError(f'Interface name "{result}" should be a single identifier')
+    return result

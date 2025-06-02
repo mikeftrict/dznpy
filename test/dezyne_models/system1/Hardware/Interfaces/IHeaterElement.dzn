@@ -1,7 +1,7 @@
 // Three times an IHeaterElement interface.
 //
 // For testing purposes (e.g. look up by FQN/scope name) this file intentionally contains three
-// interface models, plus, these interfaces have the same name but reside in a different namespaces.
+// interface models, plus, these interfaces have the same name but intentionally reside in different namespaces.
 //
 
 namespace Some { namespace Vendor {

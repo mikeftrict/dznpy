@@ -132,6 +132,14 @@ line 2
 line 4
 '''
 
+CHUNK_SPACED_TB = '''\
+line 1
+line 2
+
+line 3
+line 4
+'''
+
 CHUNKED_TB = '''\
 line 1
 line 2
@@ -176,4 +184,3 @@ MyPreAmble
 ALL_OR_NOTHING_COND_CHUNKED_TB_EMPTY_CONTENTS = '''\
 <AllOrNothing>
 '''
-

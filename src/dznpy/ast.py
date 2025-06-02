@@ -302,9 +302,3 @@ def assert_filecontents_t(value: Any):
     """Assert the specified argument equals the FileContents type. Otherwise, raise a TypeError."""
     if not isinstance(value, FileContents):
         raise TypeError(f'Value "{value}" is not a FileContents type')
-
-
-def assert_ports_t(value: Any):
-    """Assert the specified argument equals the Ports type. Otherwise, raise a TypeError."""
-    if not isinstance(value, FileContents):
-        raise TypeError(f'Value "{value}" is not a Ports type')
