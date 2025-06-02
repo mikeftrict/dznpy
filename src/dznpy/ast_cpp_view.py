@@ -13,15 +13,14 @@ from dznpy import ast_view
 from dznpy.ast import Event, Interface, FileContents, FormalDirection, ScopeName, SubInt, Enum, \
     Extern
 from dznpy.ast_view import find_fqn
-from dznpy.cpp_gen import Function, Struct, Class, void_t, param_t, param_ref_t, Param, fqn_t, Fqn, \
-    TypeAsIs, TypeDesc
-from dznpy.misc_utils import assert_t, assert_union_t, assert_union_t_optional
-from dznpy.scoping import NamespaceIds, ns_ids_t
+from dznpy.cpp_gen import Function, Struct, Class, Param, Fqn, TypeAsIs
+from dznpy.misc_utils import assert_t, assert_union_t_optional
+from dznpy.scoping import NamespaceIds
 
 
 @dataclass(frozen=True)
 class FormalExpanded:
-    """TODO"""
+    """Data class holding the type, direction and name of a formal."""
     type: TypeAsIs
     direction: FormalDirection
     name: str
@@ -29,14 +28,15 @@ class FormalExpanded:
 
 @dataclass(frozen=True)
 class EventExpanded:
-    """TODO"""
+    """Data class holding the values of an expanded Dezyne Event."""
     return_type: TypeAsIs
     name: str
     formals: List[FormalExpanded]
 
 
 def expand_type_name(name: ScopeName, parent_fqn: NamespaceIds, fct: FileContents) -> TypeAsIs:
-    """TODO"""
+    """Helper function to expand a type (specified by its Scopename) and resolve its
+    fully qualified namespace identifiers, immediately as C++."""
     assert_t(name, ScopeName)
     assert_t(parent_fqn, NamespaceIds)
     assert_t(fct, FileContents)
@@ -57,7 +57,8 @@ def expand_type_name(name: ScopeName, parent_fqn: NamespaceIds, fct: FileContent
 
 
 def expand_event(evt: Event, itf: Interface, fct: FileContents) -> EventExpanded:
-    """TODO"""
+    """Helper function to expand a Dezyne Event as part of an interface and resolve its
+    fully qualified namespace identifiers, immediately as C++."""
     assert_t(evt, Event)
     assert_t(itf, Interface)
     assert_t(fct, FileContents)
@@ -75,7 +76,7 @@ def expand_event(evt: Event, itf: Interface, fct: FileContents) -> EventExpanded
 
 
 def get_formals(evt: EventExpanded) -> tuple[str, str]:
-    """Get the formals of an Event as a tuple:
+    """Get the formals of an Event as a tuple, immediately expressed as C++:
      - first a comma-delimited string of the event names-only (e.g. "param1, param2")
      - secondly a comma-delimited string of the event type, direction and event name,
        e.g "int param1, std::string& outputMsg"
@@ -95,7 +96,8 @@ def get_formals(evt: EventExpanded) -> tuple[str, str]:
 def create_member_function(evt: EventExpanded,
                            evt_name_prefix: str = '',
                            parent: Optional[Struct or Class] = None) -> Function:
-    """TODO"""
+    """Helper function the create a cpp_gen Function out of an expanded Dezyne Event,
+    expressed as C++ and optionally hooked up into a parent."""
     assert_t(evt, EventExpanded)
     assert_t(evt_name_prefix, str)
     assert_union_t_optional(parent, [Struct, Class])

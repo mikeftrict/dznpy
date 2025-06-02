@@ -360,7 +360,8 @@ def test_textblock_trimming():
 
 
 def test_textblock_chunk_spacing_add():
-    """Test TODO"""
+    """Test the chunk_spacing mode of TextBlock where added content will be preambled with
+    spacing (EOL by default). Final result will be chunks of text with spacing in between."""
     tb1 = TextBlock(content='line 1\nline 2', header=None, chunk_spacing=EOL)
     assert str(tb1) == 'line 1\nline 2\n'
     tb2 = TextBlock(content='line 3\nline 4')
@@ -376,7 +377,8 @@ def test_textblock_chunk_spacing_add():
 
 
 def test_textblock_chunk_spacing_iadd():
-    """Test TODO"""
+    """Test the chunk_spacing mode of TextBlock where inline added content will be preambled with
+    spacing (EOL by default). Final result will be chunks of text with spacing in between."""
     tb = TextBlock(content=None, header=None, chunk_spacing=EOL)
     tb += 'Line 1\nLine 2'
     assert str(tb) == 'Line 1\nLine 2\n'
@@ -385,7 +387,7 @@ def test_textblock_chunk_spacing_iadd():
 
 
 def test_generated_content():
-    """Test creation with the mininum amount of arguments. Expect a hash calculated on
+    """Test creation with the minimum amount of arguments. Expect a hash calculated on
     the contents."""
     sut = GeneratedContent(filename='filename.txt', contents='Hi There\n')
     assert sut.filename == 'filename.txt'

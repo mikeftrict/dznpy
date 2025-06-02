@@ -157,19 +157,19 @@ def find_any(fct: FileContents, endswith_ids: NamespaceIds) -> FindResult:
 
 
 def get_in_events(itf: Interface) -> List[Event]:
-    """TODO"""
+    """Helper function to get all in-direction-ed events of a Dezyne interface."""
     assert_t(itf, Interface)
     return [evt for evt in itf.events.elements if evt.direction == EventDirection.IN]
 
 
 def get_out_events(itf: Interface) -> List[Event]:
-    """TODO"""
+    """Helper function to get all out-direction-ed events of a Dezyne interface."""
     assert_t(itf, Interface)
     return [evt for evt in itf.events.elements if evt.direction == EventDirection.OUT]
 
 
 def get_itf_name(itf: Interface) -> str:
-    """TODO"""
+    """Helper function to get the name of a Dezyne interface."""
     assert_t(itf, Interface)
     result = str(itf.name.value)
     if len(itf.name.value.items) > 1:

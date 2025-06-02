@@ -145,7 +145,8 @@ class TemplateArg:
 
 @dataclass(frozen=True)
 class TypeAsIs:
-    """Dataclass TODO
+    """Dataclass that intentionally lets the user specify the type
+    as a string -as is-. Meaning, validity is up to the user.
     """
     value: str
 

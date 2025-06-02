@@ -11,7 +11,7 @@ from dznpy.cpp_gen import Comment, Fqn, Namespace, Struct, Class, ProjectInclude
     AccessSpecifiedSection, AccessSpecifier, TypeDesc, TemplateArg, TypePostfix, fqn_t, \
     TypeConstness, void_t, int_t, float_t, double_t, std_string_t, const_std_string_ref_t, Param, \
     MemberVariable, Constructor, FunctionInitialization, Function, Destructor, decl_var_t, \
-    decl_var_ref_t, decl_var_ptr_t
+    decl_var_ref_t, decl_var_ptr_t, TypeAsIs, param_t, const_param_ref_t, FunctionPrefix
 from dznpy.scoping import NamespaceIds, ns_ids_t
 from dznpy.text_gen import TextBlock, TB
 
@@ -336,7 +336,7 @@ def example_constructor_destructor():
     print(constr.as_def())  # No sourcecode, because of '= default/delete' initialization
 
     # Destructor initialization and override
-    cls = Struct('HouseDoor')
+    cls = Class('HouseDoor')
     destr = Destructor(parent=cls,
                        override=True,
                        initialization=FunctionInitialization.DEFAULT)
@@ -355,19 +355,50 @@ def example_function():
     print(func.as_decl())
     print(func.as_def())
 
+    # A struct member function
+    struct = Struct('Villa')
+    func = Function(parent=struct,
+                    return_type=TypeAsIs('Hal::Device'),
+                    name='DoorHandle')
+    print(func.as_decl())
+    print(func.as_def())
+
+    # A virtual class member function with constness ('volatile' is another example)
+    cls = Class('Car')
+    func = Function(parent=cls,
+                    prefix=FunctionPrefix.VIRTUAL,
+                    return_type=void_t(),
+                    name='Brake',
+                    cav='const')
+    print(func.as_decl())
+    print(func.as_def())
+
+    # A class member function with parameters and -override- of assumed base class virtual method
+    cls = Class('Boat')
+    p1 = param_t(fqn_t('long'), 'speed', default_value='0')
+    p2 = const_param_ref_t(fqn_t('std.string'), 'label')
+    func = Function(parent=cls,
+                    return_type=void_t(),
+                    name='Throttle',
+                    params=[p1, p2],
+                    override=True)
+    func.contents = TB(Comment('Some code will appear here in the future'))
+    print(func.as_decl())
+    print(func.as_def())
+
 
 def main():
     """Convergence point of executing all example code for the cpp_gen module."""
 
-    # example_includes()
-    # example_fqn()
-    # example_comment()
-    # example_namespace()
-    # example_simple_struct_class_access_specification()
-    # example_type_description()
-    # example_param()
-    # example_member_variable()
-    # example_constructor_destructor()
+    example_includes()
+    example_fqn()
+    example_comment()
+    example_namespace()
+    example_simple_struct_class_access_specification()
+    example_type_description()
+    example_param()
+    example_member_variable()
+    example_constructor_destructor()
     example_function()
 
 
