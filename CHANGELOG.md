@@ -1,5 +1,12 @@
 # Changelog
 
+## Changes in 1.2 (DEV) since 1.1
+
+### Noteworthy additions and changes
+
+- [DZNPY-0035](https://github.com/mikeftrict/dznpy/issues/35): Mitigate empty line below private section in Advanced
+  shell headerfile.
+
 ## Changes in 1.1 (20250602) since 1.0
 
 ### Breaking changes
