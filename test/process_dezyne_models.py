@@ -4,9 +4,10 @@ includes generation of C++ code and JSON Abstract Syntax Trees of certain Dezyne
 
 The script depends on the user already having fetched and unpacked a copy of dezyne from the URL:
 
-    https://download.verum.com/download/verum-dezyne/verum-dezyne-2.17.8-x86_64-windows.zip
+    https://download.verum.com/download/dezyne/dezyne-2.17.8-x86_64-linux.tar.gz (linux)
+    https://download.verum.com/download/dezyne/dezyne-2.17.8-x86_64-windows.zip  (windows)
 
-Initial, but configurable, assumption is that the unpacked location is C:\SB\dezyne-2.17.8\
+Initial and configurable unpack the archive to the location as defined in the constant CFG_DZN_CMD.
 """
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -16,8 +17,9 @@ from pathlib import Path
 import subprocess
 from typing import List, Tuple
 
-# User configurable items
-CFG_DZN_CMD = 'C:\SB\dezyne-2.17.8\dzn.cmd'
+# User configurable:
+CFG_DZN_CMD = Path('~/dezyne-2.17.8/dzn').expanduser()  # Linux
+#CFG_DZN_CMD = Path('C:\SB\dezyne-2.17.8\dzn.cmd')      # Windows
 
 
 # Data class containing the final configuration
@@ -33,10 +35,10 @@ class Configuration:
         """Custom string representation"""
         return ('Script configuration:\n'
                 f'dzncmd (user) = {CFG_DZN_CMD}\n'
-                f'dzncmd (abs)  = {self.dzn_cmd.absolute()}\n'
-                f'script_root   = {self.script_root.absolute()}\n'
-                f'models_root   = {self.models_root.absolute()}\n'
-                f'gen_folder    = {self.gen_folder.absolute()}\n'
+                f'dzncmd (abs)  = {self.dzn_cmd.resolve()}\n'
+                f'script_root   = {self.script_root.resolve()}\n'
+                f'models_root   = {self.models_root.resolve()}\n'
+                f'gen_folder    = {self.gen_folder.resolve()}\n'
                 f'includes      = {self.includes}\n')
 
 
@@ -44,49 +46,53 @@ def main():
     """The main function that orchestrates the functionality of the script."""
 
     # Ensure Dezyne is present
-    dzn_cmd = Path(CFG_DZN_CMD)
+    dzn_cmd = Path(CFG_DZN_CMD).resolve()
     if not dzn_cmd.is_file():
         raise RuntimeError(f'dzn.cmd not found, check/correct CFG_DZN_CMD (={CFG_DZN_CMD})')
 
     # Ensure the Dezyne models are found
-    cwd = Path('.').absolute()
-    models_root = (cwd / 'dezyne_models/system1/').absolute()
+    cwd = Path('.').resolve()
+    models_root = (cwd / 'dezyne_models/system1/').resolve()
     if not models_root.is_dir():
         raise RuntimeError('Dezyne models not found, ensure dznpy is complete and '
                            'call this script from the test folder')
 
     # Print environment
     cfg = Configuration(dzn_cmd=dzn_cmd, script_root=cwd, models_root=models_root,
-                        gen_folder=(cwd / 'dezyne_models/generated/').absolute(),
-                        includes=['-I', '.', '-I', '..\shared\Facilities'])
+                        gen_folder=(cwd / 'dezyne_models/generated/').resolve(),
+                        includes=['-I', '.', '-I', '../shared/Facilities'])
     print(cfg)
     makedirs(cfg.gen_folder, exist_ok=True)
 
+    result = subprocess.run([cfg.dzn_cmd.resolve(), '-V'])    
+    print(result)
+
     with RaiiCd(models_root):
+        pass
         # First verify models (in parallel)
-        multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn', 'ExclusiveToaster.dzn',
-                           'StoneAgeToaster.dzn', 'Toaster.dzn'],
-                          verify, (cfg,))
+        # multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn', 'ExclusiveToaster.dzn',
+        #                    'StoneAgeToaster.dzn', 'Toaster.dzn'],
+        #                   verify, (cfg,))
 
-        # Then generate C++ code (in parallel)
-        multicore_execute(['..\shared\Facilities\FCTimer.dzn', '..\shared\Facilities\IConfiguration.dzn',
-                           '..\shared\Facilities\ITimer.dzn', '..\shared\Facilities\Types.dzn',
-                           'Hardware\Interfaces\IPowerCord.dzn', 'Hardware\Interfaces\IHeaterElement.dzn',
-                           'Hardware\Interfaces\ILed.dzn', 'IExclusiveToaster.dzn',
-                           'IToaster.dzn', 'DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
-                           'ExclusiveToaster.dzn', 'StoneAgeToaster.dzn', 'Toaster.dzn'
-                           ],
-                          generate_cpp, (cfg,))
+        # # Then generate C++ code (in parallel)
+        # multicore_execute(['../shared/Facilities/FCTimer.dzn', '../shared/Facilities/IConfiguration.dzn',
+        #                    '../shared/Facilities/ITimer.dzn', '../shared/Facilities/Types.dzn',
+        #                    'Hardware/Interfaces/IPowerCord.dzn', 'Hardware/Interfaces/IHeaterElement.dzn',
+        #                    'Hardware/Interfaces/ILed.dzn', 'IExclusiveToaster.dzn',
+        #                    'IToaster.dzn', 'DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
+        #                    'ExclusiveToaster.dzn', 'StoneAgeToaster.dzn', 'Toaster.dzn'
+        #                    ],
+        #                   generate_cpp, (cfg,))
 
-        # Then generate Thread-safe Shells C++ code (sequentially)
-        multicore_execute(['TwoToasters.dzn'], generate_tss, ('ToasterOne', cfg))
-        multicore_execute(['ToasterSystem.dzn'], generate_tss, ('My.Project.ToasterSystem', cfg))
+        # # Then generate Thread-safe Shells C++ code (sequentially)
+        # multicore_execute(['TwoToasters.dzn'], generate_tss, ('ToasterOne', cfg))
+        # multicore_execute(['ToasterSystem.dzn'], generate_tss, ('My.Project.ToasterSystem', cfg))
 
-        # Finally generate JSON AST output (in parallel)
-        multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
-                           'ExclusiveToaster.dzn', 'Hardware\Interfaces\IPowerCord.dzn',
-                           'ToasterSystem.dzn', 'StoneAgeToaster.dzn'],
-                          generate_json, (cfg,))
+        # # Finally generate JSON AST output (in parallel)
+        # multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
+        #                    'ExclusiveToaster.dzn', 'Hardware/Interfaces/IPowerCord.dzn',
+        #                    'ToasterSystem.dzn', 'StoneAgeToaster.dzn'],
+        #                   generate_json, (cfg,))
 
     print('\nFinished')
 
@@ -117,7 +123,7 @@ def multicore_execute(models: List[str], func, args: Tuple):
 def verify(model_filename: Path, cfg: Configuration):
     """Verify a Dezyne file"""
     print(f'Verifying: {model_filename}')
-    exe_args = [cfg.dzn_cmd.absolute(), 'verify'] + cfg.includes + [model_filename]
+    exe_args = [cfg.dzn_cmd.resolve(), 'verify'] + cfg.includes + [model_filename]
     result = subprocess.run(exe_args)
     if result.returncode > 0:
         raise RuntimeError(f'Verification error on model {model_filename}')
@@ -126,8 +132,8 @@ def verify(model_filename: Path, cfg: Configuration):
 def generate_cpp(model_filename: Path, cfg: Configuration):
     """Generate C++ code for a Dezyne file"""
     print(f'Generating C++ code: {model_filename}')
-    exe_args = ([cfg.dzn_cmd.absolute(), 'code', '-l', 'c++',
-                 '-o', cfg.gen_folder.absolute()] + cfg.includes + [model_filename])
+    exe_args = ([cfg.dzn_cmd.resolve(), 'code', '-l', 'c++',
+                 '-o', cfg.gen_folder.resolve()] + cfg.includes + [model_filename])
     result = subprocess.run(exe_args)
     if result.returncode > 0:
         raise RuntimeError(f'Code generation error on model {model_filename}')
@@ -136,8 +142,8 @@ def generate_cpp(model_filename: Path, cfg: Configuration):
 def generate_tss(model_filename: Path, tss_name: str, cfg: Configuration):
     """Generate a Thread-Safe Shell for a Dezyne system model"""
     print(f'Generating a Thread-Safe Shell for system "{tss_name}" in: {model_filename}')
-    exe_args = ([cfg.dzn_cmd.absolute(), 'code', '-l', 'c++', '-s', tss_name,
-                 '-o', cfg.gen_folder.absolute()] + cfg.includes + [model_filename])
+    exe_args = ([cfg.dzn_cmd.resolve(), 'code', '-l', 'c++', '-s', tss_name,
+                 '-o', cfg.gen_folder.resolve()] + cfg.includes + [model_filename])
     result = subprocess.run(exe_args)
     if result.returncode > 0:
         raise RuntimeError(f'Code generation error on model {model_filename}')
@@ -146,8 +152,8 @@ def generate_tss(model_filename: Path, tss_name: str, cfg: Configuration):
 def generate_json(model_filename: Path, cfg: Configuration):
     """Generate a JSON Abstract Syntax Tree file for a Dezyne file."""
     print(f'Generating a JSON Abstract Syntax Tree file: {model_filename}')
-    exe_args = ([cfg.dzn_cmd.absolute(), 'code', '-l', 'json',
-                 '-o', cfg.gen_folder.absolute()] + cfg.includes + [model_filename])
+    exe_args = ([cfg.dzn_cmd.resolve(), 'code', '-l', 'json',
+                 '-o', cfg.gen_folder.resolve()] + cfg.includes + [model_filename])
     result = subprocess.run(exe_args, capture_output=True)
     if result.returncode > 0:
         raise RuntimeError(f'Code generation error on model {model_filename}')
@@ -159,7 +165,7 @@ def generate_json(model_filename: Path, cfg: Configuration):
 @contextmanager
 def RaiiCd(path: Path):
     """Change current directory and restore the original when exiting the context."""
-    orig_directory = Path().absolute()
+    orig_directory = Path().resolve()
     try:
         chdir(path)
         yield
