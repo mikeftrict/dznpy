@@ -5,3 +5,6 @@ tmp
 dzn
 mylog
 generated
+build
+dist
+dznpy.egg-info
