@@ -18,8 +18,8 @@ import subprocess
 from typing import List, Tuple
 
 # User configurable:
-CFG_DZN_CMD = Path('~/dezyne-2.17.8/dzn').expanduser()  # Linux
-#CFG_DZN_CMD = Path('C:\SB\dezyne-2.17.8\dzn.cmd')      # Windows
+# CFG_DZN_CMD = Path('~/dezyne-2.17.8/dzn').expanduser()  # Linux example
+CFG_DZN_CMD = Path('C:\SB\dezyne-2.17.8\dzn.cmd')  # Windows
 
 
 # Data class containing the final configuration
@@ -64,35 +64,31 @@ def main():
     print(cfg)
     makedirs(cfg.gen_folder, exist_ok=True)
 
-    result = subprocess.run([cfg.dzn_cmd.resolve(), '-V'])    
-    print(result)
-
     with RaiiCd(models_root):
-        pass
         # First verify models (in parallel)
-        # multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn', 'ExclusiveToaster.dzn',
-        #                    'StoneAgeToaster.dzn', 'Toaster.dzn'],
-        #                   verify, (cfg,))
+        multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn', 'ExclusiveToaster.dzn',
+                           'StoneAgeToaster.dzn', 'Toaster.dzn'],
+                          verify, (cfg,))
 
         # # Then generate C++ code (in parallel)
-        # multicore_execute(['../shared/Facilities/FCTimer.dzn', '../shared/Facilities/IConfiguration.dzn',
-        #                    '../shared/Facilities/ITimer.dzn', '../shared/Facilities/Types.dzn',
-        #                    'Hardware/Interfaces/IPowerCord.dzn', 'Hardware/Interfaces/IHeaterElement.dzn',
-        #                    'Hardware/Interfaces/ILed.dzn', 'IExclusiveToaster.dzn',
-        #                    'IToaster.dzn', 'DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
-        #                    'ExclusiveToaster.dzn', 'StoneAgeToaster.dzn', 'Toaster.dzn'
-        #                    ],
-        #                   generate_cpp, (cfg,))
+        multicore_execute(['../shared/Facilities/FCTimer.dzn', '../shared/Facilities/IConfiguration.dzn',
+                           '../shared/Facilities/ITimer.dzn', '../shared/Facilities/Types.dzn',
+                           'Hardware/Interfaces/IPowerCord.dzn', 'Hardware/Interfaces/IHeaterElement.dzn',
+                           'Hardware/Interfaces/ILed.dzn', 'IExclusiveToaster.dzn',
+                           'IToaster.dzn', 'DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
+                           'ExclusiveToaster.dzn', 'StoneAgeToaster.dzn', 'Toaster.dzn'
+                           ],
+                          generate_cpp, (cfg,))
 
         # # Then generate Thread-safe Shells C++ code (sequentially)
-        # multicore_execute(['TwoToasters.dzn'], generate_tss, ('ToasterOne', cfg))
-        # multicore_execute(['ToasterSystem.dzn'], generate_tss, ('My.Project.ToasterSystem', cfg))
+        multicore_execute(['TwoToasters.dzn'], generate_tss, ('ToasterOne', cfg))
+        multicore_execute(['ToasterSystem.dzn'], generate_tss, ('My.Project.ToasterSystem', cfg))
 
         # # Finally generate JSON AST output (in parallel)
-        # multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
-        #                    'ExclusiveToaster.dzn', 'Hardware/Interfaces/IPowerCord.dzn',
-        #                    'ToasterSystem.dzn', 'StoneAgeToaster.dzn'],
-        #                   generate_json, (cfg,))
+        multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
+                           'ExclusiveToaster.dzn', 'Hardware/Interfaces/IPowerCord.dzn',
+                           'ToasterSystem.dzn', 'StoneAgeToaster.dzn'],
+                          generate_json, (cfg,))
 
     print('\nFinished')
 
