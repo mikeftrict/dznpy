@@ -8,3 +8,4 @@ generated
 build
 dist
 dznpy.egg-info
+*.dep

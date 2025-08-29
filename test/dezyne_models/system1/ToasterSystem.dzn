@@ -20,6 +20,10 @@ requires My.ILed led;
 
 system
 {
+    // Build instances of internal components
+    Toaster sut;
+    Facilities.Timer t1;
+
     // Connect the ports on the public boundary
     api <=> sut.api;
     heaterElement <=> sut.heater;
@@ -28,10 +32,6 @@ system
 
     // Connect the private/internal ports
     sut.timer <=> t1.api;
-
-    // Build instances of internal components
-    Toaster sut;
-    Facilities.Timer t1;
 
 } // system
 } // end component
