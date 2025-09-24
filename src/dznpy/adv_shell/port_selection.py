@@ -149,7 +149,7 @@ class MatchedPorts:
 
 @dataclass(frozen=True)
 class MultiClientPortCfg:
-    """"A class to store, the user specified configuration for multi-client out-event selector."""
+    """A class to store, the user specified configuration for multi-client out-event selector."""
     port_name: str
     claim_event_name: str
     claim_granting_reply_value: NamespaceIds

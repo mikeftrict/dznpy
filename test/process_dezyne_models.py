@@ -149,7 +149,7 @@ def generate_json(model_filename: Path, cfg: Configuration):
     """Generate a JSON Abstract Syntax Tree file for a Dezyne file."""
     print(f'Generating a JSON Abstract Syntax Tree file: {model_filename}')
     exe_args = ([cfg.dzn_cmd.resolve(), 'code', '-l', 'json',
-                 '-o', cfg.gen_folder.resolve()] + cfg.includes + [model_filename])
+                 '-o', '-'] + cfg.includes + [model_filename])
     result = subprocess.run(exe_args, capture_output=True)
     if result.returncode > 0:
         raise RuntimeError(f'Code generation error on model {model_filename}')

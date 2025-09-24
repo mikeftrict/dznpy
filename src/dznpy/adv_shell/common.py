@@ -46,7 +46,7 @@ class MultiClientPortCfgFixture:
 
 @dataclass(frozen=True)
 class DznPortItf:
-    """"Data class grouping Dezyne AST Port, Interface and configured semantics."""
+    """Data class grouping Dezyne AST Port, Interface and configured semantics."""
     port: ast.Port
     interface: ast.Interface
     semantics: RuntimeSemantics
@@ -61,7 +61,7 @@ class DznPortItf:
 
 @dataclass(frozen=True)
 class CppPortItf:
-    """"Data class grouping Dezyne PortItf with a corresponding C++ accessor function.
+    """Data class grouping Dezyne PortItf with a corresponding C++ accessor function.
     On rerouting the port via the dispatcher, this container provides the associated class member
     variable."""
     dzn_port_itf: DznPortItf
