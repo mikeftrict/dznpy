@@ -1,0 +1,545 @@
+{
+    "<class>": "root",
+    "comment": {
+        "<class>": "comment",
+        "string": "// Three times an IHeaterElement interface.\n//\n// For testing purposes (e.g. look up by FQN/scope name) this file intentionally contains three\n// interface models, plus, these interfaces have the same name but intentionally reside in different namespaces.\n//\n"
+    },
+    "elements": [
+        {
+            "<class>": "file-name",
+            "name": "Hardware\\Interfaces\\IHeaterElement.dzn"
+        },
+        {
+            "<class>": "namespace",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "Some"
+                ]
+            },
+            "elements": [
+                {
+                    "<class>": "namespace",
+                    "name": {
+                        "<class>": "scope_name",
+                        "ids": [
+                            "Vendor"
+                        ]
+                    },
+                    "elements": [
+                        {
+                            "<class>": "interface",
+                            "name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "IHeaterElement"
+                                ]
+                            },
+                            "types": {
+                                "<class>": "types",
+                                "elements": [
+                                    {
+                                        "<class>": "subint",
+                                        "name": {
+                                            "<class>": "scope_name",
+                                            "ids": [
+                                                "ExampleInt"
+                                            ]
+                                        },
+                                        "range": {
+                                            "<class>": "range",
+                                            "from": 0,
+                                            "to": 9
+                                        }
+                                    }
+                                ]
+                            },
+                            "events": {
+                                "<class>": "events",
+                                "elements": [
+                                    {
+                                        "<class>": "event",
+                                        "name": "Initialize",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    },
+                                    {
+                                        "<class>": "event",
+                                        "name": "Uninitialize",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    },
+                                    {
+                                        "<class>": "event",
+                                        "name": "On",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    },
+                                    {
+                                        "<class>": "event",
+                                        "name": "Off",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    }
+                                ]
+                            },
+                            "behavior": {
+                                "<class>": "behavior",
+                                "types": {
+                                    "<class>": "types",
+                                    "elements": [
+                                        {
+                                            "<class>": "enum",
+                                            "name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "State"
+                                                ]
+                                            },
+                                            "fields": {
+                                                "<class>": "fields",
+                                                "elements": [
+                                                    "Uninitialized",
+                                                    "Off",
+                                                    "Heating"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                "variables": {
+                                    "<class>": "variables",
+                                    "elements": [
+                                        {
+                                            "<class>": "variable",
+                                            "name": "s",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "State"
+                                                ]
+                                            },
+                                            "expression": {
+                                                "<class>": "enum-literal",
+                                                "expression": null,
+                                                "type_name": {
+                                                    "<class>": "scope_name",
+                                                    "ids": [
+                                                        "State"
+                                                    ]
+                                                },
+                                                "field": "Uninitialized"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "functions": {
+                                    "<class>": "functions",
+                                    "elements": []
+                                },
+                                "statement": {
+                                    "<class>": "compound",
+                                    "elements": [
+                                        {
+                                            "<class>": "on",
+                                            "triggers": {
+                                                "<class>": "triggers",
+                                                "elements": [
+                                                    {
+                                                        "<class>": "trigger",
+                                                        "event_name": "Uninitialize",
+                                                        "formals": {
+                                                            "<class>": "formals",
+                                                            "elements": []
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "statement": {
+                                                "<class>": "assign",
+                                                "variable_name": "s",
+                                                "expression": {
+                                                    "<class>": "enum-literal",
+                                                    "expression": null,
+                                                    "type_name": {
+                                                        "<class>": "scope_name",
+                                                        "ids": [
+                                                            "State"
+                                                        ]
+                                                    },
+                                                    "field": "Uninitialized"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "<class>": "guard",
+                                            "expression": {
+                                                "<class>": "field-test",
+                                                "expression": null,
+                                                "name": "s",
+                                                "field": "Uninitialized"
+                                            },
+                                            "statement": {
+                                                "<class>": "compound",
+                                                "elements": [
+                                                    {
+                                                        "<class>": "on",
+                                                        "triggers": {
+                                                            "<class>": "triggers",
+                                                            "elements": [
+                                                                {
+                                                                    "<class>": "trigger",
+                                                                    "event_name": "Initialize",
+                                                                    "formals": {
+                                                                        "<class>": "formals",
+                                                                        "elements": []
+                                                                    }
+                                                                }
+                                                            ]
+                                                        },
+                                                        "statement": {
+                                                            "<class>": "assign",
+                                                            "variable_name": "s",
+                                                            "expression": {
+                                                                "<class>": "enum-literal",
+                                                                "expression": null,
+                                                                "type_name": {
+                                                                    "<class>": "scope_name",
+                                                                    "ids": [
+                                                                        "State"
+                                                                    ]
+                                                                },
+                                                                "field": "Off"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "<class>": "guard",
+                                            "expression": {
+                                                "<class>": "field-test",
+                                                "expression": null,
+                                                "name": "s",
+                                                "field": "Off"
+                                            },
+                                            "statement": {
+                                                "<class>": "compound",
+                                                "elements": [
+                                                    {
+                                                        "<class>": "on",
+                                                        "triggers": {
+                                                            "<class>": "triggers",
+                                                            "elements": [
+                                                                {
+                                                                    "<class>": "trigger",
+                                                                    "event_name": "On",
+                                                                    "formals": {
+                                                                        "<class>": "formals",
+                                                                        "elements": []
+                                                                    }
+                                                                }
+                                                            ]
+                                                        },
+                                                        "statement": {
+                                                            "<class>": "assign",
+                                                            "variable_name": "s",
+                                                            "expression": {
+                                                                "<class>": "enum-literal",
+                                                                "expression": null,
+                                                                "type_name": {
+                                                                    "<class>": "scope_name",
+                                                                    "ids": [
+                                                                        "State"
+                                                                    ]
+                                                                },
+                                                                "field": "Heating"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "<class>": "guard",
+                                            "expression": {
+                                                "<class>": "field-test",
+                                                "expression": null,
+                                                "name": "s",
+                                                "field": "Heating"
+                                            },
+                                            "statement": {
+                                                "<class>": "compound",
+                                                "elements": [
+                                                    {
+                                                        "<class>": "on",
+                                                        "triggers": {
+                                                            "<class>": "triggers",
+                                                            "elements": [
+                                                                {
+                                                                    "<class>": "trigger",
+                                                                    "event_name": "Off",
+                                                                    "formals": {
+                                                                        "<class>": "formals",
+                                                                        "elements": []
+                                                                    }
+                                                                }
+                                                            ]
+                                                        },
+                                                        "statement": {
+                                                            "<class>": "assign",
+                                                            "variable_name": "s",
+                                                            "expression": {
+                                                                "<class>": "enum-literal",
+                                                                "expression": null,
+                                                                "type_name": {
+                                                                    "<class>": "scope_name",
+                                                                    "ids": [
+                                                                        "State"
+                                                                    ]
+                                                                },
+                                                                "field": "Off"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "<class>": "namespace",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "My"
+                ]
+            },
+            "elements": [
+                {
+                    "<class>": "namespace",
+                    "name": {
+                        "<class>": "scope_name",
+                        "ids": [
+                            "Project"
+                        ]
+                    },
+                    "elements": [
+                        {
+                            "<class>": "interface",
+                            "name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "IHeaterElement"
+                                ]
+                            },
+                            "types": {
+                                "<class>": "types",
+                                "elements": []
+                            },
+                            "events": {
+                                "<class>": "events",
+                                "elements": [
+                                    {
+                                        "<class>": "event",
+                                        "name": "Second",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    }
+                                ]
+                            },
+                            "behavior": {
+                                "<class>": "behavior",
+                                "types": {
+                                    "<class>": "types",
+                                    "elements": []
+                                },
+                                "variables": {
+                                    "<class>": "variables",
+                                    "elements": []
+                                },
+                                "functions": {
+                                    "<class>": "functions",
+                                    "elements": []
+                                },
+                                "statement": {
+                                    "<class>": "compound",
+                                    "elements": [
+                                        {
+                                            "<class>": "on",
+                                            "triggers": {
+                                                "<class>": "triggers",
+                                                "elements": [
+                                                    {
+                                                        "<class>": "trigger",
+                                                        "event_name": "Second",
+                                                        "formals": {
+                                                            "<class>": "formals",
+                                                            "elements": []
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "statement": {
+                                                "<class>": "compound",
+                                                "elements": []
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "<class>": "interface",
+            "comment": {
+                "<class>": "comment",
+                "string": "// end namespace My::Project\n"
+            },
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "IHeaterElement"
+                ]
+            },
+            "types": {
+                "<class>": "types",
+                "elements": []
+            },
+            "events": {
+                "<class>": "events",
+                "elements": [
+                    {
+                        "<class>": "event",
+                        "name": "Third",
+                        "signature": {
+                            "<class>": "signature",
+                            "type_name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "void"
+                                ]
+                            },
+                            "formals": {
+                                "<class>": "formals",
+                                "elements": []
+                            }
+                        },
+                        "direction": "in"
+                    }
+                ]
+            },
+            "behavior": {
+                "<class>": "behavior",
+                "types": {
+                    "<class>": "types",
+                    "elements": []
+                },
+                "variables": {
+                    "<class>": "variables",
+                    "elements": []
+                },
+                "functions": {
+                    "<class>": "functions",
+                    "elements": []
+                },
+                "statement": {
+                    "<class>": "compound",
+                    "elements": [
+                        {
+                            "<class>": "on",
+                            "triggers": {
+                                "<class>": "triggers",
+                                "elements": [
+                                    {
+                                        "<class>": "trigger",
+                                        "event_name": "Third",
+                                        "formals": {
+                                            "<class>": "formals",
+                                            "elements": []
+                                        }
+                                    }
+                                ]
+                            },
+                            "statement": {
+                                "<class>": "compound",
+                                "elements": []
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "working-directory": "C:/SB/dznpy/test/dezyne_models/system1"
+}

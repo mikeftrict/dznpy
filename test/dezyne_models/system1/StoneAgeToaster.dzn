@@ -22,7 +22,7 @@ requires Some.Vendor.IHeaterElement heater;
 requires ITimer timer;
 requires injected IConfiguration cfg;
 
-behavior
+behaviour
 {
     enum State
     {
@@ -83,5 +83,5 @@ behavior
         }
     }
 
-} // behavior
+} // behaviour
 } // component

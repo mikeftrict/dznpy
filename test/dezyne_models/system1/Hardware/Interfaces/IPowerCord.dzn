@@ -16,7 +16,7 @@ in MediumInt GetVoltage();
 out void Connected();
 out void Disconnected(in MyLongNamedType exampleParameter);
 
-behavior
+behaviour
 {
     enum State
     {
@@ -47,6 +47,6 @@ behavior
         on optional: Disconnected;
     }
 
-} // behavior
+} // behaviour
 } // interface
 }}} // end namespace My::Project::Hal

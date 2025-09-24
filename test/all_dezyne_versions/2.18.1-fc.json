@@ -1,0 +1,476 @@
+{
+    "<class>": "root",
+    "comment": {
+        "<class>": "comment",
+        "string": "// FCTimer / Timer\n//\n// provided interface(s)\n"
+    },
+    "elements": [
+        {
+            "<class>": "file-name",
+            "name": "../shared/Facilities/ITimer.dzn"
+        },
+        {
+            "<class>": "import",
+            "name": "Types.dzn"
+        },
+        {
+            "<class>": "interface",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "ITimer"
+                ]
+            },
+            "types": {
+                "<class>": "types",
+                "elements": []
+            },
+            "events": {
+                "<class>": "events",
+                "elements": [
+                    {
+                        "<class>": "event",
+                        "name": "Create",
+                        "signature": {
+                            "<class>": "signature",
+                            "type_name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "void"
+                                ]
+                            },
+                            "formals": {
+                                "<class>": "formals",
+                                "elements": [
+                                    {
+                                        "<class>": "formal",
+                                        "expression": "undefined",
+                                        "name": "waitingTimeMs",
+                                        "type_name": {
+                                            "<class>": "scope_name",
+                                            "ids": [
+                                                "MilliSeconds"
+                                            ]
+                                        },
+                                        "direction": "in"
+                                    }
+                                ]
+                            }
+                        },
+                        "direction": "in"
+                    },
+                    {
+                        "<class>": "event",
+                        "name": "Cancel",
+                        "signature": {
+                            "<class>": "signature",
+                            "type_name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "void"
+                                ]
+                            },
+                            "formals": {
+                                "<class>": "formals",
+                                "elements": []
+                            }
+                        },
+                        "direction": "in"
+                    },
+                    {
+                        "<class>": "event",
+                        "name": "Timeout",
+                        "signature": {
+                            "<class>": "signature",
+                            "type_name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "void"
+                                ]
+                            },
+                            "formals": {
+                                "<class>": "formals",
+                                "elements": []
+                            }
+                        },
+                        "direction": "out"
+                    }
+                ]
+            },
+            "behavior": {
+                "<class>": "behavior",
+                "types": {
+                    "<class>": "types",
+                    "elements": []
+                },
+                "variables": {
+                    "<class>": "variables",
+                    "elements": [
+                        {
+                            "<class>": "variable",
+                            "name": "running",
+                            "type_name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "bool"
+                                ]
+                            },
+                            "expression": {
+                                "<class>": "literal",
+                                "expression": "undefined",
+                                "value": "false"
+                            }
+                        }
+                    ]
+                },
+                "functions": {
+                    "<class>": "functions",
+                    "elements": []
+                },
+                "statement": {
+                    "<class>": "compound",
+                    "elements": [
+                        {
+                            "<class>": "guard",
+                            "expression": {
+                                "<class>": "not",
+                                "expression": {
+                                    "<class>": "var",
+                                    "expression": "undefined",
+                                    "name": "running"
+                                }
+                            },
+                            "statement": {
+                                "<class>": "compound",
+                                "elements": [
+                                    {
+                                        "<class>": "on",
+                                        "triggers": {
+                                            "<class>": "triggers",
+                                            "elements": [
+                                                {
+                                                    "<class>": "trigger",
+                                                    "event_name": "Create",
+                                                    "formals": {
+                                                        "<class>": "formals",
+                                                        "elements": []
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "statement": {
+                                            "<class>": "assign",
+                                            "variable_name": "running",
+                                            "expression": {
+                                                "<class>": "literal",
+                                                "expression": "undefined",
+                                                "value": "true"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "<class>": "on",
+                                        "triggers": {
+                                            "<class>": "triggers",
+                                            "elements": [
+                                                {
+                                                    "<class>": "trigger",
+                                                    "event_name": "Cancel",
+                                                    "formals": {
+                                                        "<class>": "formals",
+                                                        "elements": []
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "statement": {
+                                            "<class>": "compound",
+                                            "elements": []
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "<class>": "guard",
+                            "expression": {
+                                "<class>": "var",
+                                "expression": "undefined",
+                                "name": "running"
+                            },
+                            "statement": {
+                                "<class>": "compound",
+                                "elements": [
+                                    {
+                                        "<class>": "on",
+                                        "triggers": {
+                                            "<class>": "triggers",
+                                            "elements": [
+                                                {
+                                                    "<class>": "trigger",
+                                                    "event_name": "Cancel",
+                                                    "formals": {
+                                                        "<class>": "formals",
+                                                        "elements": []
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "statement": {
+                                            "<class>": "assign",
+                                            "variable_name": "running",
+                                            "expression": {
+                                                "<class>": "literal",
+                                                "expression": "undefined",
+                                                "value": "false"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "<class>": "on",
+                                        "triggers": {
+                                            "<class>": "triggers",
+                                            "elements": [
+                                                {
+                                                    "<class>": "trigger",
+                                                    "event_name": "inevitable",
+                                                    "formals": {
+                                                        "<class>": "formals",
+                                                        "elements": []
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "statement": {
+                                            "<class>": "compound",
+                                            "elements": [
+                                                {
+                                                    "<class>": "action",
+                                                    "expression": "undefined",
+                                                    "event_name": "Timeout",
+                                                    "arguments": {
+                                                        "<class>": "arguments",
+                                                        "elements": []
+                                                    }
+                                                },
+                                                {
+                                                    "<class>": "assign",
+                                                    "variable_name": "running",
+                                                    "expression": {
+                                                        "<class>": "literal",
+                                                        "expression": "undefined",
+                                                        "value": "false"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "<class>": "file-name",
+            "name": "../shared/Facilities/Types.dzn"
+        },
+        {
+            "<class>": "namespace",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "My"
+                ]
+            },
+            "elements": [
+                {
+                    "<class>": "enum",
+                    "name": {
+                        "<class>": "scope_name",
+                        "ids": [
+                            "Result"
+                        ]
+                    },
+                    "fields": {
+                        "<class>": "fields",
+                        "elements": [
+                            "Ok",
+                            "Fail",
+                            "Error"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "<class>": "extern",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "MilliSeconds"
+                ]
+            },
+            "value": {
+                "<class>": "data",
+                "value": "size_t"
+            }
+        },
+        {
+            "<class>": "subint",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "SmallInt"
+                ]
+            },
+            "range": {
+                "<class>": "range",
+                "from": 1,
+                "to": 5
+            }
+        },
+        {
+            "<class>": "extern",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "string"
+                ]
+            },
+            "value": {
+                "<class>": "data",
+                "value": "std::string"
+            }
+        },
+        {
+            "<class>": "namespace",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "My"
+                ]
+            },
+            "elements": [
+                {
+                    "<class>": "namespace",
+                    "name": {
+                        "<class>": "scope_name",
+                        "ids": [
+                            "Project"
+                        ]
+                    },
+                    "elements": [
+                        {
+                            "<class>": "extern",
+                            "name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "MyLongNamedType"
+                                ]
+                            },
+                            "value": {
+                                "<class>": "data",
+                                "value": "My::Project::Hal::Sub::MyLongNamedType"
+                            }
+                        },
+                        {
+                            "<class>": "extern",
+                            "name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "PResultInfo"
+                                ]
+                            },
+                            "value": {
+                                "<class>": "data",
+                                "value": "std::shared_ptr<ResultInfo>"
+                            }
+                        },
+                        {
+                            "<class>": "subint",
+                            "name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "MediumInt"
+                                ]
+                            },
+                            "range": {
+                                "<class>": "range",
+                                "from": 0,
+                                "to": 1023
+                            }
+                        },
+                        {
+                            "<class>": "enum",
+                            "name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "CountingUp"
+                                ]
+                            },
+                            "fields": {
+                                "<class>": "fields",
+                                "elements": [
+                                    "One",
+                                    "Two",
+                                    "Three"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "<class>": "file-name",
+            "name": "..\\shared\\Facilities\\FCTimer.dzn"
+        },
+        {
+            "<class>": "import",
+            "name": "ITimer.dzn"
+        },
+        {
+            "<class>": "namespace",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "Facilities"
+                ]
+            },
+            "elements": [
+                {
+                    "<class>": "foreign",
+                    "name": {
+                        "<class>": "scope_name",
+                        "ids": [
+                            "Timer"
+                        ]
+                    },
+                    "ports": {
+                        "<class>": "ports",
+                        "elements": [
+                            {
+                                "<class>": "port",
+                                "name": "api",
+                                "type_name": {
+                                    "<class>": "scope_name",
+                                    "ids": [
+                                        "ITimer"
+                                    ]
+                                },
+                                "direction": "provides",
+                                "formals": {
+                                    "<class>": "formals",
+                                    "elements": []
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "working-directory": "C:/SB/dznpy/test/dezyne_models/system1"
+}

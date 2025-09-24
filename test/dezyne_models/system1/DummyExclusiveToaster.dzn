@@ -14,7 +14,7 @@ component DummyExclusiveToaster
 provides ILifecycle lifecycle;
 provides IExclusiveToaster api;
 
-behavior
+behaviour
 {
     // TIP: set 'info' out parameters with a rootcause something like 'Not implemented'
 
@@ -23,6 +23,6 @@ behavior
 
     on api.Claim(_info): reply(Result.Fail);
 
-} // behavior
+} // behaviour
 } // component
 } // namespace My

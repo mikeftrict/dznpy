@@ -13,7 +13,7 @@ in void Initialize();
 in void Uninitialize();
 out void GlitchOccurred();
 
-behavior
+behaviour
 {
     on Initialize, Uninitialize: {}
 

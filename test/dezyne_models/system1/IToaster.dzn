@@ -32,7 +32,7 @@ enum State
     Error
 };
 
-behavior
+behaviour
 {
     State s = State.Uninitialized; // initial state
 
