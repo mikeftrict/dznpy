@@ -19,7 +19,7 @@ in void Create(in MilliSeconds waitingTimeMs);
 in void Cancel();
 out void Timeout();
 
-behavior
+behaviour
 {
     bool running = false;
 

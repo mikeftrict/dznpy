@@ -4,6 +4,7 @@ Module providing functionality to parse a Dezyne JSON-formatted AST.
 Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
+from typing import List
 
 # system modules
 import orjson
@@ -83,6 +84,15 @@ class ElementHelper:
 
         if self._element['<class>'] != value:
             raise DznJsonError(f'{self._ctx}: expecting <class> having value "{value}"')
+
+    def assert_class_aliased(self, values: List[str]):
+        """Assert a <class> key is present in the element with the specified value. Raise
+        an exception on failure."""
+        if '<class>' not in self._element:
+            raise DznJsonError(f'{self._ctx}: missing "<class>" key')
+
+        if not self._element['<class>'] in values:
+            raise DznJsonError(f'{self._ctx}: expecting <class> having one of the values {values}')
 
     def get_list_value(self, key_name: str) -> list:
         """Get the list-typed value of the 'elements' key_name. Allowed to be empty."""
@@ -333,12 +343,15 @@ def parse_port_injected_indication(element: dict) -> Injected:
     elt = ElementHelper(element, 'parse_injected_port')
     elt.assert_class('port')
     opt_injected = elt.tryget_str_value('injected?')
+    if opt_injected is None:  # retry with old scheme [<2.15.0]
+        opt_injected = elt.tryget_str_value('injected')
+
     if opt_injected is None:
         return Injected(False)
     if opt_injected == 'injected':
         return Injected(True)
 
-    raise DznJsonError(f'parse_injected_port: invalid "injected?" value "{opt_injected}"')
+    raise DznJsonError(f'parse_injected_port: invalid value "{opt_injected}"')
 
 
 def parse_range(element: dict) -> Range:
@@ -351,7 +364,9 @@ def parse_range(element: dict) -> Range:
 def parse_subint(element: dict, parent_ns: NamespaceTree) -> SubInt:
     """Parse a 'subint' <class> element."""
     elt = ElementHelper(element, 'parse_subint')
-    elt.assert_class('subint')
+
+    # int [2.11.0 - 2.16.5] replaced by subint [>= 2.17.0]
+    elt.assert_class_aliased(['int', 'subint'])
     name = parse_scope_name(elt.get_dict_value('name'))
     return SubInt(fqn=parent_ns.fqn_member_name(name.value), parent_ns=parent_ns,
                   name=name, range=parse_range(elt.get_dict_value('range')))
@@ -364,7 +379,7 @@ def parse_root(element: dict) -> Root:
     opt_comment = elt.tryget_dict_value('comment')
     return Root(comment=None if opt_comment is None else parse_comment(opt_comment),
                 elements=elt.get_list_value('elements'),
-                working_dir=elt.get_str_value('working-directory'))
+                working_dir=elt.tryget_str_value('working-directory'))
 
 
 def parse_scope_name(element: dict) -> ScopeName:
@@ -406,10 +421,10 @@ def parse_types(element: dict, parent_ns: NamespaceTree) -> Types:
         cls = get_class_value(type_item)
         if cls == 'enum':
             elements.append(parse_enum(type_item, parent_ns))
-        elif cls == 'subint':
+        elif cls in ['int', 'subint']:  # int [2.11.0 - 2.16.5] replaced by subint [>= 2.17.0]
             elements.append(parse_subint(type_item, parent_ns))
         else:
-            print(f'parse_types: skipping item {cls}')
+            pass  # TODO, verbose logging print(f'parse_types: skipping item {cls}')
     return Types(elements=elements)
 
 
@@ -490,6 +505,6 @@ class DznJsonAst:
             elif cls == 'subint':
                 fct.subints.append(parse_subint(element, parent_ns))
             else:
-                self.log(f'Unknown element class {cls}')
+                self.log(f'Skipping parsing class {cls}')
         else:
             self.log('WARNING: skipping non-dict element')

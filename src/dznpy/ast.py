@@ -8,7 +8,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 # system modules
 from dataclasses import dataclass, field
 import enum
-from typing import Any, List
+from typing import Any, List, Optional
 
 # dznpy modules
 from .misc_utils import assert_t, flatten_to_strlist
@@ -183,9 +183,9 @@ class Range:
 @dataclass(frozen=True)
 class Root:
     """Root"""
-    comment: Comment
+    comment: Comment  # [>=2.16.2]
     elements: list
-    working_dir: str
+    working_dir: Optional[str]  # present: [2.12.0 - 2.18.4], absent [2.11, >=2.19]
 
 
 @dataclass(frozen=True)

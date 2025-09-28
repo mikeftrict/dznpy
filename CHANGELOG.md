@@ -4,6 +4,9 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0040](https://github.com/mikeftrict/dznpy/issues/41): Changes to `ast` and `json_ast` parser to basically
+  support all Dezyne versions starting from 2.11 to 2.19.
+- [DZNPY-0037](https://github.com/mikeftrict/dznpy/issues/37): Add wheel packaging and push to PyPi.
 - [DZNPY-0035](https://github.com/mikeftrict/dznpy/issues/35): Mitigate empty line below private section in Advanced
   shell headerfile.
 
