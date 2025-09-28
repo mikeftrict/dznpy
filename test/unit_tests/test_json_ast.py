@@ -437,7 +437,20 @@ class InjectedIndicationTest(DznTestCase):
         dzn = DznJsonAst(json_contents=PORT_INJECTED_INDICATION_INVALID)
         with pytest.raises(DznJsonError) as exc:
             json_ast.parse_port_injected_indication(dzn.ast)
-        assert str(exc.value) == 'parse_injected_port: invalid "injected?" value "bogus"'
+        assert str(exc.value) == 'parse_injected_port: invalid value "bogus"'
+
+    @staticmethod
+    def test_true_old():
+        dzn = DznJsonAst(json_contents=PORT_INJECTED_INDICATION_OLD)
+        sut = json_ast.parse_port_injected_indication(dzn.ast)
+        assert sut.value is True
+
+    @staticmethod
+    def test_fail_old():
+        dzn = DznJsonAst(json_contents=PORT_INJECTED_INDICATION_OLD_INVALID)
+        with pytest.raises(DznJsonError) as exc:
+            json_ast.parse_port_injected_indication(dzn.ast)
+        assert str(exc.value) == 'parse_injected_port: invalid value "bogus"'
 
 
 class InstanceTest(DznTestCase):
@@ -679,6 +692,15 @@ class RootTest(DznTestCase):
         assert len(sut.elements) == 0
         assert sut.working_dir == 'D:'
 
+    @staticmethod
+    def test_without_working_directory_ok():
+        dzn = DznJsonAst(json_contents=ROOT_WITHOUT_WORKING_DIRECTORY)
+        sut = json_ast.parse_root(dzn.ast)
+        assert isinstance(sut, ast.Root)
+        assert sut.comment is None
+        assert len(sut.elements) == 0
+        assert sut.working_dir is None
+
 
 class ScopeNameTest(DznTestCase):
 
@@ -729,7 +751,8 @@ class SignatureTest(DznTestCase):
 class SubIntTest(DznTestCase):
 
     def test_wrong_class(self):
-        assert_wrong_class(BOGUS_CLASS, 'parse_subint', 'subint', self._root_ns)
+        assert_wrong_class(BOGUS_CLASS, 'parse_subint', 'subint', self._root_ns,
+                           "parse_subint: expecting <class> having one of the values ['int', 'subint']")
 
     def test_ok(self):
         dzn = DznJsonAst(json_contents=SUBINT)
@@ -892,8 +915,11 @@ def assert_items_name_on_str(collection: list, expected_strs: List[str]):
             item for item in collection if item.name == expected_str), expected_str
 
 
-def assert_wrong_class(json_contents: str, parse_method_name: str, class_value: str,
-                       ns_trail: NamespaceTree = None):
+def assert_wrong_class(json_contents: str,
+                       parse_method_name: str,
+                       class_value: str,
+                       ns_trail: NamespaceTree = None,
+                       custom_exc_msg: str = None):
     dzn = DznJsonAst(json_contents=json_contents)
     with pytest.raises(DznJsonError) as exc:
         method = getattr(json_ast, parse_method_name)
@@ -901,5 +927,8 @@ def assert_wrong_class(json_contents: str, parse_method_name: str, class_value: 
             method(dzn.ast)
         else:
             method(dzn.ast, ns_trail)
-    assert str(
-        exc.value) == f'{parse_method_name}: expecting <class> having value "{class_value}"'
+
+    if custom_exc_msg is not None:
+        assert str(exc.value) == custom_exc_msg
+    else:
+        assert str(exc.value) == f'{parse_method_name}: expecting <class> having value "{class_value}"'

@@ -39,7 +39,7 @@ interface ILifecycle
 in Result Initialize(out Project.PResultInfo info);
 in Result Uninitialize(out Project.PResultInfo info);
 
-behavior
+behaviour
 {
     on Initialize, Uninitialize: reply(Result.Ok);
     on Initialize, Uninitialize: reply(Result.Fail);
@@ -74,7 +74,7 @@ enum State
     Toasting
 };
 
-behavior
+behaviour
 {
     State s = State.Unclaimed; // initial state
 

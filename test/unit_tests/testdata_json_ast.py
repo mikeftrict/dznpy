@@ -124,6 +124,13 @@ ROOT = '''{"<class>": "root",
            "elements": [],
            "working-directory": "C:"}'''
 
+ROOT_WITHOUT_COMMENT = '''{"<class>": "root",
+                           "elements": [],
+                           "working-directory": "D:"}'''
+
+ROOT_WITHOUT_WORKING_DIRECTORY = '''{"<class>": "root",
+                                     "elements": []}'''
+
 PORT_PROVIDES = '''{"<class>": "port",
                     "name": "api",
                     "type_name": {"<class>": "scope_name", "ids": ["IToaster"]},
@@ -148,10 +155,6 @@ PORTS_EMPTY = '''{"<class>": "ports", "elements": []}'''
 PORTS_TWO_ITEMS = '''{"<class>": "ports", "elements": [''' \
                   f'{PORT_PROVIDES}, {PORT_REQUIRES}' \
                   ''']}'''
-
-ROOT_WITHOUT_COMMENT = '''{"<class>": "root",
-                           "elements": [],
-                           "working-directory": "D:"}'''
 
 SCOPE_NAME = '''{"<class>": "scope_name", "ids": ["My"]}'''
 
@@ -194,6 +197,10 @@ SYSTEM = '''{"<class>": "system", "name": {"<class>": "scope_name", "ids": ["Toa
              "instances": ''' f'{INSTANCES_TWO_ITEMS}' ''',
              "bindings": ''' f'{BINDINGS}' '''}'''
 
+# Dezyne [2.11.0 - 2.14.1]:
+PORT_INJECTED_INDICATION_OLD = '''{"<class>": "port", "injected": "injected"}'''
+PORT_INJECTED_INDICATION_OLD_INVALID = '''{"<class>": "port", "injected": "bogus"}'''
+# Dezyne [>= 2.15.0]:
 PORT_INJECTED_INDICATION = '''{"<class>": "port", "injected?": "injected"}'''
 PORT_INJECTED_INDICATION_ABSENT = '''{"<class>": "port"}'''
 PORT_INJECTED_INDICATION_INVALID = '''{"<class>": "port", "injected?": "bogus"}'''

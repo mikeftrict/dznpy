@@ -20,7 +20,7 @@ requires Hal.IPowerCord cord;
 requires ITimer timer;
 requires injected IConfiguration cfg;
 
-behavior
+behaviour
 {
     enum State
     {
@@ -159,6 +159,6 @@ behavior
         }
     }
 
-} // behavior
+} // behaviour
 } // component
 }} // end namespace My::Project

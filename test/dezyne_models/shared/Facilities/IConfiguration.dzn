@@ -7,8 +7,8 @@ interface IConfiguration
 {
 in void GetToastingTime(out MilliSeconds toastingTime);
 
-behavior
+behaviour
 {
     on GetToastingTime: {}
-} // behavior
+} // behaviour
 } // interface
