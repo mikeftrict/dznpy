@@ -14,7 +14,7 @@ the following commands. Note: the scripts need to be run -in- the test directory
 On errors, inspect the output closely. Most common finding is that you have unpacked dezyne (dzn.cmd) somewhere
 else on your system than the default location. Modify the Python script to match your location of `dzn.cmd`.
 On rare cases Dezyne reports errors on the models; either they have been altered manually (with errors) or
-a complete different version (than 2.17.8) of Dezyne is used. The models should process fine with 2.17.8 and later.
+a complete different version (than 2.17.9) of Dezyne is used. The models should process fine with 2.17.9 and later.
 If not, please contact me with your findings.
 
 After this initial step, trigger the unit tests by running **pytest** in the test folder. It will detect
@@ -54,7 +54,7 @@ it will also print code coverage percentages per source file.
     C:\SB\dznpy\src\dznpy\ ...etc...
            ...etc...       ...etc...
     ----------------------------------------------------------------------------------
-    TOTAL                                                           1980     42    98%
+    TOTAL                                                           2250     42    98%
 
 To explore the source files and to discover the missed statements, generate a HTML report like following:
 

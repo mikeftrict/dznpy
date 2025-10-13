@@ -119,8 +119,8 @@ def main():
 
     # 4. C++ generate information header
     header_block = TextBlock(chunk_spacing=EOL) + \
-                   Comment([f'Generated GoogleMock C++ sourcecode from JSON file: {json_file_name}',
-                            'Note: do not modify manually afterwards']) + \
+                   Comment([f'GoogleMock C++ sourcecode from JSON file: {json_file_name}',
+                            'Note: this is generated code']) + \
                    '#pragma once'
 
     # 5. C++ generate the system and project includes

@@ -7,6 +7,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import pytest
+from typing import Any
 
 # system-under-test
 from dznpy.cpp_gen import *
@@ -67,8 +68,16 @@ def test_system_includes():
 
 
 def test_global_namespace():
-    assert str(Namespace(ns_ids_t([]))) == GLOBAL_NAMESPACE_EMPTY
-    assert str(Namespace(ns_ids_t(''), contents=TB(CONTENTS_SINGLE_LINE))) == GLOBAL_NAMESPACE_CONTENTS
+    assert str(Namespace(ns_ids_t([]),
+                         global_namespace_on_empty_ns_ids=True)) == GLOBAL_NAMESPACE_EMPTY
+    assert str(Namespace(ns_ids_t(''),
+                         contents=TB(CONTENTS_SINGLE_LINE),
+                         global_namespace_on_empty_ns_ids=True)) == GLOBAL_NAMESPACE_CONTENTS
+
+
+def test_unnamed_namespace():
+    assert str(Namespace(ns_ids_t([]))) == UNNAMED_NAMESPACE_EMPTY
+    assert str(Namespace(ns_ids_t(''), contents=TB(CONTENTS_SINGLE_LINE))) == UNNAMED_NAMESPACE_CONTENTS
 
 
 def test_fqn_namespace():
@@ -177,16 +186,65 @@ def test_typedesc_helper_functions():
     assert_str_eq(const_std_string_ref_t(), 'const std::string&')
 
 
+def test_public_parent_reference_no_base_ns():
+    sut = ParentReference(access_specifier=AccessSpecifier.PUBLIC,
+                          base=Class(name='MyClass'))
+    assert str(sut) == 'public MyClass'
+
+
+def test_protected_parent_reference_with_base_ns():
+    # prepare base with a namespace
+    struct = Struct(name='MyStruct')
+    namespace = Namespace(ns_ids_t('My.Project'))
+    struct.namespace = namespace
+    constructor = Constructor(parent=struct)
+    struct.constructor = constructor
+
+    sut = ParentReference(access_specifier=AccessSpecifier.PROTECTED, base=struct)
+    assert str(sut) == 'protected My::Project::MyStruct'
+
+
+def test_struct_namespace_default():
+    sut = Struct(name='MyStruct')
+    assert sut.namespace.ns_ids == ns_ids_t('')
+    assert str(sut.namespace) == '', 'the default namespace is global, thus empty'
+
+
+def test_struct_set_namespace():
+    # given
+    struct = Struct(name='MyStruct')
+    namespace = Namespace(ns_ids_t('My.Project'))
+    # when
+    struct.namespace = namespace
+    # then
+    assert struct.namespace.ns_ids == ns_ids_t('My.Project')
+
+
+def test_struct_constructor_default():
+    sut = Struct(name='MyStruct')
+    assert sut.constructor.parent is sut, 'the default constructor points to this struct instance'
+
+
+def test_struct_set_constructor():
+    # given
+    struct = Struct(name='MyStruct')
+    constructor = Constructor(parent=struct)
+    # when
+    struct.constructor = constructor
+    # then
+    assert struct.constructor.parent == struct
+
+
 def test_struct_decl_without_contents():
     assert str(Struct(name='MyStruct')) == STRUCT_DECL_ENPTY
 
 
-def test_struct_decl():
+def test_struct_dec_contents():
     assert str(Struct(name='MyStruct',
                       decl_contents=TB(CONTENTS_SINGLE_LINE))) == STRUCT_DECL_CONTENTS
 
 
-def test_struct_with_post_contents():
+def test_struct_with_post_decl_contents():
     sut = Struct(name='MyStruct', decl_contents=TB(456))
     sut.decl_contents = TB(CONTENTS_SINGLE_LINE)
     assert str(sut) == STRUCT_DECL_CONTENTS
@@ -196,7 +254,7 @@ def test_struct_with_post_contents():
     assert """Value argument "123" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
 
 
-def test_struct_decl_fail():
+def test_struct_decl_contents_fail():
     with pytest.raises(CppGenError) as exc:
         Struct(name='')
     assert str(exc.value) == 'name must not be empty'
@@ -204,6 +262,13 @@ def test_struct_decl_fail():
     with pytest.raises(TypeError) as exc:
         Struct(name='MyStruct', decl_contents=123)
     assert """Value argument "123" is not equal to the expected type: <class 'dznpy.text_gen.TextBlock'>""" in str(exc.value)
+
+
+def test_struct_add_parent():
+    base_class = Class(name='MyBaseClass')
+    struct = Struct(name='MyStruct')
+    struct.add_parent(AccessSpecifier.PUBLIC, base_class)
+    assert str(struct) == STRUCT_WITH_BASE_CLASS
 
 
 def test_class_decl_without_contents():
@@ -244,6 +309,13 @@ def test_access_specified_section():
         AccessSpecifiedSection(AccessSpecifier.PRIVATE, TB(CONTENTS_SINGLE_LINE)))
     assert ANYNOMOUS_SECTION == str(
         AccessSpecifiedSection(AccessSpecifier.ANONYMOUS, TB(CONTENTS_MULTI_LINE)))
+
+
+def test_access_specified_str_without_colon():
+    assert 'public' == AccessSpecifier.str_without_colon(AccessSpecifier.PUBLIC)
+    assert 'protected' == AccessSpecifier.str_without_colon(AccessSpecifier.PROTECTED)
+    assert 'private' == AccessSpecifier.str_without_colon(AccessSpecifier.PRIVATE)
+    assert '' == AccessSpecifier.str_without_colon(AccessSpecifier.ANONYMOUS)
 
 
 def test_param_with_default1():
@@ -409,45 +481,23 @@ def test_constructor_with_member_initializer_list_multiple_items():
     assert_str_eq(sut.as_def(), CONSTRUCTOR_MEMBER_INITIALIZER_LIST_MULTIPLE_DEF)
 
 
-def test_destructor_fail():
-    with pytest.raises(CppGenError) as exc:
-        str(Destructor(parent=Class('MySubClass')))
-    assert str(exc.value) == 'instead of str(), call as_decl() or as_def()'
-
-    with pytest.raises(CppGenError) as exc:
-        Destructor(parent=None)
-    assert str(exc.value) == 'parent must be either a Class or Struct'
+def test_constructor_get_method_fqn_default():
+    # given
+    cls = Class('MyClass')
+    sut = Constructor(parent=cls)
+    # then/when
+    assert 'MyClass' == sut.get_method_fqn()
 
 
-def test_destructor_ok():
-    class_sut = Destructor(parent=Class('MyToaster'))
-    assert_str_eq(class_sut.as_decl(), DESTRUCTOR_DECL_MINIMAL)
-    assert_str_eq(class_sut.as_def(), DESTRUCTOR_DEF_MINIMAL)
-
-    struct_sut = Destructor(parent=Struct('MyToaster'))
-    assert_str_eq(struct_sut.as_decl(), DESTRUCTOR_DECL_MINIMAL)
-    assert_str_eq(struct_sut.as_def(), DESTRUCTOR_DEF_MINIMAL)
-
-
-def test_destructor_content_ok():
-    class_sut = Destructor(parent=Class('MyToaster'), contents=CONTENTS_MULTI_LINE)
-    assert_str_eq(class_sut.as_decl(), DESTRUCTOR_DECL_MINIMAL)
-    assert_str_eq(class_sut.as_def(), DESTRUCTOR_CONTENT_DEF)
-
-
-def test_destructor_with_default_initialization():
-    sut = Destructor(parent=Class('MyToaster'),
-                     initialization=FunctionInitialization.DEFAULT)
-    assert_str_eq(sut.as_decl(), DESTRUCTOR_INITIALIZATION_DEFAULT_DECL)
-    assert_str_eq(sut.as_def(), NOTHING_GENERATED)
-
-
-def test_destructor_with_default_initialization_and_override():
-    sut = Destructor(parent=Class('MyToaster'),
-                     override=True,
-                     initialization=FunctionInitialization.DEFAULT)
-    assert_str_eq(sut.as_decl(), DESTRUCTOR_OVERRIDE_INITIALIZATION_DEFAULT_DECL)
-    assert_str_eq(sut.as_def(), NOTHING_GENERATED)
+def test_constructor_get_method_fqn_associated():
+    # given
+    namespace = Namespace(ns_ids_t('My.Project'))
+    struct = Struct('MyStruct')
+    sut = Constructor(parent=struct)
+    struct.namespace = namespace
+    struct.constructor = sut
+    # then/when
+    assert 'My::Project::MyStruct' == sut.get_method_fqn()
 
 
 def test_function_fail():

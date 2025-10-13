@@ -6,6 +6,16 @@
 
 - [DZNPY-0040](https://github.com/mikeftrict/dznpy/issues/41): Changes to `ast` and `json_ast` parser to basically
   support all Dezyne versions starting from 2.11 to 2.19.
+- [DZNPY-0039](https://github.com/mikeftrict/dznpy/issues/40):
+    - Introduces the RuleOfFive class and related constructors in a new designated `cpp_gen_rule_of_five` module.
+    - Extended `cpp_gen.Struct` (and Class) to associate with parent(s), a namespace and a constructor. These constructs
+      are required when generating C++ code that involves inheritance and calling the base class constructor in the C++
+      definition.
+    - Extended `cpp_gen.Namespace` with the option global_namespace_on_empty_ns_ids to specify a true global namespace.
+      Fixed the previous strategy to **unnamed** namespace. This can be a minor breaking change for existing code bases.
+    - Extended `cpp_gen.AccessSpecifier` with the function str_without_colon().
+    - Expanded the code coverage of the project by adding more unit tests.
+    - Bumped reference Dezyne 2.17.8 to **2.17.9**.
 - [DZNPY-0037](https://github.com/mikeftrict/dznpy/issues/37): Add wheel packaging and push to PyPi.
 - [DZNPY-0036](https://github.com/mikeftrict/dznpy/issues/36): Extend `ast_cpp_view.create_member_function()` with the
   keyword override.

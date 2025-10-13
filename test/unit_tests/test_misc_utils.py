@@ -45,6 +45,13 @@ def test_flatten_to_strlist():
     assert flatten_to_strlist([{123: '', 456: None}, ['Y']], skip_empty_strings=False) == ['', 'Y']
 
 
+def test_newlined_list_items():
+    """Test the expected behaviour of composing a new-line-delimited string from a list"""
+    assert newlined_list_items([1, 2, 3]) == '1\n2\n3'
+    assert newlined_list_items(['One', 2, 3.14]) == 'One\n2\n3.14'
+    assert newlined_list_items([]) == '\n'
+
+
 def test_plural_ok():
     """Validate the good weather scenarios of the plural function that makes a plural string
     from a singular noun when a provided collection contains more than one element."""
@@ -181,6 +188,36 @@ def test_assert_t_optional_fails():
         assert_t_optional('Some text', float)
     assert str(
         exc.value) == """Value argument "Some text" is not equal to the expected type: <class 'float'>, actual type found: <class 'str'>."""
+
+
+def test_assert_union_t_superclass_ok():
+    """Test valid scenario of the assert_union_t() function."""
+    sut = Top()
+    assert_union_t(sut, [Top, Sub])
+
+
+def test_assert_union_t_superclass_fail1():
+    """Test failing scenario of the assert_union_t() function when omitting a value parameter."""
+
+    with pytest.raises(ValueError) as exc:
+        assert_union_t(None, [Top, Sub])
+    assert str(exc.value) == 'Value argument is None and therefore it can not be asserted.'
+
+
+def test_assert_union_t_superclass_fail2():
+    """Test failing scenario of the assert_union_t() function when omitting a valid types list."""
+    sut = Top()
+    with pytest.raises(ValueError) as exc:
+        assert_union_t(sut, [])
+    assert str(exc.value) == 'No valid types specified and therefore assertion is impossible.'
+
+
+def test_assert_union_t_superclass_fail3():
+    """Test failing scenario of the assert_union_t() function when omitting a value parameter."""
+    sut = Top()
+    with pytest.raises(TypeError) as exc:
+        assert_union_t(sut, [Sub])
+    assert str(exc.value) == '''Value argument "Top(member='')" is not equal to any expected types: ["<class 'test_misc_utils.Sub'>"].'''
 
 
 def test_trim_list():

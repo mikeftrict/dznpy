@@ -20,6 +20,7 @@ in [requirements.txt](https://github.com/mikeftrict/dznpy/blob/main/requirements
 ### Text and code generation
 
 * [cpp_gen - Code generation (C++)](Modules/cpp_gen.md)
+* [cpp_gen_rule_of_five - Code generation (C++)](Modules/cpp_gen_rule_of_five.md)
 * [text_gen - Text generation (Generic)](Modules/text_gen.md)
 
 ### Common

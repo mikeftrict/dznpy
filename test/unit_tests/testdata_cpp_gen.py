@@ -61,10 +61,17 @@ PROJECT_INCLUDES = '''\
 '''
 
 GLOBAL_NAMESPACE_EMPTY = '''\
-namespace {}
 '''
 
 GLOBAL_NAMESPACE_CONTENTS = '''\
+SomeContents
+'''
+
+UNNAMED_NAMESPACE_EMPTY = '''\
+namespace {}
+'''
+
+UNNAMED_NAMESPACE_CONTENTS = '''\
 namespace {
 SomeContents
 } // namespace
@@ -99,6 +106,12 @@ STRUCT_DECL_CONTENTS = '''\
 struct MyStruct
 {
 SomeContents
+};
+'''
+
+STRUCT_WITH_BASE_CLASS = '''\
+struct MyStruct : public MyBaseClass
+{
 };
 '''
 
@@ -185,6 +198,86 @@ MyToaster::MyToaster()
 }
 '''
 
+COPY_CONSTRUCTOR_DECL_MINIMAL = '''\
+MyToaster(const MyToaster&);
+'''
+
+COPY_CONSTRUCTOR_DEF_MINIMAL = '''\
+MyToaster::MyToaster(const MyToaster& rhs) {}
+'''
+
+COPY_CONSTRUCTOR_CONTENT_DEF = '''\
+MyToaster::MyToaster(const MyToaster& rhs)
+{
+    SomeContents
+    MoreContents
+}
+'''
+
+COPY_CONSTRUCTOR_INITIALIZATION_DELETE_DECL = '''\
+MyToaster(const MyToaster&) = delete;
+'''
+
+COPY_ASSIGNMENT_CONSTRUCTOR_DECL_MINIMAL = '''\
+MyToaster& operator=(const MyToaster&);
+'''
+
+COPY_ASSIGNMENT_CONSTRUCTOR_DEF_MINIMAL = '''\
+MyToaster::MyToaster& operator=(const MyToaster& rhs) {}
+'''
+
+COPY_ASSIGNMENT_CONSTRUCTOR_CONTENT_DEF = '''\
+MyToaster::MyToaster& operator=(const MyToaster& rhs)
+{
+    SomeContents
+    MoreContents
+}
+'''
+
+COPY_ASSIGNMENT_CONSTRUCTOR_INITIALIZATION_DELETE_DECL = '''\
+MyToaster& operator=(const MyToaster&) = delete;
+'''
+
+MOVE_CONSTRUCTOR_DECL_MINIMAL = '''\
+MyToaster(MyToaster&&);
+'''
+
+MOVE_CONSTRUCTOR_DEF_MINIMAL = '''\
+MyToaster::MyToaster(MyToaster&& rhs) {}
+'''
+
+MOVE_CONSTRUCTOR_CONTENT_DEF = '''\
+MyToaster::MyToaster(MyToaster&& rhs)
+{
+    SomeContents
+    MoreContents
+}
+'''
+
+MOVE_CONSTRUCTOR_INITIALIZATION_DELETE_DECL = '''\
+MyToaster(MyToaster&&) = delete;
+'''
+
+MOVE_ASSIGNMENT_CONSTRUCTOR_DECL_MINIMAL = '''\
+MyToaster& operator=(MyToaster&&);
+'''
+
+MOVE_ASSIGNMENT_CONSTRUCTOR_DEF_MINIMAL = '''\
+MyToaster::MyToaster& operator=(MyToaster&& rhs) {}
+'''
+
+MOVE_ASSIGNMENT_CONSTRUCTOR_CONTENT_DEF = '''\
+MyToaster::MyToaster& operator=(MyToaster&& rhs)
+{
+    SomeContents
+    MoreContents
+}
+'''
+
+MOVE_ASSIGNMENT_CONSTRUCTOR_INITIALIZATION_DELETE_DECL = '''\
+MyToaster& operator=(MyToaster&&) = delete;
+'''
+
 DESTRUCTOR_DECL_MINIMAL = '''\
 ~MyToaster();
 '''
@@ -207,6 +300,14 @@ DESTRUCTOR_INITIALIZATION_DEFAULT_DECL = '''\
 
 DESTRUCTOR_OVERRIDE_INITIALIZATION_DEFAULT_DECL = '''\
 ~MyToaster() override = default;
+'''
+
+RULE_OF_FIVE_DECL = '''\
+MyStruct(const MyStruct&) = delete;
+MyStruct(MyStruct&&) = default;
+MyStruct& operator=(const MyStruct&) = delete;
+MyStruct& operator=(MyStruct&&) = default;
+~MyStruct() = delete;
 '''
 
 FUNCTION_DECL_MINIMAL = '''\
