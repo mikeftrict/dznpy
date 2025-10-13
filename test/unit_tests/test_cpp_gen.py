@@ -645,6 +645,13 @@ def test_param_t_ok():
     assert sut.as_def() == 'std::string message'
 
 
+def test_param_ref_t_ok():
+    sut = param_ref_t(fqn_t('std.string'), 'message')
+    assert isinstance(sut, Param)
+    assert sut.as_decl() == 'std::string& message'
+    assert sut.as_def() == 'std::string& message'
+
+
 def test_param_t_ok_with_default():
     sut = param_t(fqn_t('std::string'), 'message', '"MyDefault"')
     assert sut.as_decl() == 'std::string message = "MyDefault"'
