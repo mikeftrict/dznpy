@@ -225,12 +225,12 @@ class Types:
 
     @property
     def enums(self) -> List[Enum]:
-        """"Get all enums from the element list."""
+        """Get all enums from the element list."""
         return [item for item in self.elements if isinstance(item, Enum)]
 
     @property
     def subints(self) -> List[SubInt]:
-        """"Get all enums from the element list."""
+        """Get all enums from the element list."""
         return [item for item in self.elements if isinstance(item, SubInt)]
 
 

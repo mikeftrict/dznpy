@@ -465,14 +465,14 @@ class DznJsonAst:
         return self._file_contents
 
     def process(self) -> FileContents:
-        """"Start processing the preloaded Dezyne JSON AST and return the FileContents."""
+        """Start processing the preloaded Dezyne JSON AST and return the FileContents."""
         root = parse_root(self.ast)
         for element in root.elements:
             self.parse_element(element, self._ns_trail)
         return self.file_contents
 
     def parse_element(self, element, parent_ns: NamespaceTree):
-        """"Parse an element and identify its type."""
+        """Parse an element and identify its type."""
         fct = self.file_contents
 
         if isinstance(element, dict):

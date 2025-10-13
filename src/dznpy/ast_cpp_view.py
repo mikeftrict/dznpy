@@ -52,7 +52,7 @@ def expand_type_name(name: ScopeName, parent_fqn: NamespaceIds, fct: FileContent
             return TypeAsIs(inst.value.value)
         return TypeAsIs('UNRECOGNISED TYPE')
 
-    return TypeAsIs(str(Fqn(name.value)))
+    return TypeAsIs(str(Fqn(name.value)))  # just pass-through
 
 
 def expand_event(evt: Event, itf: Interface, fct: FileContents) -> EventExpanded:
@@ -94,12 +94,14 @@ def get_formals(evt: EventExpanded) -> tuple[str, str]:
 
 def create_member_function(evt: EventExpanded,
                            evt_name_prefix: str = '',
-                           parent: Optional[Struct or Class] = None) -> Function:
+                           parent: Optional[Struct or Class] = None,
+                           override: bool = False) -> Function:
     """Helper function that creates a cpp_gen Function out of an expanded Dezyne Event,
     expressed as C++ and optionally hooked up into a parent."""
     assert_t(evt, EventExpanded)
     assert_t(evt_name_prefix, str)
     assert_union_t_optional(parent, [Struct, Class])
+    assert_t(override, bool)
 
     params: List[Param] = []
     for formal in evt.formals:
@@ -108,4 +110,5 @@ def create_member_function(evt: EventExpanded,
     return Function(parent=parent,
                     return_type=evt.return_type,
                     name=f'{evt_name_prefix}{evt.name}',
-                    params=params)
+                    params=params,
+                    override=override)
