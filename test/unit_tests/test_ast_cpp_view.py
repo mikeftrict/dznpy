@@ -5,9 +5,6 @@ Copyright (c) 2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
-# system modules
-import pytest
-
 # own modules
 from dznpy import ast, json_ast
 
@@ -16,7 +13,6 @@ from dznpy.scoping import ns_ids_t
 
 # Test data
 from common.helpers import resolve
-from dznpy.text_gen import TB
 from testdata_json_ast import *
 
 # system-under-test
