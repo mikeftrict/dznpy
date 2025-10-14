@@ -7,6 +7,8 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import os
+from contextlib import contextmanager
+from pathlib import Path
 from typing import Any, List
 
 
@@ -134,6 +136,17 @@ def plural(singular_noun: str, ref_collection: Any) -> str:
         return f'{singular_noun}{addition}'
 
     return singular_noun
+
+
+@contextmanager
+def raii_cd(path: Path):
+    """Change current directory and restore the original when exiting the context."""
+    orig_directory = Path().absolute()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(orig_directory)  # restore
 
 
 def trim_list(list_to_trim: list, end_only: bool = False) -> list:
