@@ -10,8 +10,9 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 from dznpy.cpp_gen import Comment, Fqn, Namespace, Struct, Class, ProjectIncludes, SystemIncludes, \
     AccessSpecifiedSection, AccessSpecifier, TypeDesc, TemplateArg, TypePostfix, fqn_t, \
     TypeConstness, void_t, int_t, float_t, double_t, std_string_t, const_std_string_ref_t, Param, \
-    MemberVariable, Constructor, FunctionInitialization, Function, Destructor, decl_var_t, \
+    MemberVariable, Constructor, FunctionInitialization, Function, decl_var_t, \
     decl_var_ref_t, decl_var_ptr_t, TypeAsIs, param_t, const_param_ref_t, FunctionPrefix
+from dznpy.cpp_gen_rule_of_five import Destructor
 from dznpy.scoping import NamespaceIds, ns_ids_t
 from dznpy.text_gen import TextBlock, TB
 
@@ -84,11 +85,19 @@ def example_namespace():
     The namespace type is a regular Python class instead of a frozen dataclass because it
     supports setting the contents at a later moment."""
 
-    # A global namespace without contents
+    # A global namespace without contents, the stringification will be empty
     global_namespace_ids = NamespaceIds()
-    print(Namespace(ns_ids=global_namespace_ids))
+    print(Namespace(ns_ids=global_namespace_ids, global_namespace_on_empty_ns_ids=True))
 
     # A global namespace with a simple comment as contents right from the start
+    print(Namespace(ns_ids=NamespaceIds(), contents=TextBlock(Comment('My comment')),
+                    global_namespace_on_empty_ns_ids=True))
+
+    # An unnamed namespace without contents
+    unnamed_namespace_ids = NamespaceIds()
+    print(Namespace(ns_ids=unnamed_namespace_ids))
+
+    # An unnamed namespace with a simple comment as contents right from the start
     print(Namespace(ns_ids=NamespaceIds(), contents=TextBlock(Comment('My comment'))))
 
     # A fully qualified namespace (FQN) identification without contents
@@ -382,7 +391,7 @@ def example_function():
                     name='Throttle',
                     params=[p1, p2],
                     override=True)
-    func.contents = TB(Comment('Some code will appear here in the future'))
+    func.contents = TB(Comment('Some code'))
     print(func.as_decl())
     print(func.as_def())
 

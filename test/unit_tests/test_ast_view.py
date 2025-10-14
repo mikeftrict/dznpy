@@ -72,6 +72,13 @@ def example_system() -> ast.System:
     return r.get_single_instance(ast.System)
 
 
+def example_interface(name: str) -> ast.Interface:
+    """Retrieve a Dezyne interface from a real file (ToasterSystem.dzn)."""
+    r = find_fqn(fc2(), ns_ids_t(name), ns_ids_t('My.Project'))
+    assert r.has_one_instance(ast.Interface), "The interface must be present in the testdata."
+    return r.get_single_instance(ast.Interface)
+
+
 def expect_find_result(result: FindResult, list_size: int) -> List[NamespaceIds]:
     """Test helper function to assert the type of the FindResult argument and its expected size of list items.
     As final result, return a list of the NamespaceIds their FQN."""
@@ -174,6 +181,19 @@ def test_findresult_get_single_instance_fail2():
     with pytest.raises(FindError) as exc:
         sut.get_single_instance()
     assert str(exc.value) == 'The result contains more than one instance'
+
+
+def test_findresult_get_single_instance_fail3():
+    """Test FindResult on getting an instance but with a typehint that is invalid."""
+    sut = FindResult(fc2().systems)
+    assert sut.has_one_instance(), 'Assert the test data is ok before continuing'
+
+    class BogusType:
+        pass
+
+    with pytest.raises(FindError) as exc:
+        sut.get_single_instance(ast_typehint=BogusType)
+    assert str(exc.value) == "Argument ast_typehint does not match one of the valid_types"
 
 
 def test_findresult_get_single_instance_with_typehint_ok():
@@ -357,6 +377,52 @@ def test_find_any_returned_types(lookup, exp_type):
     assert isinstance(r, FindResult)
     assert r.has_one_instance(), "Exactly one instance is expected"
     assert isinstance(r.get_single_instance(), exp_type)
+
+
+###############################################################################
+# Test other helpers
+#
+
+
+def test_get_in_events():
+    """Test a helper function to get only the in-events of an interface."""
+    itf = example_interface('IToaster')
+    assert [evt.name for evt in get_in_events(itf)] == ['Initialize',
+                                                        'Uninitialize',
+                                                        'SetTime',
+                                                        'GetTime',
+                                                        'Toast',
+                                                        'Cancel',
+                                                        'Recover']
+
+
+def test_get_out_events():
+    """Test a helper function to get only the out-events of an interface."""
+    itf = example_interface('IToaster')
+    assert [evt.name for evt in get_out_events(itf)] == ['Ok',
+                                                         'Fail',
+                                                         'Error']
+
+
+def test_get_itf_name_ok():
+    """Test a helper function to get the name of a Dezyne AST Interface."""
+    itf = example_interface('IToaster')
+    assert get_itf_name(itf) == 'IToaster'
+
+
+def test_get_itf_name_fail():
+    """Test a helper function to raise an exception on an invalid name inside a Dezyne AST Interface."""
+    itf = ast.Interface(fqn=ns_ids_t(''),
+                        parent_ns=ast.NamespaceTree(),
+                        ns_trail=ast.NamespaceTree(),
+                        name=ast.ScopeName(ns_ids_t('Not.A.Single.Identifier')),
+                        types=ast.Types(),
+                        events=ast.Events())
+
+    with pytest.raises(NameError) as exc:
+        get_itf_name(itf)
+    assert str(
+        exc.value) == 'Interface name "Not.A.Single.Identifier" should be a single identifier'
 
 
 ###############################################################################

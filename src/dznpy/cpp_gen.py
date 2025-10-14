@@ -34,6 +34,12 @@ class AccessSpecifier(enum.Enum):
     PRIVATE = 'private:'
     ANONYMOUS = None
 
+    @staticmethod
+    def str_without_colon(specifier: 'AccessSpecifier') -> str or None:
+        """Return the access specifier name without the colon."""
+        assert_t(specifier, AccessSpecifier)
+        return '' if specifier.value is None else specifier.value.rstrip(':')
+
 
 class StructOrClass(enum.Enum):
     """Enum to indicate a struct or class."""
@@ -272,72 +278,6 @@ class MemberVariable(Param):
         raise CppGenError('MemberVariable only supports calling as_decl()')
 
 
-class Struct:
-    """Dataclass representing a C++ struct clause with un-indented contents. The contents
-    can be set later after initial construction but note that strict typing checking applues.
-    Example:
-
-        struct MyStruct
-        {
-        <contents>
-        };
-    """
-    __slots__ = ['_name', '_decl_contents', '_struct_or_class']
-
-    def __init__(self, name: str, decl_contents: Optional[TextBlock] = None):
-        """Initialize with a name and optional initial content."""
-        assert_t(name, str)
-        assert_t_optional(decl_contents, TextBlock)
-        if not name:
-            raise CppGenError('name must not be empty')
-
-        self._name = name
-        self._decl_contents = decl_contents if decl_contents else TextBlock()
-        self._struct_or_class = StructOrClass.STRUCT
-
-    def __str__(self) -> str:
-        """Return the contents of this dataclass as a multiline string."""
-        if self.decl_contents.lines:
-            return str(
-                TB([f'{self._struct_or_class.value} {self.name}', '{', self.decl_contents, '};']))
-
-        return str(TB([f'{self._struct_or_class.value} {self.name}', '{', '};']))
-
-    @property
-    def name(self) -> str:
-        """Get the current name of the struct."""
-        return self._name
-
-    @property
-    def decl_contents(self) -> TextBlock:
-        """Get the current contents."""
-        return self._decl_contents
-
-    @decl_contents.setter
-    def decl_contents(self, value: TextBlock):
-        """Set new contents that must be a TextBlock."""
-        assert_t(value, TextBlock)
-        self._decl_contents = value
-
-
-@dataclass
-class Class(Struct):
-    """Dataclass representing a C++ class clause with un-indented contents. The contents
-    can be set later after initial construction but note that strict typing checking applues.
-    Example:
-
-        struct MyClass
-        {
-        <contents>
-        };
-    """
-
-    def __init__(self, name: str, decl_contents: Optional[TextBlock] = None):
-        """Initialize with a name and optional initial content."""
-        super().__init__(name, decl_contents)
-        self._struct_or_class = StructOrClass.CLASS
-
-
 @dataclass(frozen=True)
 class ProjectIncludes:
     """Dataclass representing a C++ 'system' include statements. Example:
@@ -401,28 +341,35 @@ class Namespace:  # pylint: disable=too-few-public-methods
         namespace My::Zone {}
 
     """
-    ns_ids: NamespaceIds
-    contents: TextBlock
+    __slots__ = ['_ns_ids', '_contents', '_global_namespace_on_empty_ns_ids']
 
-    def __init__(self, ns_ids: NamespaceIds, contents: Optional[TextBlock] = None):
-        """Initialize with a namespace and optional initial content."""
+    def __init__(self, ns_ids: NamespaceIds, contents: Optional[TextBlock] = None,
+                 global_namespace_on_empty_ns_ids: bool = False):
+        """Initialize with namespace identifiers and optional initial content."""
         assert_t(ns_ids, NamespaceIds)
         assert_t_optional(contents, TextBlock)
+        assert_t(global_namespace_on_empty_ns_ids, bool)
         self._ns_ids = ns_ids
         self._contents = contents if contents else TextBlock()
+        self._global_namespace_on_empty_ns_ids = global_namespace_on_empty_ns_ids
 
     def __str__(self) -> str:
         """Return the contents of this dataclass as a multiline string."""
         ns_ids_str = f' {fqn_t(self.ns_ids)}' if self.ns_ids.items else ''
-        head = f'namespace{ns_ids_str} {{'
-        fqn_tail = f'}} // namespace{ns_ids_str}'
+
+        if ns_ids_str == '' and self._global_namespace_on_empty_ns_ids:
+            head = None
+            fqn_tail = None
+        else:
+            head = f'namespace{ns_ids_str} {{'
+            fqn_tail = f'}} // namespace{ns_ids_str}'
 
         if self.contents.lines:
             return str(TB([head,
                            self.contents,
                            fqn_tail]))  # multi-line
 
-        return str(TB([f'{head}}}']))  # one-liner
+        return str(TB([f'{head}}}'])) if head else str(TB())  # one-liner
 
     @property
     def ns_ids(self) -> NamespaceIds:
@@ -456,6 +403,130 @@ class Comment:  # pylint: disable=too-few-public-methods
         # applying the C++ '// ' indentation.
         # The original lines buffer stays intact to allow a user further extending the buffer.
         return str(TextBlock(deepcopy(self._tb).indent()))
+
+
+@dataclass(frozen=True)
+class ParentReference:
+    """Dataclass containing properties referencing to a base class/struct"""
+    access_specifier: AccessSpecifier
+    base: 'Struct' or 'Class'
+
+    def __post_init__(self):
+        """Post check the constructed data class members on validity."""
+        assert_t(self.access_specifier, AccessSpecifier)
+        assert_union_t(self.base, [Struct, Class])
+
+    def __str__(self):
+        """Stringification of access specification and FQN formatting of the base class."""
+        xs_spec = AccessSpecifier.str_without_colon(self.access_specifier)
+        base_ns = self.base.namespace.ns_ids if self.base.namespace else ns_ids_t('')
+        return f'{xs_spec} {Fqn(base_ns + ns_ids_t(self.base.name))}'
+
+
+class Struct:
+    """Dataclass representing a C++ struct clause with un-indented contents. The contents
+    can be set later after initial construction but note that strict typing checking applues.
+    Example:
+
+        struct MyStruct
+        {
+        <contents>
+        };
+    """
+    __slots__ = ['_name', '_decl_contents', '_struct_or_class', '_parents',
+                 '_namespace', '_constructor']
+
+    def __init__(self, name: str, decl_contents: Optional[TextBlock] = None):
+        """Initialize with a name and optional initial content."""
+        assert_t(name, str)
+        assert_t_optional(decl_contents, TextBlock)
+        if not name:
+            raise CppGenError('name must not be empty')
+
+        self._name = name
+        self._decl_contents = decl_contents if decl_contents else TextBlock()
+        self._struct_or_class = StructOrClass.STRUCT
+        self._parents: List[ParentReference] = []
+        # install defaults
+        self._namespace = Namespace(ns_ids_t(''), global_namespace_on_empty_ns_ids=True)
+        self._constructor = Constructor(parent=self)
+
+    def __str__(self) -> str:
+        """Return the contents of this dataclass as a multiline string."""
+        if self._parents:
+            parents_str = ' : ' + ', '.join([str(x) for x in self._parents])
+        else:
+            parents_str = ''
+
+        if self.decl_contents.lines:
+            return str(
+                TB([f'{self._struct_or_class.value} {self.name}{parents_str}', '{',
+                    self.decl_contents, '};']))
+
+        return str(TB([f'{self._struct_or_class.value} {self.name}{parents_str}', '{', '};']))
+
+    @property
+    def name(self) -> str:
+        """Get the current name of the struct."""
+        return self._name
+
+    @property
+    def decl_contents(self) -> TextBlock:
+        """Get the current contents."""
+        return self._decl_contents
+
+    @decl_contents.setter
+    def decl_contents(self, value: TextBlock):
+        """Set new contents that must be a TextBlock."""
+        assert_t(value, TextBlock)
+        self._decl_contents = value
+
+    def add_parent(self, access_specifier: AccessSpecifier, base: 'Struct' or 'Class'):
+        """Add a parent Struct or Class to this instance."""
+        assert_t(access_specifier, AccessSpecifier)
+        assert_union_t(base, [Struct, Class])
+        self._parents.append(ParentReference(access_specifier, base))
+
+    @property
+    def namespace(self) -> Namespace:
+        """Get the namespace instance of this struct."""
+        return self._namespace
+
+    @namespace.setter
+    def namespace(self, value: 'Constructor'):
+        """Set a new namespace instance."""
+        assert_t(value, Namespace)
+        self._namespace = value
+
+    @property
+    def constructor(self) -> 'Constructor':
+        """Get the current constructor."""
+        return self._constructor
+
+    @constructor.setter
+    def constructor(self, value: 'Constructor'):
+        """Set a new constructor instance."""
+        assert_t(value, Constructor)
+        self._constructor = value
+        value.parent = self
+
+
+@dataclass
+class Class(Struct):
+    """Dataclass representing a C++ class clause with un-indented contents. The contents
+    can be set later after initial construction but note that strict typing checking applues.
+    Example:
+
+        struct MyClass
+        {
+        <contents>
+        };
+    """
+
+    def __init__(self, name: str, decl_contents: Optional[TextBlock] = None):
+        """Initialize with a name and optional initial content."""
+        super().__init__(name, decl_contents)
+        self._struct_or_class = StructOrClass.CLASS
 
 
 @dataclass(kw_only=True)
@@ -559,59 +630,12 @@ class Constructor(ParentAndContents):
                    content,
                    '}'])
 
-
-@dataclass(kw_only=True)
-class Destructor(ParentAndContents):
-    """Dataclass representing a C++ destructor where its parent must be assigned to an existing
-    instance of a Struct or Class because that determines the name of the destructor function.
-    The contents for the destructor definition will be indented.
-
-    Example of a declaration:
-
-        ~MyToaster();
-
-        ~MyToaster() override = default;
-
-    Examples of a definition:
-
-        MyToaster::~MyToaster() {}
-
-        MyToaster::~MyToaster()
-        {
-            <contents>
-        }
-    """
-    override: bool = field(default=False)
-
-    def __post_init__(self):
-        """Post check the constructed data class members on validity."""
-        ParentAndContents.__post_init__(self)
-        if not isinstance(self.parent, Class) and not isinstance(self.parent, Struct):
-            raise CppGenError('parent must be either a Class or Struct')
-
-    def __str__(self) -> str:
-        raise CppGenError('instead of str(), call as_decl() or as_def()')
-
-    def as_decl(self) -> TextBlock:
-        """Return the destructor declaration as a multiline string."""
-        override = ' override' if self.override else ''
-        full_signature = f'~{self.parent.name}(){override}{self.initialization.value};'
-        return TB(full_signature)
-
-    def as_def(self) -> TextBlock:
-        """Return the destructor definition as a multiline string."""
-        if self.initialization != FunctionInitialization.NONE:
-            return TextBlock()  # no definition is generated when declared with initialization
-
-        full_signature = f'{self.parent.name}::~{self.parent.name}()'
-
-        if not self.contents:
-            return TB(f'{full_signature} {{}}')
-
-        return TB([full_signature,
-                   '{',
-                   TB(self.contents).indent(),
-                   '}'])
+    def get_method_fqn(self) -> str:
+        """Return the constructor method in full FQN format without parentheses and
+        parameter arguments."""
+        namespace: Namespace = self.parent.namespace
+        return str(Fqn(namespace.ns_ids + ns_ids_t(self.parent.name))) if namespace \
+            else str(Fqn(ns_ids_t(self.parent.name)))
 
 
 @dataclass(kw_only=True)

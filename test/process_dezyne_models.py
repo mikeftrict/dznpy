@@ -4,8 +4,8 @@ includes generation of C++ code and JSON Abstract Syntax Trees of certain Dezyne
 
 The script depends on the user already having fetched and unpacked a copy of dezyne from the URL:
 
-    https://download.verum.com/download/dezyne/dezyne-2.17.8-x86_64-linux.tar.gz (linux)
-    https://download.verum.com/download/dezyne/dezyne-2.17.8-x86_64-windows.zip  (windows)
+    https://download.verum.com/download/dezyne/dezyne-2.17.9-x86_64-linux.tar.gz (linux)
+    https://download.verum.com/download/dezyne/dezyne-2.17.9-x86_64-windows.zip  (windows)
 
 Initial and configurable unpack the archive to the location as defined in the constant CFG_DZN_CMD.
 """
@@ -18,8 +18,8 @@ import subprocess
 from typing import List, Tuple
 
 # User configurable:
-# CFG_DZN_CMD = Path('~/dezyne-2.17.8/dzn').expanduser()  # Linux example
-CFG_DZN_CMD = Path('C:\SB\dezyne-2.17.8\dzn.cmd')  # Windows
+# CFG_DZN_CMD = Path('~/dezyne-2.17.9/dzn').expanduser()  # Linux example
+CFG_DZN_CMD = Path('C:\SB\dezyne-2.17.9\dzn.cmd')  # Windows
 
 
 # Data class containing the final configuration

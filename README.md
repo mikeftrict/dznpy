@@ -13,12 +13,12 @@ All material is available under MIT license so feel free to use/copy it. Suggest
 welcome.
 
 First of all have Dezyne installed on your system by browsing to https://download.verum.com/download/verum-dezyne/ and
-download `verum-dezyne-2.17.8-x86_64-windows.zip` or the `*.msi` version. When unpacking the `*.zip`, ensure to use an
+download `verum-dezyne-2.17.9-x86_64-windows.zip` or the `*.msi` version. When unpacking the `*.zip`, ensure to use an
 unzipper that preserves all timestamps, for instance `7Zip` suffices. But do **not** use the Windows builtin unzipper.
 
 By default, the tests and data preparation scripts have been configured to an installation path having dzn.cmd here:
 
-    C:\SB\dezyne-2.17.8\dzn.cmd
+    C:\SB\dezyne-2.17.9\dzn.cmd
 
 Of course this installation path can be suited to your situation. In that case edit/configure the script
 `test\process_dezyne_models.py`. Run it at least once after downloading dznpy from GitHub in order for the unit tests
