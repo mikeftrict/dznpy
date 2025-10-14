@@ -10,11 +10,11 @@ module can not guarantee that the final total generated text is compilable.
 Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
-import abc
 # system modules
+import abc
+import enum
 from copy import deepcopy
 from dataclasses import dataclass, field
-import enum
 from typing import List, Any, Optional
 
 # dznpy modules

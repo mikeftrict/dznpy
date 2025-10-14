@@ -7,6 +7,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import pytest
+import tempfile
 from dataclasses import dataclass, field
 
 # system-under-test
@@ -218,6 +219,22 @@ def test_assert_union_t_superclass_fail3():
     with pytest.raises(TypeError) as exc:
         assert_union_t(sut, [Sub])
     assert str(exc.value) == '''Value argument "Top(member='')" is not equal to any expected types: ["<class 'test_misc_utils.Sub'>"].'''
+
+
+def test_raii_cd():
+    """Test the function to enter and exit a specified directory with RAII."""
+    orig = Path().absolute()
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+
+        with raii_cd(tmp_path):
+            cwd = Path().absolute()
+            assert cwd == tmp_path, f'Expected the new set directory {tmp_path}, got {cwd}'
+            assert cwd != orig, f'Expected the current directory to differ from the original'
+
+        cwd_after = Path().absolute()
+        assert cwd_after == orig, f'Expected directory to be restored to {orig}, got {cwd_after}'
 
 
 def test_trim_list():
