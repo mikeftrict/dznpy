@@ -1,0 +1,73 @@
+delta history
+=============
+
+2.11.0
+- lowest version allowed by dznpy
+- all ok (itf, sys, comp, fc)
+- includes node "behaviour"
+
+2.12.0
+- all ok (itf, sys, comp, fc)
+- *.dzn: excludes node "behaviour" as of now
+- *.dzn: adds node "working-directory"
+
+2.13.0 == 2.12.0
+2.13.1 == 2.13.0
+2.13.2 == 2.13.1
+2.13.3 == 2.13.2
+
+2.14.0 == 2.13.3
+2.14.1 == 2.14.0
+
+2.15.0 == 2.14.1, but:
+- comp.dzn/sys.dzn: node "injected" -> node "injected?"
+2.15.1 == 2.15.0
+
+2.15.2 totally broken, downgrade to 2.15.1 or upgrade to 2.16.2
+2.15.3 totally broken, downgrade to 2.15.1 or upgrade to 2.16.2
+2.15.4 totally broken, downgrade to 2.15.1 or upgrade to 2.16.2
+2.15.5 totally broken, downgrade to 2.15.1 or upgrade to 2.16.2
+
+2.16.0 totally broken, upgrade to 2.16.2
+2.16.1 totally broken, upgrade to 2.16.2
+2.16.2, compared to 2.15.1
+- comp, itf, sys ok. fc FAIL!
+- *.dzn: add node "comment"
+- *.dzn: add node "import"
+- *.dzn: in interface.events.elements.[n].signature.formals.elements.[n] add node "expression": "undefined"
+2.16.3 == 2.16.2
+2.16.5 == 2.16.3
+
+2.17.0, upgrade to 2.17.9
+- still: comp, itf, sys ok. fc FAIL!
+- *.dzn: removes "<class>": "bool" and "<class>": "void" from top level elements
+- *.dzn: under "types",  <class>": "int"   becomes  "<class>": "subint"
+2.17.1 == 2.17.0
+2.17.2 == 2.17.1
+2.17.3 == 2.17.2
+2.17.4 == 2.17.3, but:
+- itf ok. BUT sys, comp, fc FAIL!
+2.17.5 == 2.17.3
+- comp, itf, sys ok. fc FAIL!
+2.17.6 == 2.17.5
+2.17.7 == 2.17.6
+2.17.8 == 2.17.7
+2.17.9
+- all ok (itf, sys, comp, fc)
+
+2.18.0, upgrade to 2.18.2
+- itf, fc ok. BUT sys, comp FAIL!
+- node "behavior" returns as of now. Note the american spelling.
+2.18.1 == 2.18.0
+2.18.2
+- all ok (itf, sys, comp, fc)
+- *.dzn: in interface.events.elements.[n].signature.formals.elements.[n] node "expression": "undefined"   becomes    "expression": null
+2.18.3 == 2.18.2
+2.18.4 == 2.18.3
+
+2.19.0.rc1
+- comp.dzn: minor swapping of "file-name" nodes in the file
+- comp.dzn: in functions.elements.[]."noisy?" becomes "called?"
+- *.dzn: removal of node "working-directory"
+- sys.dzn: swapping of nodes in the file
+2.19.1 == 2.19.0

@@ -1,0 +1,435 @@
+# making an overview of all Dezyne versions and their JSON output
+# (https://download.verum.com/download/verum-dezyne/)
+#################################################################
+
+cd C:\SB\dznpy\test\dezyne_models\system1
+
+
+
+cls
+C:\data\dezyne\dezyne-2.11.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.11.0-itf.json
+python -m json.tool _raw_2.11.0-itf.json > 2.11.0-itf.json
+C:\data\dezyne\dezyne-2.11.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.11.0-sys.json
+python -m json.tool _raw_2.11.0-sys.json > 2.11.0-sys.json
+C:\data\dezyne\dezyne-2.11.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.11.0-comp.json
+python -m json.tool _raw_2.11.0-comp.json > 2.11.0-comp.json
+C:\data\dezyne\dezyne-2.11.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.11.0-fc.json
+python -m json.tool _raw_2.11.0-fc.json > 2.11.0-fc.json
+ALL OK!
+
+
+
+cls
+C:\data\dezyne\dezyne-2.12.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.12.0-itf.json
+python -m json.tool _raw_2.12.0-itf.json > 2.12.0-itf.json
+C:\data\dezyne\dezyne-2.12.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.12.0-sys.json
+python -m json.tool _raw_2.12.0-sys.json > 2.12.0-sys.json
+C:\data\dezyne\dezyne-2.12.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.12.0-comp.json
+python -m json.tool _raw_2.12.0-comp.json > 2.12.0-comp.json
+C:\data\dezyne\dezyne-2.12.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.12.0-fc.json
+python -m json.tool _raw_2.12.0-fc.json > 2.12.0-fc.json
+ALL OK!
+
+
+
+cls
+C:\data\dezyne\dezyne-2.13.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.13.0-itf.json
+python -m json.tool _raw_2.13.0-itf.json > 2.13.0-itf.json
+C:\data\dezyne\dezyne-2.13.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.13.0-sys.json
+python -m json.tool _raw_2.13.0-sys.json > 2.13.0-sys.json
+C:\data\dezyne\dezyne-2.13.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.13.0-comp.json
+python -m json.tool _raw_2.13.0-comp.json > 2.13.0-comp.json
+C:\data\dezyne\dezyne-2.13.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.13.0-fc.json
+python -m json.tool _raw_2.13.0-fc.json > 2.13.0-fc.json
+ALL OK!
+
+cls
+C:\data\dezyne\dezyne-2.13.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.13.1-itf.json
+python -m json.tool _raw_2.13.1-itf.json > 2.13.1-itf.json
+C:\data\dezyne\dezyne-2.13.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.13.1-sys.json
+python -m json.tool _raw_2.13.1-sys.json > 2.13.1-sys.json
+C:\data\dezyne\dezyne-2.13.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.13.1-comp.json
+python -m json.tool _raw_2.13.1-comp.json > 2.13.1-comp.json
+C:\data\dezyne\dezyne-2.13.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.13.1-fc.json
+python -m json.tool _raw_2.13.1-fc.json > 2.13.1-fc.json
+ALL OK!
+
+cls
+C:\data\dezyne\dezyne-2.13.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.13.2-itf.json
+python -m json.tool _raw_2.13.2-itf.json > 2.13.2-itf.json
+C:\data\dezyne\dezyne-2.13.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.13.2-sys.json
+python -m json.tool _raw_2.13.2-sys.json > 2.13.2-sys.json
+C:\data\dezyne\dezyne-2.13.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.13.2-comp.json
+python -m json.tool _raw_2.13.2-comp.json > 2.13.2-comp.json
+C:\data\dezyne\dezyne-2.13.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.13.2-fc.json
+python -m json.tool _raw_2.13.2-fc.json > 2.13.2-fc.json
+ALL OK!
+
+cls
+C:\data\dezyne\dezyne-2.13.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.13.3-itf.json
+python -m json.tool _raw_2.13.3-itf.json > 2.13.3-itf.json
+C:\data\dezyne\dezyne-2.13.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.13.3-sys.json
+python -m json.tool _raw_2.13.3-sys.json > 2.13.3-sys.json
+C:\data\dezyne\dezyne-2.13.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.13.3-comp.json
+python -m json.tool _raw_2.13.3-comp.json > 2.13.3-comp.json
+C:\data\dezyne\dezyne-2.13.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.13.3-fc.json
+python -m json.tool _raw_2.13.3-fc.json > 2.13.3-fc.json
+ALL OK!
+
+
+
+cls
+C:\data\dezyne\dezyne-2.14.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.14.0-itf.json
+python -m json.tool _raw_2.14.0-itf.json > 2.14.0-itf.json
+C:\data\dezyne\dezyne-2.14.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.14.0-sys.json
+python -m json.tool _raw_2.14.0-sys.json > 2.14.0-sys.json
+C:\data\dezyne\dezyne-2.14.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.14.0-comp.json
+python -m json.tool _raw_2.14.0-comp.json > 2.14.0-comp.json
+C:\data\dezyne\dezyne-2.14.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.14.0-fc.json
+python -m json.tool _raw_2.14.0-fc.json > 2.14.0-fc.json
+ALL OK!
+
+cls
+C:\data\dezyne\dezyne-2.14.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.14.1-itf.json
+python -m json.tool _raw_2.14.1-itf.json > 2.14.1-itf.json
+C:\data\dezyne\dezyne-2.14.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.14.1-sys.json
+python -m json.tool _raw_2.14.1-sys.json > 2.14.1-sys.json
+C:\data\dezyne\dezyne-2.14.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.14.1-comp.json
+python -m json.tool _raw_2.14.1-comp.json > 2.14.1-comp.json
+C:\data\dezyne\dezyne-2.14.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.14.1-fc.json
+python -m json.tool _raw_2.14.1-fc.json > 2.14.1-fc.json
+ALL OK!
+
+
+
+cls
+C:\data\dezyne\dezyne-2.15.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.15.0-itf.json
+python -m json.tool _raw_2.15.0-itf.json > 2.15.0-itf.json
+C:\data\dezyne\dezyne-2.15.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.15.0-sys.json
+python -m json.tool _raw_2.15.0-sys.json > 2.15.0-sys.json
+C:\data\dezyne\dezyne-2.15.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.15.0-comp.json
+python -m json.tool _raw_2.15.0-comp.json > 2.15.0-comp.json
+C:\data\dezyne\dezyne-2.15.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.15.0-fc.json
+python -m json.tool _raw_2.15.0-fc.json > 2.15.0-fc.json
+ALL OK!
+
+cls
+C:\data\dezyne\dezyne-2.15.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.15.1-itf.json
+python -m json.tool _raw_2.15.1-itf.json > 2.15.1-itf.json
+C:\data\dezyne\dezyne-2.15.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.15.1-sys.json
+python -m json.tool _raw_2.15.1-sys.json > 2.15.1-sys.json
+C:\data\dezyne\dezyne-2.15.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.15.1-comp.json
+python -m json.tool _raw_2.15.1-comp.json > 2.15.1-comp.json
+C:\data\dezyne\dezyne-2.15.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.15.1-fc.json
+python -m json.tool _raw_2.15.1-fc.json > 2.15.1-fc.json
+ALL OK!
+
+cls
+C:\data\dezyne\dezyne-2.15.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.15.2-itf.json
+python -m json.tool _raw_2.15.2-itf.json > 2.15.2-itf.json
+C:\data\dezyne\dezyne-2.15.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.15.2-sys.json
+python -m json.tool _raw_2.15.2-sys.json > 2.15.2-sys.json
+C:\data\dezyne\dezyne-2.15.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.15.2-comp.json
+python -m json.tool _raw_2.15.2-comp.json > 2.15.2-comp.json
+C:\data\dezyne\dezyne-2.15.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.15.2-fc.json
+python -m json.tool _raw_2.15.2-fc.json > 2.15.2-fc.json
+BLACKLIST ALL!
+
+cls
+C:\data\dezyne\dezyne-2.15.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.15.3-itf.json
+python -m json.tool _raw_2.15.3-itf.json > 2.15.3-itf.json
+C:\data\dezyne\dezyne-2.15.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.15.3-sys.json
+python -m json.tool _raw_2.15.3-sys.json > 2.15.3-sys.json
+C:\data\dezyne\dezyne-2.15.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.15.3-comp.json
+python -m json.tool _raw_2.15.3-comp.json > 2.15.3-comp.json
+C:\data\dezyne\dezyne-2.15.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.15.3-fc.json
+python -m json.tool _raw_2.15.3-fc.json > 2.15.3-fc.json
+BLACKLIST ALL!
+
+cls
+C:\data\dezyne\dezyne-2.15.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.15.4-itf.json
+python -m json.tool _raw_2.15.4-itf.json > 2.15.4-itf.json
+C:\data\dezyne\dezyne-2.15.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.15.4-sys.json
+python -m json.tool _raw_2.15.4-sys.json > 2.15.4-sys.json
+C:\data\dezyne\dezyne-2.15.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.15.4-comp.json
+python -m json.tool _raw_2.15.4-comp.json > 2.15.4-comp.json
+C:\data\dezyne\dezyne-2.15.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.15.4-fc.json
+python -m json.tool _raw_2.15.4-fc.json > 2.15.4-fc.json
+BLACKLIST ALL!
+
+cls
+C:\data\dezyne\dezyne-2.15.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.15.5-itf.json
+python -m json.tool _raw_2.15.5-itf.json > 2.15.5-itf.json
+C:\data\dezyne\dezyne-2.15.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.15.5-sys.json
+python -m json.tool _raw_2.15.5-sys.json > 2.15.5-sys.json
+C:\data\dezyne\dezyne-2.15.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.15.5-comp.json
+python -m json.tool _raw_2.15.5-comp.json > 2.15.5-comp.json
+C:\data\dezyne\dezyne-2.15.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.15.5-fc.json
+python -m json.tool _raw_2.15.5-fc.json > 2.15.5-fc.json
+BLACKLIST ALL!
+
+
+
+
+
+
+cls
+C:\data\dezyne\dezyne-2.16.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.16.0-itf.json
+python -m json.tool _raw_2.16.0-itf.json > 2.16.0-itf.json
+C:\data\dezyne\dezyne-2.16.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.16.0-sys.json
+python -m json.tool _raw_2.16.0-sys.json > 2.16.0-sys.json
+C:\data\dezyne\dezyne-2.16.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.16.0-comp.json
+python -m json.tool _raw_2.16.0-comp.json > 2.16.0-comp.json
+C:\data\dezyne\dezyne-2.16.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.16.0-fc.json
+python -m json.tool _raw_2.16.0-fc.json > 2.16.0-fc.json
+BLACKLIST ALL!
+
+cls
+C:\data\dezyne\dezyne-2.16.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.16.1-itf.json
+python -m json.tool _raw_2.16.1-itf.json > 2.16.1-itf.json
+C:\data\dezyne\dezyne-2.16.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.16.1-sys.json
+python -m json.tool _raw_2.16.1-sys.json > 2.16.1-sys.json
+C:\data\dezyne\dezyne-2.16.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.16.1-comp.json
+python -m json.tool _raw_2.16.1-comp.json > 2.16.1-comp.json
+C:\data\dezyne\dezyne-2.16.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.16.1-fc.json
+python -m json.tool _raw_2.16.1-fc.json > 2.16.1-fc.json
+BLACKLIST ALL!
+
+cls
+C:\data\dezyne\dezyne-2.16.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.16.2-itf.json
+python -m json.tool _raw_2.16.2-itf.json > 2.16.2-itf.json
+C:\data\dezyne\dezyne-2.16.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.16.2-sys.json
+python -m json.tool _raw_2.16.2-sys.json > 2.16.2-sys.json
+C:\data\dezyne\dezyne-2.16.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.16.2-comp.json
+python -m json.tool _raw_2.16.2-comp.json > 2.16.2-comp.json
+C:\data\dezyne\dezyne-2.16.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.16.2-fc.json
+python -m json.tool _raw_2.16.2-fc.json > 2.16.2-fc.json
+FC FAIL! REST OK
+
+cls
+C:\data\dezyne\dezyne-2.16.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.16.3-itf.json
+python -m json.tool _raw_2.16.3-itf.json > 2.16.3-itf.json
+C:\data\dezyne\dezyne-2.16.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.16.3-sys.json
+python -m json.tool _raw_2.16.3-sys.json > 2.16.3-sys.json
+C:\data\dezyne\dezyne-2.16.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.16.3-comp.json
+python -m json.tool _raw_2.16.3-comp.json > 2.16.3-comp.json
+C:\data\dezyne\dezyne-2.16.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.16.3-fc.json
+python -m json.tool _raw_2.16.3-fc.json > 2.16.3-fc.json
+FC FAIL! REST OK
+
+cls
+C:\data\dezyne\dezyne-2.16.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.16.5-itf.json
+python -m json.tool _raw_2.16.5-itf.json > 2.16.5-itf.json
+C:\data\dezyne\dezyne-2.16.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.16.5-sys.json
+python -m json.tool _raw_2.16.5-sys.json > 2.16.5-sys.json
+C:\data\dezyne\dezyne-2.16.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.16.5-comp.json
+python -m json.tool _raw_2.16.5-comp.json > 2.16.5-comp.json
+C:\data\dezyne\dezyne-2.16.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.16.5-fc.json
+python -m json.tool _raw_2.16.5-fc.json > 2.16.5-fc.json
+FC FAIL! REST OK
+
+
+
+cls
+C:\data\dezyne\dezyne-2.17.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.0-itf.json
+python -m json.tool _raw_2.17.0-itf.json > 2.17.0-itf.json
+C:\data\dezyne\dezyne-2.17.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.0-sys.json
+python -m json.tool _raw_2.17.0-sys.json > 2.17.0-sys.json
+C:\data\dezyne\dezyne-2.17.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.0-comp.json
+python -m json.tool _raw_2.17.0-comp.json > 2.17.0-comp.json
+C:\data\dezyne\dezyne-2.17.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.0-fc.json
+python -m json.tool _raw_2.17.0-fc.json > 2.17.0-fc.json
+FC FAIL! REST OK
+
+cls
+C:\data\dezyne\dezyne-2.17.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.1-itf.json
+python -m json.tool _raw_2.17.1-itf.json > 2.17.1-itf.json
+C:\data\dezyne\dezyne-2.17.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.1-sys.json
+python -m json.tool _raw_2.17.1-sys.json > 2.17.1-sys.json
+C:\data\dezyne\dezyne-2.17.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.1-comp.json
+python -m json.tool _raw_2.17.1-comp.json > 2.17.1-comp.json
+C:\data\dezyne\dezyne-2.17.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.1-fc.json
+python -m json.tool _raw_2.17.1-fc.json > 2.17.1-fc.json
+FC FAIL! REST OK
+
+cls
+C:\data\dezyne\dezyne-2.17.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.2-itf.json
+python -m json.tool _raw_2.17.2-itf.json > 2.17.2-itf.json
+C:\data\dezyne\dezyne-2.17.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.2-sys.json
+python -m json.tool _raw_2.17.2-sys.json > 2.17.2-sys.json
+C:\data\dezyne\dezyne-2.17.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.2-comp.json
+python -m json.tool _raw_2.17.2-comp.json > 2.17.2-comp.json
+C:\data\dezyne\dezyne-2.17.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.2-fc.json
+python -m json.tool _raw_2.17.2-fc.json > 2.17.2-fc.json
+FC FAIL! REST OK
+
+cls
+C:\data\dezyne\dezyne-2.17.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.3-itf.json
+python -m json.tool _raw_2.17.3-itf.json > 2.17.3-itf.json
+C:\data\dezyne\dezyne-2.17.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.3-sys.json
+python -m json.tool _raw_2.17.3-sys.json > 2.17.3-sys.json
+C:\data\dezyne\dezyne-2.17.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.3-comp.json
+python -m json.tool _raw_2.17.3-comp.json > 2.17.3-comp.json
+C:\data\dezyne\dezyne-2.17.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.3-fc.json
+python -m json.tool _raw_2.17.3-fc.json > 2.17.3-fc.json
+FC FAIL! REST OK
+
+cls
+C:\data\dezyne\dezyne-2.17.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.4-itf.json
+python -m json.tool _raw_2.17.4-itf.json > 2.17.4-itf.json
+C:\data\dezyne\dezyne-2.17.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.4-sys.json
+python -m json.tool _raw_2.17.4-sys.json > 2.17.4-sys.json
+C:\data\dezyne\dezyne-2.17.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.4-comp.json
+python -m json.tool _raw_2.17.4-comp.json > 2.17.4-comp.json
+C:\data\dezyne\dezyne-2.17.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.4-fc.json
+python -m json.tool _raw_2.17.4-fc.json > 2.17.4-fc.json
+FC, COMP, SYS FAIL!  ITF OK
+
+cls
+C:\data\dezyne\dezyne-2.17.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.5-itf.json
+python -m json.tool _raw_2.17.5-itf.json > 2.17.5-itf.json
+C:\data\dezyne\dezyne-2.17.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.5-sys.json
+python -m json.tool _raw_2.17.5-sys.json > 2.17.5-sys.json
+C:\data\dezyne\dezyne-2.17.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.5-comp.json
+python -m json.tool _raw_2.17.5-comp.json > 2.17.5-comp.json
+C:\data\dezyne\dezyne-2.17.5\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.5-fc.json
+python -m json.tool _raw_2.17.5-fc.json > 2.17.5-fc.json
+FC FAIL! REST OK
+
+C:\data\dezyne\dezyne-2.17.6\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.6-itf.json
+python -m json.tool _raw_2.17.6-itf.json > 2.17.6-itf.json
+C:\data\dezyne\dezyne-2.17.6\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.6-sys.json
+python -m json.tool _raw_2.17.6-sys.json > 2.17.6-sys.json
+C:\data\dezyne\dezyne-2.17.6\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.6-comp.json
+python -m json.tool _raw_2.17.6-comp.json > 2.17.6-comp.json
+C:\data\dezyne\dezyne-2.17.6\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.6-fc.json
+python -m json.tool _raw_2.17.6-fc.json > 2.17.6-fc.json
+FC FAIL! REST OK
+
+C:\data\dezyne\dezyne-2.17.7\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.7-itf.json
+python -m json.tool _raw_2.17.7-itf.json > 2.17.7-itf.json
+C:\data\dezyne\dezyne-2.17.7\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.7-sys.json
+python -m json.tool _raw_2.17.7-sys.json > 2.17.7-sys.json
+C:\data\dezyne\dezyne-2.17.7\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.7-comp.json
+python -m json.tool _raw_2.17.7-comp.json > 2.17.7-comp.json
+C:\data\dezyne\dezyne-2.17.7\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.7-fc.json
+python -m json.tool _raw_2.17.7-fc.json > 2.17.7-fc.json
+BLACKLIST FC?
+
+C:\data\dezyne\dezyne-2.17.8\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.8-itf.json
+python -m json.tool _raw_2.17.8-itf.json > 2.17.8-itf.json
+C:\data\dezyne\dezyne-2.17.8\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.8-sys.json
+python -m json.tool _raw_2.17.8-sys.json > 2.17.8-sys.json
+C:\data\dezyne\dezyne-2.17.8\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.8-comp.json
+python -m json.tool _raw_2.17.8-comp.json > 2.17.8-comp.json
+C:\data\dezyne\dezyne-2.17.8\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.8-fc.json
+python -m json.tool _raw_2.17.8-fc.json > 2.17.8-fc.json
+FC FAIL! REST OK
+
+C:\data\dezyne\dezyne-2.17.9\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.17.9-itf.json
+python -m json.tool _raw_2.17.9-itf.json > 2.17.9-itf.json
+C:\data\dezyne\dezyne-2.17.9\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.17.9-sys.json
+python -m json.tool _raw_2.17.9-sys.json > 2.17.9-sys.json
+C:\data\dezyne\dezyne-2.17.9\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.17.9-comp.json
+python -m json.tool _raw_2.17.9-comp.json > 2.17.9-comp.json
+C:\data\dezyne\dezyne-2.17.9\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.17.9-fc.json
+python -m json.tool _raw_2.17.9-fc.json > 2.17.9-fc.json
+ALL OK!
+
+
+
+
+
+
+
+cls
+C:\data\dezyne\dezyne-2.18.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.18.0-itf.json
+python -m json.tool _raw_2.18.0-itf.json > 2.18.0-itf.json
+C:\data\dezyne\dezyne-2.18.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.18.0-sys.json
+python -m json.tool _raw_2.18.0-sys.json > 2.18.0-sys.json
+C:\data\dezyne\dezyne-2.18.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.18.0-comp.json
+python -m json.tool _raw_2.18.0-comp.json > 2.18.0-comp.json
+C:\data\dezyne\dezyne-2.18.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.18.0-fc.json
+python -m json.tool _raw_2.18.0-fc.json > 2.18.0-fc.json
+COMP, SYS FAIL.  FC, ITF OK.
+
+cls
+C:\data\dezyne\dezyne-2.18.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.18.1-itf.json
+python -m json.tool _raw_2.18.1-itf.json > 2.18.1-itf.json
+C:\data\dezyne\dezyne-2.18.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.18.1-sys.json
+python -m json.tool _raw_2.18.1-sys.json > 2.18.1-sys.json
+C:\data\dezyne\dezyne-2.18.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.18.1-comp.json
+python -m json.tool _raw_2.18.1-comp.json > 2.18.1-comp.json
+C:\data\dezyne\dezyne-2.18.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.18.1-fc.json
+python -m json.tool _raw_2.18.1-fc.json > 2.18.1-fc.json
+COMP, SYS FAIL.  FC, ITF OK.
+
+cls
+C:\data\dezyne\dezyne-2.18.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.18.2-itf.json
+python -m json.tool _raw_2.18.2-itf.json > 2.18.2-itf.json
+C:\data\dezyne\dezyne-2.18.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.18.2-sys.json
+python -m json.tool _raw_2.18.2-sys.json > 2.18.2-sys.json
+C:\data\dezyne\dezyne-2.18.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.18.2-comp.json
+python -m json.tool _raw_2.18.2-comp.json > 2.18.2-comp.json
+C:\data\dezyne\dezyne-2.18.2\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.18.2-fc.json
+python -m json.tool _raw_2.18.2-fc.json > 2.18.2-fc.json
+ALL OK.
+
+cls
+C:\data\dezyne\dezyne-2.18.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.18.3-itf.json
+python -m json.tool _raw_2.18.3-itf.json > 2.18.3-itf.json
+C:\data\dezyne\dezyne-2.18.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.18.3-sys.json
+python -m json.tool _raw_2.18.3-sys.json > 2.18.3-sys.json
+C:\data\dezyne\dezyne-2.18.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.18.3-comp.json
+python -m json.tool _raw_2.18.3-comp.json > 2.18.3-comp.json
+C:\data\dezyne\dezyne-2.18.3\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.18.3-fc.json
+python -m json.tool _raw_2.18.3-fc.json > 2.18.3-fc.json
+ALL OK.
+
+cls
+C:\data\dezyne\dezyne-2.18.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.18.4-itf.json
+python -m json.tool _raw_2.18.4-itf.json > 2.18.4-itf.json
+C:\data\dezyne\dezyne-2.18.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.18.4-sys.json
+python -m json.tool _raw_2.18.4-sys.json > 2.18.4-sys.json
+C:\data\dezyne\dezyne-2.18.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.18.4-comp.json
+python -m json.tool _raw_2.18.4-comp.json > 2.18.4-comp.json
+C:\data\dezyne\dezyne-2.18.4\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.18.4-fc.json
+python -m json.tool _raw_2.18.4-fc.json > 2.18.4-fc.json
+ALL OK.
+
+
+
+cls
+C:\data\dezyne\dezyne-2.19.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.19.0-itf.json
+python -m json.tool _raw_2.19.0-itf.json > 2.19.0-itf.json
+C:\data\dezyne\dezyne-2.19.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.19.0-sys.json
+python -m json.tool _raw_2.19.0-sys.json > 2.19.0-sys.json
+C:\data\dezyne\dezyne-2.19.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.19.0-comp.json
+python -m json.tool _raw_2.19.0-comp.json > 2.19.0-comp.json
+C:\data\dezyne\dezyne-2.19.0\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.19.0-fc.json
+python -m json.tool _raw_2.19.0-fc.json > 2.19.0-fc.json
+ALL OK.
+
+cls
+C:\data\dezyne\dezyne-2.19.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Hardware\Interfaces\IHeaterElement.dzn > _raw_2.19.1-itf.json
+python -m json.tool _raw_2.19.1-itf.json > 2.19.1-itf.json
+C:\data\dezyne\dezyne-2.19.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ToasterSystem.dzn > _raw_2.19.1-sys.json
+python -m json.tool _raw_2.19.1-sys.json > 2.19.1-sys.json
+C:\data\dezyne\dezyne-2.19.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - Toaster.dzn > _raw_2.19.1-comp.json
+python -m json.tool _raw_2.19.1-comp.json > 2.19.1-comp.json
+C:\data\dezyne\dezyne-2.19.1\dzn.cmd code -l json -I . -I ../shared/Facilities -o - ..\shared\Facilities\FCTimer.dzn > _raw_2.19.1-fc.json
+python -m json.tool _raw_2.19.1-fc.json > 2.19.1-fc.json
+ALL OK.
+
+
+
+
+
+
+
+
+
+
+
+
+

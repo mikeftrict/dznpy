@@ -1,0 +1,257 @@
+{
+    "<class>": "root",
+    "comment": {
+        "<class>": "comment",
+        "string": "// Three times an IHeaterElement interface.\n//\n// For testing purposes (e.g. look up by FQN/scope name) this file intentionally contains three\n// interface models, plus, these interfaces have the same name but intentionally reside in different namespaces.\n//\n"
+    },
+    "elements": [
+        {
+            "<class>": "bool",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "bool"
+                ]
+            }
+        },
+        {
+            "<class>": "void",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "void"
+                ]
+            }
+        },
+        {
+            "<class>": "file-name",
+            "name": "Hardware\\Interfaces\\IHeaterElement.dzn"
+        },
+        {
+            "<class>": "namespace",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "Some"
+                ]
+            },
+            "elements": [
+                {
+                    "<class>": "namespace",
+                    "name": {
+                        "<class>": "scope_name",
+                        "ids": [
+                            "Vendor"
+                        ]
+                    },
+                    "elements": [
+                        {
+                            "<class>": "interface",
+                            "name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "IHeaterElement"
+                                ]
+                            },
+                            "types": {
+                                "<class>": "types",
+                                "elements": [
+                                    {
+                                        "<class>": "int",
+                                        "name": {
+                                            "<class>": "scope_name",
+                                            "ids": [
+                                                "ExampleInt"
+                                            ]
+                                        },
+                                        "range": {
+                                            "<class>": "range",
+                                            "from": 0,
+                                            "to": 9
+                                        }
+                                    }
+                                ]
+                            },
+                            "events": {
+                                "<class>": "events",
+                                "elements": [
+                                    {
+                                        "<class>": "event",
+                                        "name": "Initialize",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    },
+                                    {
+                                        "<class>": "event",
+                                        "name": "Uninitialize",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    },
+                                    {
+                                        "<class>": "event",
+                                        "name": "On",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    },
+                                    {
+                                        "<class>": "event",
+                                        "name": "Off",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "<class>": "namespace",
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "My"
+                ]
+            },
+            "elements": [
+                {
+                    "<class>": "namespace",
+                    "name": {
+                        "<class>": "scope_name",
+                        "ids": [
+                            "Project"
+                        ]
+                    },
+                    "elements": [
+                        {
+                            "<class>": "interface",
+                            "name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "IHeaterElement"
+                                ]
+                            },
+                            "types": {
+                                "<class>": "types",
+                                "elements": []
+                            },
+                            "events": {
+                                "<class>": "events",
+                                "elements": [
+                                    {
+                                        "<class>": "event",
+                                        "name": "Second",
+                                        "signature": {
+                                            "<class>": "signature",
+                                            "type_name": {
+                                                "<class>": "scope_name",
+                                                "ids": [
+                                                    "void"
+                                                ]
+                                            },
+                                            "formals": {
+                                                "<class>": "formals",
+                                                "elements": []
+                                            }
+                                        },
+                                        "direction": "in"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "<class>": "interface",
+            "comment": {
+                "<class>": "comment",
+                "string": "// end namespace My::Project\n"
+            },
+            "name": {
+                "<class>": "scope_name",
+                "ids": [
+                    "IHeaterElement"
+                ]
+            },
+            "types": {
+                "<class>": "types",
+                "elements": []
+            },
+            "events": {
+                "<class>": "events",
+                "elements": [
+                    {
+                        "<class>": "event",
+                        "name": "Third",
+                        "signature": {
+                            "<class>": "signature",
+                            "type_name": {
+                                "<class>": "scope_name",
+                                "ids": [
+                                    "void"
+                                ]
+                            },
+                            "formals": {
+                                "<class>": "formals",
+                                "elements": []
+                            }
+                        },
+                        "direction": "in"
+                    }
+                ]
+            }
+        }
+    ],
+    "working-directory": "C:/SB/dznpy/test/dezyne_models/system1"
+}
