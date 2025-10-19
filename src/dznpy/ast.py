@@ -274,6 +274,7 @@ class System:
     bindings: Bindings
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(frozen=True)
 class FileContents:
     """FileContents"""

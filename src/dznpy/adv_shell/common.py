@@ -100,6 +100,7 @@ class FacilitiesOrigin(enum.Enum):
     CREATE = 'Create all facilities (dispatcher, runtime and locator)'
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class Configuration:
     """Data class containing the user specified configuration for generating an Advanced Shell."""
@@ -342,6 +343,7 @@ class SupportFiles:
                 self.multi_client_selector, self.mutex_wrapped]
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(frozen=True)
 class CppElements:
     """Data class providing the model of the C++ elements required for the Advanced Shell."""

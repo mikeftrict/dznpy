@@ -828,12 +828,12 @@ class LoadFileTest(DznTestCase):
     @staticmethod
     def test_open_some_json_ok():
         sut = DznJsonAst().load_file(SOME_JSON_FILE)
-        assert sut._ast is not None
+        assert sut._json_ast is not None
 
     @staticmethod
     def test_open_dezyne_json_ok():
         sut = DznJsonAst().load_file(DZNJSON_FILE)
-        assert sut._ast is not None
+        assert sut._json_ast is not None
 
     @staticmethod
     def test_open_json_fail():
