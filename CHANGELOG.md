@@ -1,5 +1,9 @@
 # Changelog
 
+## Changes in 1.3 (DEV) since 1.2
+
+### Noteworthy additions and changes
+
 ## Changes in 1.2 (20251019) since 1.1
 
 ### Noteworthy additions and changes
