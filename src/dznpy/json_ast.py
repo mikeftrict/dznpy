@@ -475,36 +475,41 @@ class DznJsonAst:
         """Parse an element and identify its type."""
         fct = self.file_contents
 
-        if isinstance(element, dict):
-            cls = get_class_value(element)
-            if cls == 'component':
-                fct.components.append(parse_component(element, parent_ns))
-            elif cls == 'enum':
-                fct.enums.append(parse_enum(element, parent_ns))
-            elif cls == 'extern':
-                fct.externs.append(parse_extern(element, parent_ns))
-            elif cls == 'foreign':
-                fct.foreigns.append(parse_foreign(element, parent_ns))
-            elif cls == 'file-name':
-                fct.filenames.append(parse_filename(element))
-            elif cls == 'import':
-                fct.imports.append(parse_import(element))
-            elif cls == 'interface':
-                interface = parse_interface(element, parent_ns)
-                fct.interfaces.append(interface)
-                fct.enums.extend(interface.types.enums)
-                fct.subints.extend(interface.types.subints)
-            elif cls == 'namespace':
-                namespace = parse_namespace(element)
-                sub_ns = NamespaceTree(parent=parent_ns,
-                                       scope_name=namespace.scope_name.value)
-                for sub_element in namespace.elements:
-                    self.parse_element(sub_element, sub_ns)
-            elif cls == 'system':
-                fct.systems.append(parse_system(element, parent_ns))
-            elif cls == 'subint':
-                fct.subints.append(parse_subint(element, parent_ns))
-            else:
-                self.log(f'Skipping parsing class {cls}')
-        else:
+        if not isinstance(element, dict):
             self.log('WARNING: skipping non-dict element')
+            return
+
+        cls = get_class_value(element)
+
+        # Mapping from element type to a handler function
+        handlers = {
+            'component': lambda e: fct.components.append(parse_component(e, parent_ns)),
+            'enum': lambda e: fct.enums.append(parse_enum(e, parent_ns)),
+            'extern': lambda e: fct.externs.append(parse_extern(e, parent_ns)),
+            'foreign': lambda e: fct.foreigns.append(parse_foreign(e, parent_ns)),
+            'file-name': lambda e: fct.filenames.append(parse_filename(e)),
+            'import': lambda e: fct.imports.append(parse_import(e)),
+            'interface': lambda e: self._handle_interface(e, fct, parent_ns),
+            'namespace': lambda e: self._handle_namespace(e, parent_ns),
+            'system': lambda e: fct.systems.append(parse_system(e, parent_ns)),
+            'subint': lambda e: fct.subints.append(parse_subint(e, parent_ns)),
+        }
+
+        handler = handlers.get(cls)
+        if handler:
+            handler(element)
+        else:
+            self.log(f'Skipping parsing class {cls}')
+
+    @staticmethod
+    def _handle_interface(element, fct, parent_ns):
+        interface = parse_interface(element, parent_ns)
+        fct.interfaces.append(interface)
+        fct.enums.extend(interface.types.enums)
+        fct.subints.extend(interface.types.subints)
+
+    def _handle_namespace(self, element, parent_ns):
+        namespace = parse_namespace(element)
+        sub_ns = NamespaceTree(parent=parent_ns, scope_name=namespace.scope_name.value)
+        for sub_element in namespace.elements:
+            self.parse_element(sub_element, sub_ns)
