@@ -4,6 +4,10 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0045](https://github.com/mikeftrict/dznpy/issues/56): Correct testdata for ToasterTest example. With the
+  addition of the `unpack_test_data.py` script in the `test` folder it appeared to miss some Dezyne generated files that
+  are required by the ToasterTest example project.
+
 ## Changes in 1.2 (20251019) since 1.1
 
 ### Noteworthy additions and changes

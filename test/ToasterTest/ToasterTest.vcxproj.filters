@@ -34,10 +34,10 @@
     <ClCompile Include="..\dezyne_models\generated\ToasterSystem.cc">
       <Filter>Dezyne generated</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\dezyne-2.17.8\runtime\c++\pump.cc">
+    <ClCompile Include="..\..\..\dezyne-2.17.9\runtime\c++\pump.cc">
       <Filter>Dezyne runtime</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\dezyne-2.17.8\runtime\c++\runtime.cc">
+    <ClCompile Include="..\..\..\dezyne-2.17.9\runtime\c++\runtime.cc">
       <Filter>Dezyne runtime</Filter>
     </ClCompile>
     <ClCompile Include="Facilities_Timer.cpp">
@@ -51,25 +51,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\container.hh">
+    <ClInclude Include="..\..\..\dezyne-2.17.9\runtime\c++\dzn\container.hh">
       <Filter>Dezyne runtime</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\context.hh">
+    <ClInclude Include="..\..\..\dezyne-2.17.9\runtime\c++\dzn\context.hh">
       <Filter>Dezyne runtime</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\coroutine.hh">
+    <ClInclude Include="..\..\..\dezyne-2.17.9\runtime\c++\dzn\coroutine.hh">
       <Filter>Dezyne runtime</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\locator.hh">
+    <ClInclude Include="..\..\..\dezyne-2.17.9\runtime\c++\dzn\locator.hh">
       <Filter>Dezyne runtime</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\meta.hh">
+    <ClInclude Include="..\..\..\dezyne-2.17.9\runtime\c++\dzn\meta.hh">
       <Filter>Dezyne runtime</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\pump.hh">
+    <ClInclude Include="..\..\..\dezyne-2.17.9\runtime\c++\dzn\pump.hh">
       <Filter>Dezyne runtime</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\dezyne-2.17.8\runtime\c++\dzn\runtime.hh">
+    <ClInclude Include="..\..\..\dezyne-2.17.9\runtime\c++\dzn\runtime.hh">
       <Filter>Dezyne runtime</Filter>
     </ClInclude>
     <ClInclude Include="MyExternalTypes.h" />
