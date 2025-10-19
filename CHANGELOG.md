@@ -1,6 +1,6 @@
 # Changelog
 
-## Changes in 1.2 (DEV) since 1.1
+## Changes in 1.2 (20251019) since 1.1
 
 ### Noteworthy additions and changes
 
