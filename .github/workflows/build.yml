@@ -1,4 +1,4 @@
-name: Test on Windows with Dezyne setup
+name: 'CI: Build and Test'
 
 on:
   push:
@@ -9,9 +9,8 @@ on:
       - main
 
 jobs:
-  build-linux:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -35,3 +34,30 @@ jobs:
         with:
           name: dznpy-wheel
           path: dist/*.whl
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download wheel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dznpy-wheel
+          path: dist/
+
+      - name: Unpack test data
+        run: python test/unpack_test_data.py
+
+      - name: Run test suite
+        run: pytest test/
