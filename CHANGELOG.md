@@ -4,6 +4,10 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0041](https://github.com/mikeftrict/dznpy/issues/46):
+    - In `json_ast` refactor the function parse_element(..) according to pylint's complexity indication
+    - In `json_ast` rename 'element' to more conventional AST naming 'node' where applicable
+    - Solve various minor pylint reported issues
 - [DZNPY-0040](https://github.com/mikeftrict/dznpy/issues/41): Changes to `ast` and `json_ast` parser to basically
   support all Dezyne versions starting from 2.11 to 2.19.
 - [DZNPY-0039](https://github.com/mikeftrict/dznpy/issues/40):

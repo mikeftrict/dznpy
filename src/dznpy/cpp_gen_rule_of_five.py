@@ -282,6 +282,7 @@ class RuleOfFive:
     __slots__ = ['_copy_constructor', '_move_constructor', '_copy_assign_constructor',
                  '_move_assign_constructor', '_destructor']
 
+    # pylint: disable=too-many-arguments
     def __init__(self, parent: Struct or Class,
                  copy_constr: FunctionInitialization,
                  move_constr: FunctionInitialization,
