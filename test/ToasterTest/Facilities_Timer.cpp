@@ -3,7 +3,7 @@
 namespace Facilities {
 
 Timer::Timer(const dzn::locator& dzn_locator)
-    : ::Facilities::skel::Timer(dzn_locator)
+    : Facilities::skel::Timer(dzn_locator)
     , m_pump(dzn_locator.get<dzn::pump>())
 {
 }
