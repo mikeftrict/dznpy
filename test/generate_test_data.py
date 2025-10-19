@@ -14,17 +14,18 @@ from dataclasses import dataclass
 from multiprocessing import Process
 from os import chdir, makedirs
 from pathlib import Path
-import subprocess
 from typing import List, Tuple
+import subprocess
+import sys
 
 # User configurable:
-# CFG_DZN_CMD = Path('~/dezyne-2.17.9/dzn').expanduser()  # Linux example
-CFG_DZN_CMD = Path('C:\SB\dezyne-2.17.9\dzn.cmd')  # Windows
+CFG_DZN_CMD = Path('C:\\SB\\dezyne-2.17.9\\dzn.cmd') if sys.platform.startswith("win") else Path('~/dezyne-2.17.9/dzn').expanduser()
 
 
 # Data class containing the final configuration
 @dataclass(frozen=True)
 class Configuration:
+    """Dataclass containing the configuration"""
     dzn_cmd: Path
     script_root: Path
     models_root: Path
@@ -64,7 +65,7 @@ def main():
     print(cfg)
     makedirs(cfg.gen_folder, exist_ok=True)
 
-    with RaiiCd(models_root):
+    with raii_cd(models_root):
         # First verify models (in parallel)
         multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn', 'ExclusiveToaster.dzn',
                            'StoneAgeToaster.dzn', 'Toaster.dzn'],
@@ -120,7 +121,7 @@ def verify(model_filename: Path, cfg: Configuration):
     """Verify a Dezyne file"""
     print(f'Verifying: {model_filename}')
     exe_args = [cfg.dzn_cmd.resolve(), 'verify'] + cfg.includes + [model_filename]
-    result = subprocess.run(exe_args)
+    result = subprocess.run(exe_args, check=False)
     if result.returncode > 0:
         raise RuntimeError(f'Verification error on model {model_filename}')
 
@@ -130,7 +131,7 @@ def generate_cpp(model_filename: Path, cfg: Configuration):
     print(f'Generating C++ code: {model_filename}')
     exe_args = ([cfg.dzn_cmd.resolve(), 'code', '-l', 'c++',
                  '-o', cfg.gen_folder.resolve()] + cfg.includes + [model_filename])
-    result = subprocess.run(exe_args)
+    result = subprocess.run(exe_args, check=False)
     if result.returncode > 0:
         raise RuntimeError(f'Code generation error on model {model_filename}')
 
@@ -140,7 +141,7 @@ def generate_tss(model_filename: Path, tss_name: str, cfg: Configuration):
     print(f'Generating a Thread-Safe Shell for system "{tss_name}" in: {model_filename}')
     exe_args = ([cfg.dzn_cmd.resolve(), 'code', '-l', 'c++', '-s', tss_name,
                  '-o', cfg.gen_folder.resolve()] + cfg.includes + [model_filename])
-    result = subprocess.run(exe_args)
+    result = subprocess.run(exe_args, check=False)
     if result.returncode > 0:
         raise RuntimeError(f'Code generation error on model {model_filename}')
 
@@ -150,7 +151,7 @@ def generate_json(model_filename: Path, cfg: Configuration):
     print(f'Generating a JSON Abstract Syntax Tree file: {model_filename}')
     exe_args = ([cfg.dzn_cmd.resolve(), 'code', '-l', 'json',
                  '-o', cfg.gen_folder.resolve()] + cfg.includes + [model_filename])
-    result = subprocess.run(exe_args, capture_output=True)
+    result = subprocess.run(exe_args, capture_output=True, check=False)
     if result.returncode > 0:
         raise RuntimeError(f'Code generation error on model {model_filename}')
 
@@ -159,7 +160,7 @@ def generate_json(model_filename: Path, cfg: Configuration):
 
 
 @contextmanager
-def RaiiCd(path: Path):
+def raii_cd(path: Path):
     """Change current directory and restore the original when exiting the context."""
     orig_directory = Path().resolve()
     try:

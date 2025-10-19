@@ -4,18 +4,37 @@ Folder containing unit tests, test data, dezyne models and a VS2022 C++ ToasterT
 
 ## Unit Tests
 
-Before running the unit tests ensure that all test data is present and dezyne models have been processed with
-the following commands. Note: the scripts need to be run -in- the test directory:
+Before running the unit tests ensure that all test data is present. There are two possibilities: generate the test data
+with a locally present dezyne version 2.17.9, or, unpack the pre-generated testdata from a zip.
+Note: the scripts need to be run -in- the test directory:
+
+### Option A: generate the test data
+
+Execute the following commands.
 
     cd C:\SB\dznpy\test\
 
-    python process_dezyne_models.py
+    python generate_test_data.py
 
 On errors, inspect the output closely. Most common finding is that you have unpacked dezyne (dzn.cmd) somewhere
 else on your system than the default location. Modify the Python script to match your location of `dzn.cmd`.
 On rare cases Dezyne reports errors on the models; either they have been altered manually (with errors) or
 a complete different version (than 2.17.9) of Dezyne is used. The models should process fine with 2.17.9 and later.
 If not, please contact me with your findings.
+
+### Option B: unpack pre-generated test data
+
+Execute the following commands.
+
+    cd C:\SB\dznpy\test\
+
+    python unpack_test_data.py
+
+On successful execution it will feed back:
+
+    Extracted 'testdata-2.17.9.zip' to '<dznpy-location>/test/dezyne_models'. The testsuite can be executed.
+
+### Run the testsuite
 
 After this initial step, trigger the unit tests by running **pytest** in the test folder. It will detect
 the `pytest.ini` file for the appropriate test configuration to use. Assuming you unpacked `dznpy` to the path `C:\SB\`,
@@ -62,7 +81,6 @@ To explore the source files and to discover the missed statements, generate a HT
     python -m coverage html
     
     Wrote HTML report to htmlcov\index.html
-
 
 ## VS2022 Example C++ GoogleTest project
 
