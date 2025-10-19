@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dznpy"
-version = "1.1.0"
+version = "1.2.0"
 description = "Python modules to support in developing C++ software with Dezyne"
 authors = [
     { name = "Michael van de Ven", email = "michael@ftr-ict.com" }
