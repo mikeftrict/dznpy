@@ -489,6 +489,7 @@ class DznJsonAst:
             'namespace': lambda e: self._handle_namespace(e, parent_ns),
             'system': lambda e: fct.systems.append(parse_system(e, parent_ns)),
             'subint': lambda e: fct.subints.append(parse_subint(e, parent_ns)),
+            'int': lambda e: fct.subints.append(parse_subint(e, parent_ns)),
         }
 
         handler = node_handlers.get(class_value)

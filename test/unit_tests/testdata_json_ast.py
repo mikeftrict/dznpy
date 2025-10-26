@@ -162,13 +162,21 @@ SCOPE_NAME_EX = '''{"<class>": "scope_name", "ids": ["My", "Nice", "Type"]}'''
 
 SCOPE_NAME_FAIL = '''{"<class>": "scope_name", "ids": []}'''
 
+# As of 2.17.0:
 SUBINT = '''{"<class>": "subint",
              "name": {"<class>": "scope_name", "ids": ["SmallInt"]},
              "range": ''' f'{RANGE}' '''}'''
 
+# Until 2.16.5:
+INT = '''{"<class>": "int",
+          "name": {"<class>": "scope_name", "ids": ["MediumInt"]},
+          "range": ''' f'{RANGE}' '''}'''
+
 TYPES_EMPTY = '''{"<class>": "types", "elements": [] }'''
 
-TYPES_TWO_ITEMS = '''{"<class>": "types", "elements": [''' f'{ENUM}, {SUBINT}' ''']}'''
+TYPES_TWO_ITEMS_ENUM_SUBINT = '''{"<class>": "types", "elements": [''' f'{ENUM}, {SUBINT}' ''']}'''
+
+TYPES_TWO_ITEMS_ENUM_INT = '''{"<class>": "types", "elements": [''' f'{ENUM}, {INT}' ''']}'''
 
 INTERFACE_EMPTY = '''{"<class>": "interface",
                       "name": {"<class>": "scope_name", "ids": ["IToaster"]},
@@ -178,9 +186,15 @@ INTERFACE_EMPTY = '''{"<class>": "interface",
 
 INTERFACE_TWO_ITEMS = '''{"<class>": "interface",
                           "name": {"<class>": "scope_name", "ids": ["IHeaterElement"]},
-                          "types":''' f'{TYPES_TWO_ITEMS}' ''',
+                          "types":''' f'{TYPES_TWO_ITEMS_ENUM_SUBINT}' ''',
                           "events": ''' f'{EVENTS_TWO_ITEMS}' \
                       '''}'''
+
+INTERFACE_TWO_ITEMS_INT = '''{"<class>": "interface",
+                          "name": {"<class>": "scope_name", "ids": ["IHeaterElement"]},
+                          "types":''' f'{TYPES_TWO_ITEMS_ENUM_INT}' ''',
+                          "events": ''' f'{EVENTS_TWO_ITEMS}' \
+                          '''}'''
 
 COMPONENT = '''{"<class>": "component",
                 "name": {"<class>": "scope_name", "ids": ["Toaster"]},

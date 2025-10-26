@@ -87,8 +87,8 @@ def main():
 
         # # Finally generate JSON AST output (in parallel)
         multicore_execute(['DummyToaster.dzn', 'DummyExclusiveToaster.dzn',
-                           'ExclusiveToaster.dzn', 'Hardware/Interfaces/IPowerCord.dzn',
-                           'ToasterSystem.dzn', 'StoneAgeToaster.dzn'],
+                           'ExclusiveToaster.dzn', 'Hardware/Interfaces/IPowerCord.dzn', 'Hardware/Interfaces/IHeaterElement.dzn',
+                           'ToasterSystem.dzn', 'StoneAgeToaster.dzn', '../shared/Facilities/FCTimer.dzn'],
                           generate_json, (cfg,))
 
     print('\nFinished')

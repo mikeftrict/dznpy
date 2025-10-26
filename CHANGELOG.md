@@ -4,6 +4,7 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0046](https://github.com/mikeftrict/dznpy/issues/58): Fix support of pre-2.17.0 int AST type.
 - [DZNPY-0045](https://github.com/mikeftrict/dznpy/issues/56): Correct testdata for ToasterTest example. With the
   addition of the `unpack_test_data.py` script in the `test` folder it appeared to miss some Dezyne generated files that
   are required by the ToasterTest example project.
