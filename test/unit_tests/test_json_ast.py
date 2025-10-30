@@ -105,6 +105,10 @@ class ComponentTest(DznTestCase):
         assert str(sut.name) == 'Toaster'
         assert isinstance(sut.ports, ast.Ports)
         assert len(sut.ports.elements) == 2
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.components) == 1
+        assert dzn.file_contents.components[0] == sut
 
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=COMPONENT)
@@ -198,6 +202,10 @@ class EnumTest(DznTestCase):
         assert sut.name.value == ns_ids_t('Result')
         assert sut.fields.elements == ['Ok', 'Fail', 'Error']
         assert sut.fqn == ns_ids_t('Result')
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.enums) == 1
+        assert dzn.file_contents.enums[0] == sut
 
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=ENUM)
@@ -287,6 +295,10 @@ class ExternTest(DznTestCase):
         assert sut.fqn == ns_ids_t('MilliSeconds')
         assert isinstance(sut.value, ast.Data)
         assert sut.value.value == 'size_t'
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.externs) == 1
+        assert dzn.file_contents.externs[0] == sut
 
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=EXTERN)
@@ -316,12 +328,15 @@ class FilenameTest(DznTestCase):
     def test_wrong_class():
         assert_wrong_class(BOGUS_CLASS, 'parse_filename', 'file-name')
 
-    @staticmethod
-    def test_ok():
+    def test_ok(self):
         dzn = DznJsonAst(json_contents=FILENAME)
         sut = json_ast.parse_filename(dzn.ast)
         assert isinstance(sut, ast.Filename)
         assert sut.name == './Toaster.dzn'
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.filenames) == 1
+        assert dzn.file_contents.filenames[0] == sut
 
 
 class ForeignTest(DznTestCase):
@@ -338,6 +353,10 @@ class ForeignTest(DznTestCase):
         assert sut.name.value == ns_ids_t('Timer')
         assert isinstance(sut.ports, ast.Ports)
         assert len(sut.ports.elements) == 2
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.foreigns) == 1
+        assert dzn.file_contents.foreigns[0] == sut
 
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=FOREIGN)
@@ -410,12 +429,15 @@ class ImportTest(DznTestCase):
     def test_wrong_class():
         assert_wrong_class(BOGUS_CLASS, 'parse_import', 'import')
 
-    @staticmethod
-    def test_ok():
+    def test_ok(self):
         dzn = DznJsonAst(json_contents=IMPORT)
         sut = json_ast.parse_import(dzn.ast)
         assert isinstance(sut, ast.Import)
         assert sut.name == 'ITimer.dzn'
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.imports) == 1
+        assert dzn.file_contents.imports[0] == sut
 
 
 class InjectedIndicationTest(DznTestCase):
@@ -511,6 +533,10 @@ class InterfaceTest(DznTestCase):
         assert len(sut.types.elements) == 0
         assert isinstance(sut.events, ast.Events)
         assert len(sut.events.elements) == 0
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.interfaces) == 1
+        assert dzn.file_contents.interfaces[0] == sut
 
     def test_two_elements(self):
         dzn = DznJsonAst(json_contents=INTERFACE_TWO_ITEMS)
@@ -549,6 +575,13 @@ class InterfaceTest(DznTestCase):
         subints_list = sut.types.subints
         assert len(subints_list) == 1
         assert subints_list[0].fqn == ns_ids_t('My.Project.IHeaterElement.SmallInt')
+
+    def test_get_subints_from_types_until_2_16_5_ok(self):
+        dzn = DznJsonAst(json_contents=INTERFACE_TWO_ITEMS_INT)
+        sut = json_ast.parse_interface(dzn.ast, self._nested_ns)
+        subints_list = sut.types.subints
+        assert len(subints_list) == 1
+        assert subints_list[0].fqn == ns_ids_t('My.Project.IHeaterElement.MediumInt')
 
 
 class NamespaceTest(DznTestCase):
@@ -763,6 +796,10 @@ class SubIntTest(DznTestCase):
         assert sut.name.value == ns_ids_t('SmallInt')
         assert sut.range.from_int == 2
         assert sut.range.to_int == 5
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.subints) == 1
+        assert dzn.file_contents.subints[0] == sut
 
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=SUBINT)
@@ -770,6 +807,20 @@ class SubIntTest(DznTestCase):
         assert sut.fqn == ns_ids_t('My.Project.SmallInt')
         assert str(sut.name) == 'SmallInt'
         assert sut.name.value == ns_ids_t('SmallInt')
+
+    def test_until_2_16_5_ok(self):
+        dzn = DznJsonAst(json_contents=INT)
+        sut = json_ast.parse_subint(dzn.ast, self._root_ns)
+        assert isinstance(sut, ast.SubInt)
+        assert sut.fqn == ns_ids_t('MediumInt')
+        assert str(sut.name) == 'MediumInt'
+        assert sut.name.value == ns_ids_t('MediumInt')
+        assert sut.range.from_int == 2
+        assert sut.range.to_int == 5
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.subints) == 1
+        assert dzn.file_contents.subints[0] == sut
 
 
 class SystemTest(DznTestCase):
@@ -786,6 +837,10 @@ class SystemTest(DznTestCase):
         assert len(sut.ports.elements) == 2
         assert len(sut.instances.elements) == 2
         assert len(sut.bindings.elements) == 1
+        # besides the specific handler, ensure the overall parser recognises it:
+        dzn._parse_node(dzn.ast, self._root_ns)
+        assert len(dzn.file_contents.systems) == 1
+        assert dzn.file_contents.systems[0] == sut
 
     def test_nested_fqn(self):
         dzn = DznJsonAst(json_contents=SYSTEM)
@@ -801,7 +856,7 @@ class TypesTest(DznTestCase):
         assert_wrong_class(BOGUS_CLASS, 'parse_types', 'types', self._root_ns)
 
     def test_ok(self):
-        dzn = DznJsonAst(json_contents=TYPES_TWO_ITEMS)
+        dzn = DznJsonAst(json_contents=TYPES_TWO_ITEMS_ENUM_SUBINT)
         sut = json_ast.parse_types(dzn.ast, self._root_ns)
         assert isinstance(sut, ast.Types)
         assert len(sut.elements) == 2
@@ -815,7 +870,7 @@ class TypesTest(DznTestCase):
         assert sut.elements[1].range.to_int == 5
 
     def test_nested_fqn(self):
-        dzn = DznJsonAst(json_contents=TYPES_TWO_ITEMS)
+        dzn = DznJsonAst(json_contents=TYPES_TWO_ITEMS_ENUM_SUBINT)
         sut = json_ast.parse_types(dzn.ast, self._nested_ns)
         assert isinstance(sut, ast.Types)
         assert sut.elements[0].fqn == ns_ids_t('My.Project.Result')
