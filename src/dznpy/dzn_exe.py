@@ -18,7 +18,9 @@ from typing import List
 
 @total_ordering
 class DznVersion:
-    """Class that parses the output of dzn.cmd --version and contains the version of Dezyne."""
+    """Class that parses the output of dzn.cmd --version and contains the version of Dezyne.
+    It offers dunder methods to compare two instances of DznVersion in terms of major, minor and
+    revision numbers."""
     __slots__ = ['_major', '_minor', '_revision', '_dev_tag']
 
     def __init__(self, dzn_version_output: str):
@@ -86,8 +88,8 @@ class DznFileModelsList:
         return bool(self.components or self.interfaces)
 
     def is_generatable(self) -> bool:
-        """Indicate whether the file can be generated depending on the types of models inside."""
-        return bool(self.components or self.interfaces or self.foreigns or self.systems)
+        """Indicate that Dezyne can always be asked to generate code for every Dzn file."""
+        return True
 
     def is_wfc_only(self) -> bool:
         """Indicate whether only a well-formedness check can be performed."""

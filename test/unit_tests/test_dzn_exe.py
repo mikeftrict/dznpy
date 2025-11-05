@@ -81,7 +81,7 @@ def test_file_models_list():
     """Test various compositions of the DznFileModelsList data class and its functions."""
     sut1 = DznFileModelsList()
     assert sut1.is_verifiable() == False
-    assert sut1.is_generatable() == False
+    assert sut1.is_generatable() == True
     assert sut1.is_wfc_only() == False
 
     sut2 = DznFileModelsList(interfaces=['IBar'])
