@@ -7,9 +7,11 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import os
+import subprocess
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Optional
 
 
 def assert_t(value: Any, expected_type: Any):
@@ -172,3 +174,34 @@ def trim_list(list_to_trim: list, end_only: bool = False) -> list:
         lst = lst[:-1]
 
     return lst
+
+
+@dataclass
+class ProcessResult:
+    """Data class storing the result of subprocess.run"""
+    cmdline: str  # the executed commandline arguments (space delimited string)
+    exit_code: int
+    stdout: str
+    stderr: str
+    message: Optional[str] = field(default=None)  # optional additional (failure) message
+
+    def succeeded(self) -> bool:
+        """Returns a boolean to indicate whether the requested task resulted with success."""
+        return self.exit_code == 0
+
+
+def run_subprocess(args: List[str]) -> ProcessResult:
+    """Run the arguments as executable process and return a result."""
+    try:
+        result = subprocess.run(args, capture_output=True, text=True, check=False)
+        return ProcessResult(cmdline=' '.join(args),
+                             exit_code=result.returncode,
+                             stdout=result.stdout,
+                             stderr=result.stderr,
+                             message=None)
+    except Exception as exc:
+        return ProcessResult(cmdline=' '.join(args),
+                             exit_code=2,
+                             stdout='',
+                             stderr=f'{exc}',
+                             message='Exception raised')
