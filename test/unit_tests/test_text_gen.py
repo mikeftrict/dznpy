@@ -386,6 +386,60 @@ def test_textblock_chunk_spacing_iadd():
     assert str(tb) == 'Line 1\nLine 2\n\nLine 3\n'
 
 
+def test_indentizer_fail():
+    """Test the scenario when an invalid indentor is specified on construction of Indentizer."""
+    with pytest.raises(TypeError) as exc:
+        Indentizer(indentor=123)
+    assert 'Invalid indentor specified: 123' in str(exc.value)
+
+
+def test_all_dashes_t_default1():
+    """Test the default behaviour of calling the sut without parameters."""
+    sut = all_dashes_t()
+    assert sut.indentor == Indentor.SPACES
+    assert sut.spaces_count == 2
+    assert sut.bullet_list == BulletList()
+
+
+def test_all_dashes_t_default2():
+    """Test the default behaviour of calling the sut without parameters."""
+    sut = all_dashes_t(indentor=None)
+    assert sut.indentor == Indentor.SPACES
+    assert sut.spaces_count == 2
+    assert sut.bullet_list == BulletList()
+
+
+def test_initial_dash_t_default1():
+    """Test the default behaviour of calling the sut without parameters."""
+    sut = initial_dash_t()
+    assert sut.indentor == Indentor.SPACES
+    assert sut.spaces_count == 2
+    assert sut.bullet_list == BulletList(mode=BulletListMode.FIRST_ONLY)
+
+
+def test_initial_dash_t_default2():
+    """Test the default behaviour of calling the sut without parameters."""
+    sut = initial_dash_t(indentor=None)
+    assert sut.indentor == Indentor.SPACES
+    assert sut.spaces_count == 2
+    assert sut.bullet_list == BulletList(mode=BulletListMode.FIRST_ONLY)
+
+
+def test_indent():
+    """Test the indentation function"""
+    assert indent(None) == ''
+
+    assert indent('text') == '    text'
+    assert indent('textA\ntextB') == '    textA\n    textB'
+
+    assert indent('text', 5) == '     text'
+    assert indent('textA\ntextB', 5) == '     textA\n     textB'
+
+    with RaiiOverrideDefaultIndentNrSpacesConstant(2):
+        assert indent('text') == '  text'
+        assert indent('textA\ntextB') == '  textA\n  textB'
+
+
 def test_generated_content():
     """Test creation with the minimum amount of arguments. Expect a hash calculated on
     the contents."""

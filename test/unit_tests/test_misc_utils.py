@@ -4,6 +4,8 @@ Testsuite validating the misc_utils module
 Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
+import re
+from unittest.mock import Mock, patch
 
 # system modules
 import pytest
@@ -237,6 +239,27 @@ def test_raii_cd():
         assert cwd_after == orig, f'Expected directory to be restored to {orig}, got {cwd_after}'
 
 
+def test_log_to_stdout_calls_write_and_flush():
+    """Test the function that logs to stdout."""
+    mock_stdout = Mock()
+    with patch("sys.stdout", mock_stdout):
+        log_to_stdout("Hello")
+
+    mock_stdout.write.assert_called_once_with("Hello\n")
+    mock_stdout.flush.assert_called_once()
+
+
+def test_stopwatch_pytest():
+    """Test the stopwatch facility including correct logging"""
+    mock_logger = Mock()
+    with stopwatch('PREFIX', 'mylabel', logger=mock_logger):
+        time.sleep(0.01)
+
+    mock_logger.assert_called_once()
+    msg = mock_logger.call_args[0][0]
+    assert re.search(r"^PREFIX: mylabel \(\d+\.\d{3}s\)$", msg)
+
+
 def test_trim_list():
     """Test trimming a list from true-ish empty items at the start and end of the list.
     Boolean false, zero integer, zero float and zero complex values are excluded from trimming."""
@@ -252,3 +275,43 @@ def test_trim_list():
     assert trim_list([0]) == [0]
     assert trim_list([0.0]) == [0.0]
     assert trim_list([complex(0j)]) == [complex(0j)]
+
+
+def test_run_subprocess_ok():
+    """Test the good weather scenario calling the SUT."""
+    mock_result = Mock(returncode=0, stdout='hello\n', stderr='')
+    with patch("subprocess.run", return_value=mock_result) as mock_run:
+        result = run_subprocess(['foo', 'bar'])
+
+    mock_run.assert_called_once_with(['foo', 'bar'], capture_output=True, text=True, check=False)
+    assert result.exit_code == 0
+    assert result.stdout == 'hello\n'
+    assert result.stderr == ''
+    assert result.message is None
+    assert result.cmdline == 'foo bar'
+
+
+def test_run_subprocess_fail1():
+    """Test the bad weather scenario calling the SUT."""
+    mock_result = Mock(returncode=1, stdout='', stderr='some error')
+    with patch("subprocess.run", return_value=mock_result) as mock_run:
+        result = run_subprocess(['foo', 'bar'])
+
+    mock_run.assert_called_once_with(['foo', 'bar'], capture_output=True, text=True, check=False)
+    assert result.exit_code == 1
+    assert result.stdout == ''
+    assert result.stderr == 'some error'
+    assert result.message is None
+    assert result.cmdline == 'foo bar'
+
+
+def test_run_subprocess_fail2():
+    """Test the scenario where the sut throws an exception."""
+    with patch('subprocess.run', side_effect=OSError('boom')):
+        result = run_subprocess(['echo', 'hello'])
+
+    assert result.exit_code == 2
+    assert result.stdout == ''
+    assert result.stderr == 'OSError: boom'
+    assert result.message == 'Exception raised'
+    assert result.cmdline == 'echo hello'
