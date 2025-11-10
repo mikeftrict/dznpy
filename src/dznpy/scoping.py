@@ -103,9 +103,7 @@ class NamespaceTree:
         """Get the fully qualified namespace identifiers of the user specified NamespaceIds
         instance projected onto this node of NamespaceTree instance."""
         assert_t(member_name, NamespaceIds)
-        if self.fqn:
-            return self.fqn + member_name
-        return member_name
+        return self.fqn + member_name
 
 
 ###############################################################################

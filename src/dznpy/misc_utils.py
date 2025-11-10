@@ -7,9 +7,13 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import os
+import subprocess
+import sys
+import time
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Optional, Callable
 
 
 def assert_t(value: Any, expected_type: Any):
@@ -149,6 +153,23 @@ def raii_cd(path: Path):
         os.chdir(orig_directory)  # restore
 
 
+def log_to_stdout(message: str = ''):
+    """Log a message to stdout (and flush)."""
+    sys.stdout.write(f"{message}\n")
+    sys.stdout.flush()
+
+
+@contextmanager
+def stopwatch(prefix: str, label: str, logger: Callable[[str], None] = log_to_stdout):
+    """Measure the elapsed time of the inner context (during yield)."""
+    start = time.perf_counter()
+    try:
+        yield
+    finally:
+        elapsed = time.perf_counter() - start
+        logger(f"{prefix}: {label} ({elapsed:.3f}s)")
+
+
 def trim_list(list_to_trim: list, end_only: bool = False) -> list:
     """Return a trimmed list at the start and end from 'Python empty' items except that
     boolean false, zero integer, zero float and zero complex values are excluded from trimming.
@@ -172,3 +193,34 @@ def trim_list(list_to_trim: list, end_only: bool = False) -> list:
         lst = lst[:-1]
 
     return lst
+
+
+@dataclass
+class ProcessResult:
+    """Data class storing the result of subprocess.run"""
+    cmdline: str  # the executed commandline arguments (space delimited string)
+    exit_code: int
+    stdout: str
+    stderr: str
+    message: Optional[str] = field(default=None)  # optional additional (failure) message
+
+    def succeeded(self) -> bool:
+        """Returns a boolean to indicate whether the requested task resulted with success."""
+        return self.exit_code == 0
+
+
+def run_subprocess(args: List[str]) -> ProcessResult:
+    """Run the arguments as executable process and return a result."""
+    try:
+        result = subprocess.run(args, capture_output=True, text=True, check=False)
+        return ProcessResult(cmdline=' '.join(args),
+                             exit_code=result.returncode,
+                             stdout=result.stdout,
+                             stderr=result.stderr,
+                             message=None)
+    except Exception as exc:
+        return ProcessResult(cmdline=' '.join(args),
+                             exit_code=2,
+                             stdout='',
+                             stderr=f'{type(exc).__name__}: {exc}',
+                             message='Exception raised')

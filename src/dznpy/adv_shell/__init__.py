@@ -212,22 +212,22 @@ class Builder:
 
         public_section = cpp_gen.AccessSpecifiedSection(
             access_specifier=AccessSpecifier.ANONYMOUS,
-            contents=TB(chunk_spacing=EOL) + \
+            contents=TB(chunk_spacing=EOL) +
                      TB([cpp.constructor.as_decl(),
-                         cpp.final_construct_fn.as_decl()]) + \
-                     cpp.facilities.accessors_decl + \
-                     cpp.provides_ports.accessors_decl + \
-                     cpp.provides_port_helpers.public_decl + \
+                         cpp.final_construct_fn.as_decl()]) +
+                     cpp.facilities.accessors_decl +
+                     cpp.provides_ports.accessors_decl +
+                     cpp.provides_port_helpers.public_decl +
                      cpp.requires_ports.accessors_decl)
 
         private_section = cpp_gen.AccessSpecifiedSection(
             access_specifier=AccessSpecifier.PRIVATE,
-            contents=TB(chunk_spacing=EOL) + \
+            contents=TB(chunk_spacing=EOL) +
                      TB([cpp.facilities.member_variables,
-                         cpp.facilities_check_fn.as_decl()]) + \
-                     cpp.encapsulee + \
-                     cpp.provides_ports.rerouting_class_members + \
-                     cpp.provides_port_helpers.private_decl + \
+                         cpp.facilities_check_fn.as_decl()]) +
+                     cpp.encapsulee +
+                     cpp.provides_ports.rerouting_class_members +
+                     cpp.provides_port_helpers.private_decl +
                      cpp.requires_ports.rerouting_class_members)
 
         # fill the struct declaration with the public and private sections
