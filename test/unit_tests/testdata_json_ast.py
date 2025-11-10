@@ -178,6 +178,11 @@ TYPES_TWO_ITEMS_ENUM_SUBINT = '''{"<class>": "types", "elements": [''' f'{ENUM},
 
 TYPES_TWO_ITEMS_ENUM_INT = '''{"<class>": "types", "elements": [''' f'{ENUM}, {INT}' ''']}'''
 
+UNKNOWN_TYPE = '''{"<class>": "unknown",
+          "name": {"<class>": "scope_name", "ids": ["MyUnknown"]} }'''
+
+TYPES_ONE_ITEM_UNKNOWN_TYPE = '''{"<class>": "types", "elements": [''' f'{UNKNOWN_TYPE}' ''']}'''
+
 INTERFACE_EMPTY = '''{"<class>": "interface",
                       "name": {"<class>": "scope_name", "ids": ["IToaster"]},
                       "types":''' f'{TYPES_EMPTY}' ''',

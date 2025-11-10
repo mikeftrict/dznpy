@@ -75,7 +75,7 @@ class Indentizer:
 
             if self.indentor is Indentor.SPACES:
                 glyph = f'{self.bullet_list.glyph} '  # the glyph with minimally 1 space postfixed
-                self._bulletized_indent = f'{glyph : <{self.spaces_count}}'
+                self._bulletized_indent = f'{glyph: <{self.spaces_count}}'
                 self._whitespace = ' ' * len(self._bulletized_indent)  # expand if needed
 
             if self.indentor is Indentor.TAB:

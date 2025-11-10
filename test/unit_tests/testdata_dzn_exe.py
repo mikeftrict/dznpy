@@ -23,8 +23,17 @@ My.Project.ToasterSystem system
 Facilities.Timer foreign
 """
 
+DZN_PARSE_PREPROCESS_OUTPUT = """
+#dir "C:/SB/dznpy/test/dezyne_models/system1"
+#file "Hardware\\Interfaces\\IHeaterElement.dzn"
+// Three times an IHeaterElement interface.
+"""
+
 DZN_FILE_MODELS_LIST_STR = """Components: My.Project.Toaster, SecondToaster
 Interfaces: My.IExclusiveToaster
 Foreigns: Facilities.Timer
 Systems: My.Project.ToasterSystem
+"""
+
+DZN_JSON_OUTPUT = """
 """
