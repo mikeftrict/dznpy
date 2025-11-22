@@ -4,6 +4,7 @@ Testsuite validating the json_ast module
 Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
+from unittest.mock import patch
 
 # system modules
 import pytest
@@ -36,6 +37,110 @@ class DznTestCase(TestCase):
         self._root_ns = NamespaceTree()
         self._nested_ns = NamespaceTree(parent=NamespaceTree(parent=NamespaceTree(), scope_name=ns_ids_t('My')),
                                         scope_name=ns_ids_t('Project'))
+
+
+class NodeHelperFailureTest(TestCase):
+    _sut: json_ast.NodeHelper
+
+    def setUp(self):
+        self._sut = json_ast.NodeHelper({'str_value': 123, 'dict_value': 123, 'int_value': 'bogus', 'list_value': 123}, 'mycontext')
+
+    @staticmethod
+    def test_creation():
+        """Test creation fails when the provided node is not of type dictionary."""
+        with pytest.raises(DznJsonError) as exc:
+            json_ast.NodeHelper(123, 'mycontext')
+        assert str(exc.value) == 'mycontext: node is not of type "dict"'
+
+    def test_tryget_str_value_fail(self):
+        """Test the value of a key is not matching the type str."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.tryget_str_value('str_value')
+        assert str(exc.value) == 'mycontext: value of key "str_value" is not of type "str"'
+
+    def test_get_str_value_fail(self):
+        """Test that a key is missing."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.get_str_value('no_key')
+        assert str(exc.value) == 'mycontext: missing key "no_key"'
+
+    def test_tryget_dict_value_fail(self):
+        """Test the value of a key is not matching the type str."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.tryget_dict_value('dict_value')
+        assert str(exc.value) == 'mycontext: value of key "dict_value" is not of type "dict"'
+
+    def test_get_dict_value_fail(self):
+        """Test that a key is missing."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.get_dict_value('no_key')
+        assert str(exc.value) == 'mycontext: missing key "no_key"'
+
+    def test_get_int_value_fail1(self):
+        """Test that a key is missing."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.get_int_value('no_key')
+        assert str(exc.value) == 'mycontext: missing key "no_key"'
+
+    def test_get_int_value_fail2(self):
+        """Test the value of a key is not matching the type int."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.get_int_value('int_value')
+        assert str(exc.value) == 'mycontext: key "int_value" is not of type "int"'
+
+    def test_assert_class_fail1(self):
+        """Test that a key is missing."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.assert_class('no_key')
+        assert str(exc.value) == 'mycontext: missing key "<class>"'
+
+    @staticmethod
+    def test_assert_class_fail2():
+        """Test that a value can not be matched."""
+        sut = json_ast.NodeHelper({'<class>': 'placeholder'}, 'mycontext')
+        with pytest.raises(DznJsonError) as exc:
+            sut.assert_class('no_key')
+        assert str(exc.value) == 'mycontext: expecting <class> having value "no_key"'
+
+    def test_assert_class_aliased_fail1(self):
+        """Test that a key is missing."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.assert_class_aliased(['no_key', 'another_missing_key'])
+        assert str(exc.value) == 'mycontext: missing key "<class>"'
+
+    @staticmethod
+    def test_assert_class_aliased_fail2():
+        """Test that a value can not be matched."""
+        sut = json_ast.NodeHelper({'<class>': 'placeholder'}, 'mycontext')
+        with pytest.raises(DznJsonError) as exc:
+            sut.assert_class_aliased(['no_key', 'another_missing_key'])
+        assert str(exc.value) == "mycontext: expecting <class> having one of the values ['no_key', 'another_missing_key']"
+
+    def test_get_list_value_fail1(self):
+        """Test that a key is missing."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.get_list_value('no_key')
+        assert str(exc.value) == 'mycontext: missing key "no_key"'
+
+    def test_get_list_value_fail2(self):
+        """Test the value of a key is not matching the type list."""
+        with pytest.raises(DznJsonError) as exc:
+            self._sut.get_list_value('list_value')
+        assert str(exc.value) == 'mycontext: key "list_value" is not of type "list"'
+
+
+def test_get_class_value_fail1():
+    """Test that a specified parameter of the wrong type raises an exception."""
+    with pytest.raises(DznJsonError) as exc:
+        json_ast.get_class_value(123)
+    assert str(exc.value) == 'expecting parameter "node" to be dictionary'
+
+
+def test_get_class_value_fail2():
+    """Test that a specified dictionary without containing a <class> key raises an exception."""
+    with pytest.raises(DznJsonError) as exc:
+        json_ast.get_class_value({'mykey': 'myvalue'})
+    assert str(exc.value) == 'Missing <class> key in dictionary'
 
 
 class BindingTest(DznTestCase):
@@ -877,6 +982,45 @@ class TypesTest(DznTestCase):
         assert sut.elements[0].fields.elements == ['Ok', 'Fail', 'Error']
         assert sut.elements[1].fqn == ns_ids_t('My.Project.SmallInt')
 
+    def test_empty_collection_of_types(self):
+        dzn = DznJsonAst(json_contents=TYPES_EMPTY)
+        sut = json_ast.parse_types(dzn.ast, self._nested_ns)
+        assert isinstance(sut, ast.Types)
+        assert len(sut.elements) == 0
+
+    def test_unknown_type(self):
+        dzn = DznJsonAst(json_contents=TYPES_ONE_ITEM_UNKNOWN_TYPE)
+        sut = json_ast.parse_types(dzn.ast, self._nested_ns)
+        assert isinstance(sut, ast.Types)
+        assert len(sut.elements) == 0
+
+
+class DznJsonAstClassTest(TestCase):
+
+    @staticmethod
+    def test_log():
+        """Test that the verbose option enables logging with print()."""
+        with patch("builtins.print") as mock_print:
+            sut = DznJsonAst(None, verbose=True)
+            sut.log("DznJsonAst: log message")
+        mock_print.assert_called_once_with('DznJsonAst: log message')
+
+    @staticmethod
+    def test_parse_node_skipping1():
+        """Test that parsing a node, and the specified node is not a dictionary it is skipped and a warning given when verbose option is on."""
+        with patch("builtins.print") as mock_print:
+            sut = DznJsonAst(None, verbose=True)
+            sut._parse_node(123, NamespaceTree())
+        mock_print.assert_called_once_with('WARNING: skipping non-dict node')
+
+    @staticmethod
+    def test_parse_node_skipping2():
+        """Test that parsing a node, and the specified node indicates an unsupported class it is skipped and a log message is given when verbose option is on."""
+        with patch("builtins.print") as mock_print:
+            sut = DznJsonAst(None, verbose=True)
+            sut._parse_node({'<class>': 'unknown'}, NamespaceTree())
+        mock_print.assert_called_once_with('Skipping parsing class value: unknown')
+
 
 class LoadFileTest(DznTestCase):
 
@@ -900,7 +1044,7 @@ class LoadFileTest(DznTestCase):
         sut = DznJsonAst(verbose=True).load_file(SOME_JSON_FILE)
         with pytest.raises(DznJsonError) as exc:
             sut.process()
-        assert str(exc.value) == 'parse_root: missing "<class>" key'
+        assert str(exc.value) == 'parse_root: missing key "<class>"'
 
     @staticmethod
     def test_process_entire_dezyne_file():
@@ -952,7 +1096,6 @@ class LoadFileTest(DznTestCase):
 
 
 # testing/assertion helpers
-
 
 def assert_items_name_on_fqn(collection: list, expected_fqns: List[str]):
     """Assert all expected fqns match the items in collection on their 'fqn' attribute."""
