@@ -4,6 +4,9 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0048](https://github.com/mikeftrict/dznpy/issues/60): Introduce a full dzn exec module that provides types and
+  functions to execute dzn.cmd commands commonly used by users. For instance: list models, preprocess, code, verify,
+  parse. Also the code coverage of other modules has been increased.
 - [DZNPY-0047](https://github.com/mikeftrict/dznpy/issues/62): Fix bug that indicate types-only Dezyne file would be not
   generatable. This was incorrect.
 - [DZNPY-0046](https://github.com/mikeftrict/dznpy/issues/58): Fix support of pre-2.17.0 int AST type.

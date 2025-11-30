@@ -37,7 +37,7 @@ class NodeHelper:
             return None
 
         if not isinstance(self._node[key_name], str):
-            raise DznJsonError(f'{self._ctx}: key "{key_name}" is not of type "str"')
+            raise DznJsonError(f'{self._ctx}: value of key "{key_name}" is not of type "str"')
 
         return self._node[key_name]
 
@@ -55,7 +55,7 @@ class NodeHelper:
             return None
 
         if not isinstance(self._node[key_name], dict):
-            raise DznJsonError(f'{self._ctx}: key "{key_name}" is not of type "dict"')
+            raise DznJsonError(f'{self._ctx}: value of key "{key_name}" is not of type "dict"')
 
         return self._node[key_name]
 
@@ -81,7 +81,7 @@ class NodeHelper:
         """Assert a <class> key is present in the node with the specified value. Raise
         an exception on failure."""
         if '<class>' not in self._node:
-            raise DznJsonError(f'{self._ctx}: missing "<class>" key')
+            raise DznJsonError(f'{self._ctx}: missing key "<class>"')
 
         if self._node['<class>'] != value:
             raise DznJsonError(f'{self._ctx}: expecting <class> having value "{value}"')
@@ -90,7 +90,7 @@ class NodeHelper:
         """Assert a <class> key is present in the node with the specified value. Raise
         an exception on failure."""
         if '<class>' not in self._node:
-            raise DznJsonError(f'{self._ctx}: missing "<class>" key')
+            raise DznJsonError(f'{self._ctx}: missing key "<class>"')
 
         if not self._node['<class>'] in values:
             raise DznJsonError(f'{self._ctx}: expecting <class> having one of the values {values}')
@@ -98,7 +98,7 @@ class NodeHelper:
     def get_list_value(self, key_name: str) -> list:
         """Get the list-typed value of the 'elements' key_name. Allowed to be empty."""
         if key_name not in self._node:
-            raise DznJsonError(f'{self._ctx}: missing "{key_name}" key')
+            raise DznJsonError(f'{self._ctx}: missing key "{key_name}"')
 
         if not isinstance(self._node[key_name], list):
             raise DznJsonError(f'{self._ctx}: key "{key_name}" is not of type "list"')
@@ -109,9 +109,9 @@ class NodeHelper:
 def get_class_value(node: dict) -> str:
     """Get the value of the <class> key in the specified node."""
     if not isinstance(node, dict):
-        raise DznJsonError('expecting node to be dictionary')
+        raise DznJsonError('expecting parameter "node" to be dictionary')
     if '<class>' not in node:
-        raise DznJsonError('Missing <class>')
+        raise DznJsonError('Missing <class> key in dictionary')
     return node['<class>']
 
 

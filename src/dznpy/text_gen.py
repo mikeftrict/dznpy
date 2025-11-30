@@ -26,12 +26,23 @@ DEFAULT_INDENT_NR_SPACES = 4
 DO_NOT_MODIFY = 'This is generated content. DO NOT MODIFY manually.'
 
 
-def fetch_default_indent_nr_spaces():
+def fetch_default_indent_nr_spaces() -> int:
     """Helper to fetch the actual value of the module constant, as per feature, it is a valid
     use case to override the constant. Implementation classes need to call this function instead
     of referring the constant itself to prevent having a cached value from the early beginning.
     """
     return DEFAULT_INDENT_NR_SPACES
+
+
+def indent(message: str, num_spaces: Optional[int] = None) -> str:
+    """Indent the specified (multi-line) message with spaces."""
+    if not message:
+        return ''
+
+    if not num_spaces:
+        num_spaces = fetch_default_indent_nr_spaces()
+    ind = ' ' * num_spaces
+    return '\n'.join(ind + line if line.strip() else '' for line in message.splitlines())
 
 
 class Indentor(enum.Enum):
@@ -75,7 +86,7 @@ class Indentizer:
 
             if self.indentor is Indentor.SPACES:
                 glyph = f'{self.bullet_list.glyph} '  # the glyph with minimally 1 space postfixed
-                self._bulletized_indent = f'{glyph : <{self.spaces_count}}'
+                self._bulletized_indent = f'{glyph: <{self.spaces_count}}'
                 self._whitespace = ' ' * len(self._bulletized_indent)  # expand if needed
 
             if self.indentor is Indentor.TAB:
@@ -109,11 +120,6 @@ class Indentizer:
 
         # Or inevitably: just indent with the configured indentation characters
         return [only_indent(x) for x in flattened_list]
-
-    def to_str(self, contents: Any) -> str:
-        """Process the specified contents with indentation per dataclass configuration and
-        return the result as an end-of-line delimited string."""
-        return EOL.join(self.to_str(contents)) + EOL
 
 
 class TextBlock:
