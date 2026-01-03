@@ -49,6 +49,12 @@ SYSTEM_INCLUDES = '''\
 #include <dzn/pump.hh>
 '''
 
+SYSTEM_INCLUDES_WITH_FLAT_MULTILINE_SIDE_COMMENT = '''\
+// System includes
+#include <string>
+#include <dzn/pump.hh> // a multiline  comment with space
+'''
+
 PROJECT_INCLUDE = '''\
 // Project include
 #include "IToaster.h"
@@ -57,6 +63,18 @@ PROJECT_INCLUDE = '''\
 PROJECT_INCLUDES = '''\
 // Project includes
 #include "IHeater.h"
+#include "ProjectB/Lunchbox.h"
+'''
+
+PROJECT_INCLUDES_WITH_SIDE_COMMENT = '''\
+// Project includes
+#include "IHeater.h" // a side comment
+#include "ProjectB/Lunchbox.h"
+'''
+
+PROJECT_INCLUDES_WITH_FLAT_MULTILINE_SIDE_COMMENT = '''\
+// Project includes
+#include "IHeater.h" // a multiline comment
 #include "ProjectB/Lunchbox.h"
 '''
 

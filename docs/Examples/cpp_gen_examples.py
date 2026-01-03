@@ -44,6 +44,12 @@ def example_includes():
     # Multiple system includes, the associated comment will be pronounced in plural form
     print(SystemIncludes(includes=['string', 'memory']))
 
+    # Multiple system includes with a side comment on the right side of the <string> include
+    print(SystemIncludes(['string', Comment('My side comment'), 'memory']))
+
+    # Example of a multi line comment that will be flattened to a single 'side' comment
+    print(SystemIncludes(['string', Comment(['My', 'multi line', 'comment']), 'memory']))
+
     # A default empty list of project includes, resulting in just a comment
     print(ProjectIncludes(includes=[]))
 
@@ -52,6 +58,9 @@ def example_includes():
 
     # Multiple project includes, the associated comment will be pronounced in plural form
     print(ProjectIncludes(includes=['MyProject.h', 'SomeOtherFile.hh']))
+
+    # Multiple project includes with a side comment
+    print(SystemIncludes(['MyProject.h', 'SomeOtherFile.hh', Comment('My side comment')]))
 
 
 def example_fqn():
@@ -396,12 +405,10 @@ def example_function():
     print(func.as_def())
 
 
-def main():
-    """Convergence point of executing all example code for the cpp_gen module."""
-
+if __name__ == "__main__":
+    example_comment()
     example_includes()
     example_fqn()
-    example_comment()
     example_namespace()
     example_simple_struct_class_access_specification()
     example_type_description()
@@ -409,7 +416,3 @@ def main():
     example_member_variable()
     example_constructor_destructor()
     example_function()
-
-
-if __name__ == "__main__":
-    main()

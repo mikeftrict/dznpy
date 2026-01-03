@@ -7,7 +7,6 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import pytest
-from typing import Any
 
 # system-under-test
 from dznpy.cpp_gen import *
@@ -42,7 +41,7 @@ def test_comment_block():
                         None,
                         'I have spoken.'])) == COMMENT_BLOCK_WITH_PRECEEDING_NR
 
-    # already commented lines are left in tact. Which means they are 'indented again'; but trailing whitespace is stripped anyhow
+    # already commented lines are left intact. Which means they are 'indented again'; but trailing whitespace is stripped anyhow
     assert str(Comment(['// As the mandalorian says:',
                         '// this is the way.  ',
                         '// ',
@@ -50,21 +49,41 @@ def test_comment_block():
 
 
 def test_project_includes():
+    assert str(ProjectIncludes([])) == ""
     assert str(ProjectIncludes(['IToaster.h'])) == PROJECT_INCLUDE
     assert str(ProjectIncludes(['IHeater.h', 'ProjectB/Lunchbox.h'])) == PROJECT_INCLUDES
+    assert str(ProjectIncludes(['IHeater.h', Comment('a side comment'), 'ProjectB/Lunchbox.h'])) == PROJECT_INCLUDES_WITH_SIDE_COMMENT
+    assert str(ProjectIncludes(['IHeater.h', Comment(['a multiline', 'comment']), 'ProjectB/Lunchbox.h'])) == PROJECT_INCLUDES_WITH_FLAT_MULTILINE_SIDE_COMMENT
 
     with pytest.raises(TypeError) as exc:
         ProjectIncludes(123)
-    assert str(exc.value) == 'property "includes" must be a list of strings'
+    assert str(exc.value) == 'property "includes" must be a list'
+
+    with pytest.raises(TypeError) as exc:
+        ProjectIncludes([123])
+    assert str(exc.value) == 'property "includes" can only contain strings or Comment instances'
+
+    with pytest.raises(TypeError) as exc:
+        ProjectIncludes([Comment('lonely comment')])
+    assert str(exc.value) == 'Comment must follow an include string'
 
 
 def test_system_includes():
     assert str(SystemIncludes(['string'])) == SYSTEM_INCLUDE
     assert str(SystemIncludes(['string', 'dzn/pump.hh'])) == SYSTEM_INCLUDES
+    assert str(SystemIncludes(['string', 'dzn/pump.hh', Comment(['a multiline ', 'comment with space'])])) == SYSTEM_INCLUDES_WITH_FLAT_MULTILINE_SIDE_COMMENT
 
     with pytest.raises(TypeError) as exc:
         SystemIncludes(123)
-    assert str(exc.value) == 'property "includes" must be a list of strings'
+    assert str(exc.value) == 'property "includes" must be a list'
+
+    with pytest.raises(TypeError) as exc:
+        SystemIncludes([123])
+    assert str(exc.value) == 'property "includes" can only contain strings or Comment instances'
+
+    with pytest.raises(TypeError) as exc:
+        SystemIncludes([Comment('soem comment')])
+    assert str(exc.value) == 'Comment must follow an include string'
 
 
 def test_global_namespace():

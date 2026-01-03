@@ -41,6 +41,12 @@ class AccessSpecifier(enum.Enum):
         return '' if specifier.value is None else specifier.value.rstrip(':')
 
 
+class IncludeType(enum.Enum):
+    """Enum to indicate a type of include."""
+    SYSTEM = 'system'
+    PROJECT = 'project'
+
+
 class StructOrClass(enum.Enum):
     """Enum to indicate a struct or class."""
     STRUCT = 'struct'
@@ -278,54 +284,6 @@ class MemberVariable(Param):
         raise CppGenError('MemberVariable only supports calling as_decl()')
 
 
-@dataclass(frozen=True)
-class ProjectIncludes:
-    """Dataclass representing a C++ 'system' include statements. Example:
-
-        // Project include
-        #include "IToaster.h"
-
-        // Project includes
-        #include "IHeater.h"
-        #include "ProjectB/Lunchbox.h"
-    """
-    includes: List[str]
-
-    def __post_init__(self):
-        """Post check the constructed data class members on validity."""
-        if not is_strlist_instance(self.includes):
-            raise TypeError('property "includes" must be a list of strings')
-
-    def __str__(self) -> str:
-        """Return the contents of this dataclass as a multiline string."""
-        return str(TB([Comment(f'Project {plural("include", self.includes)}'),
-                       [f'#include "{x}"' for x in self.includes]]))
-
-
-@dataclass(frozen=True)
-class SystemIncludes:
-    """Dataclass representing a C++ 'project' include statements. Example:
-
-        // System include
-        #include <string>
-
-        // System includes
-        #include <string>
-        #include <dzn/pump.hh>
-    """
-    includes: List[str]
-
-    def __post_init__(self):
-        """Post check the constructed data class members on validity."""
-        if not is_strlist_instance(self.includes):
-            raise TypeError('property "includes" must be a list of strings')
-
-    def __str__(self) -> str:
-        """Return the contents of this dataclass as a multiline string."""
-        return str(TB([Comment(f'System {plural("include", self.includes)}'),
-                       [f'#include <{x}>' for x in self.includes]]))
-
-
 class Namespace:  # pylint: disable=too-few-public-methods
     """Ordinary python class with properties representing a C++ namespace clause with
     unindented contents. The contents can be specified initially or later. In both cases strict
@@ -403,6 +361,99 @@ class Comment:  # pylint: disable=too-few-public-methods
         # applying the C++ '// ' indentation.
         # The original lines buffer stays intact to allow a user further extending the buffer.
         return str(TextBlock(deepcopy(self._tb).indent()))
+
+
+class IncludesBase:
+    __slots__ = ['_include_items', '_label', '_opening', '_closing']
+
+    def __init__(self, include_type: IncludeType, includes: List[str or Comment]):
+        self._label = 'System' if include_type == IncludeType.SYSTEM else 'Project'
+        self._opening = '#include <' if include_type == IncludeType.SYSTEM else '#include "'
+        self._closing = '>' if include_type == IncludeType.SYSTEM else '"'
+        self._include_items = []
+
+        if not isinstance(includes, list):
+            raise TypeError('property "includes" must be a list')
+
+        prev_was_include = None
+
+        for item in includes:
+            if isinstance(item, str):
+                if prev_was_include:
+                    self._include_items.append(prev_was_include)
+                prev_was_include = item
+            elif isinstance(item, Comment):
+                if not prev_was_include:
+                    raise TypeError('Comment must follow an include string')
+                self._include_items.append((prev_was_include, item))
+                prev_was_include = None
+            else:
+                raise TypeError('property "includes" can only contain strings or Comment instances')
+
+        # flush prev_was_include
+        if prev_was_include:
+            self._include_items.append(prev_was_include)
+
+    def generate_str(self) -> str:
+        """Return the contents as a multiline string."""
+        if not self._include_items:
+            return ""
+
+        result = TB([Comment(f'{self._label} {plural("include", self._include_items)}')])
+
+        for item in self._include_items:
+            if isinstance(item, str):
+                result += f'{self._opening}{item}{self._closing}'
+            if isinstance(item, tuple):
+                include, comment = item
+                flattened_comment = ' '.join(comment._tb.lines)
+                result += f'{self._opening}{item[0]}{self._closing} // {flattened_comment}'
+
+        return str(result)
+
+
+class ProjectIncludes(IncludesBase):
+    """Class representing a C++ 'project' include statements. Example:
+
+        // Project include
+        #include "IToaster.h"
+
+        // Project includes
+        #include "IHeater.h"
+        #include "ProjectB/Lunchbox.h"
+
+        // Project includes
+        #include "IHeater.h" // a side comment
+        #include "ProjectB/Lunchbox.h"
+    """
+
+    def __init__(self, includes: List[str or Comment]):
+        super().__init__(IncludeType.PROJECT, includes)
+
+    def __str__(self):
+        return super().generate_str()
+
+
+class SystemIncludes(IncludesBase):
+    """Class representing a C++ 'system' include statements. Example:
+
+        // System include
+        #include <string>
+
+        // System includes
+        #include <string>
+        #include <dzn/pump.hh>
+
+        // System includes
+        #include <string> // a side comment
+        #include <dzn/pump.hh>
+    """
+
+    def __init__(self, includes: List[str or Comment]):
+        super().__init__(IncludeType.SYSTEM, includes)
+
+    def __str__(self):
+        return super().generate_str()
 
 
 @dataclass(frozen=True)
