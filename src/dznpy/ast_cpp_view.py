@@ -1,7 +1,7 @@
 """
 Module providing functionality for C++ specific inquiries on the Dezyne AST and ast_view.
 
-Copyright (c) 2025 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2025-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 # system modules

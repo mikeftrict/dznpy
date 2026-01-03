@@ -7,7 +7,7 @@ responsibility that the produced text can be compiled. It attempts to closely ma
 with the 'building blocks'. Since the developer needs to insert content manually, this cpp_gen
 module can not guarantee that the final total generated text is compilable.
 
-Copyright (c) 2025 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2025-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 

@@ -1,7 +1,7 @@
 """
 Module providing constants and types for versioning dznpy and Dezyne
 
-Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -10,7 +10,7 @@ import re
 from functools import total_ordering
 
 DZNPY_COPYRIGHT = '''\
-Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 '''
 

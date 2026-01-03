@@ -18,11 +18,10 @@ Example configurations:
 - All requires ports MTS, all provides ports STS
 - All requires ports MTS, mixed provides ports MTS/STS
 - All provides and requires ports MTS (like dzn code --shell)
+
+Copyright (c) 2023-2026 Michael van de Ven <michael@ftr-ict.com>
+This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
-
-# Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
-# This is free software, released under the MIT License. Refer to dznpy/LICENSE.
-
 
 # system modules
 from typing import Optional, List

@@ -1,7 +1,7 @@
 """
 Testsuite validating the dzn_exe module
 
-Copyright (c) 2025 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2025-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -22,7 +22,7 @@ def test_dznpy_version():
 
 def test_copyright():
     """Test the contents of dznpy copyright."""
-    assert str(DZNPY_COPYRIGHT) == '''Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
+    assert str(DZNPY_COPYRIGHT) == '''Copyright (c) 2023-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 '''
 

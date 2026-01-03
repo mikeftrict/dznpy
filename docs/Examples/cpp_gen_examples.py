@@ -2,7 +2,7 @@
 Examples of using the cpp_gen module. This module generates C++ code that
 takes C++17 as standard (see Namespaces as example).
 
-Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
