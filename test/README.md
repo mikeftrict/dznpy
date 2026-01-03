@@ -58,7 +58,7 @@ example output will look like:
     
     ==================== 234 passed in 0.34s ====================
 
-To measure code coverage during unittesting, issue the command shown below. Besides the standard py.test output
+To measure code coverage during unit testing, issue the command shown below. Besides the standard py.test output
 it will also print code coverage percentages per source file.
 
     cd C:\SB\dznpy\test\

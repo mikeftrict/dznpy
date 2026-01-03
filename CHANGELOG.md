@@ -4,6 +4,8 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0049](https://github.com/mikeftrict/dznpy/issues/65): Allow side comments to #include statements. Note that
+  multi line comments will be flattened into a single side comment.
 - [DZNPY-0048](https://github.com/mikeftrict/dznpy/issues/60): Introduce a full dzn exec module that provides types and
   functions to execute dzn.cmd commands commonly used by users. For instance: list models, preprocess, code, verify,
   parse. Also the code coverage of other modules has been increased.
