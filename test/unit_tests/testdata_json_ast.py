@@ -1,7 +1,7 @@
 """
 Test data for validating the output of the json_ast module.
 
-Copyright (c) 2023-2025 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2023-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -177,6 +177,11 @@ TYPES_EMPTY = '''{"<class>": "types", "elements": [] }'''
 TYPES_TWO_ITEMS_ENUM_SUBINT = '''{"<class>": "types", "elements": [''' f'{ENUM}, {SUBINT}' ''']}'''
 
 TYPES_TWO_ITEMS_ENUM_INT = '''{"<class>": "types", "elements": [''' f'{ENUM}, {INT}' ''']}'''
+
+UNKNOWN_TYPE = '''{"<class>": "unknown",
+          "name": {"<class>": "scope_name", "ids": ["MyUnknown"]} }'''
+
+TYPES_ONE_ITEM_UNKNOWN_TYPE = '''{"<class>": "types", "elements": [''' f'{UNKNOWN_TYPE}' ''']}'''
 
 INTERFACE_EMPTY = '''{"<class>": "interface",
                       "name": {"<class>": "scope_name", "ids": ["IToaster"]},

@@ -1,7 +1,7 @@
 """
 Test data for validating the dzb_exe module.
 
-Copyright (c) 2025 Michael van de Ven <michael@ftr-ict.com>
+Copyright (c) 2025-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 """
 
@@ -23,8 +23,17 @@ My.Project.ToasterSystem system
 Facilities.Timer foreign
 """
 
+DZN_PARSE_PREPROCESS_OUTPUT = """
+#dir "C:/SB/dznpy/test/dezyne_models/system1"
+#file "Hardware\\Interfaces\\IHeaterElement.dzn"
+// Three times an IHeaterElement interface.
+"""
+
 DZN_FILE_MODELS_LIST_STR = """Components: My.Project.Toaster, SecondToaster
 Interfaces: My.IExclusiveToaster
 Foreigns: Facilities.Timer
 Systems: My.Project.ToasterSystem
+"""
+
+DZN_JSON_OUTPUT = """
 """
