@@ -4,6 +4,10 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0050](https://github.com/mikeftrict/dznpy/issues/67): In ast_cpp_view, make expand_type_name and expand_event
+  dzn version sensitive. Mainly with `ast_cpp_view.expand_type_name()`, the final `TypeAsIs` of enums must differ for
+  Dezyne versions until 2.17.x, versus, as of 2.17.x. To be exact, before 2.17.x plain old enums where generated in c++
+  and required the postfix ::type to be written in glue code.
 - [DZNPY-0049](https://github.com/mikeftrict/dznpy/issues/65): Allow side comments to #include statements. Note that
   multi line comments will be flattened into a single side comment.
 - [DZNPY-0048](https://github.com/mikeftrict/dznpy/issues/60): Introduce a full dzn exec module that provides types and

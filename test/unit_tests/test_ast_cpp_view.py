@@ -7,16 +7,15 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # own modules
 from dznpy import ast, json_ast
+from dznpy.scoping import ns_ids_t
+from dznpy.versioning import DznVersion
 
 # system-under-test
-from dznpy.scoping import ns_ids_t
+from dznpy.ast_cpp_view import *
 
 # Test data
 from common.helpers import resolve
 from testdata_json_ast import *
-
-# system-under-test
-from dznpy.ast_cpp_view import *
 
 # test constants
 DZNJSON_FILE = resolve(__file__, TOASTER_SYSTEM_JSON_FILE)
@@ -48,27 +47,57 @@ def fc2() -> ast.FileContents:
 # Test type creation functions
 #
 
-def test_expand_type_name_enum_ok():
-    """Test a valid example of creating an TypeAsIs instance."""
+def test_expand_type_name_enum_ok1():
+    """Test a valid example of creating an TypeAsIs instance with Dezyne version 2.17.0."""
     r = expand_type_name(name=ScopeName(ns_ids_t('Result')),
                          parent_fqn=ns_ids_t('My'),
-                         fct=fc2())
+                         fct=fc2(),
+                         dzn_version=DznVersion('2.17.0'))
     assert str(r) == '::My::Result'
 
 
-def test_expand_type_name_extern_ok():
-    """Test a valid example of creating an TypeAsIs instance."""
+def test_expand_type_name_enum_ok2():
+    """Test a valid example of creating an TypeAsIs instance with Dezyne version older than 2.17.0."""
+    r = expand_type_name(name=ScopeName(ns_ids_t('Result')),
+                         parent_fqn=ns_ids_t('My'),
+                         fct=fc2(),
+                         dzn_version=DznVersion('2.16.5'))
+    assert str(r) == '::My::Result::type'
+
+
+def test_expand_type_name_extern_ok1():
+    """Test a valid example of creating an TypeAsIs instance with Dezyne version 2.17.0."""
     r = expand_type_name(name=ScopeName(ns_ids_t('PResultInfo')),
                          parent_fqn=ns_ids_t('My.Project'),
-                         fct=fc2())
+                         fct=fc2(),
+                         dzn_version=DznVersion('2.17.0'))
     assert str(r) == 'std::shared_ptr<ResultInfo>'
 
 
-def test_expand_type_name_int_ok():
-    """Test a valid example of creating an TypeAsIs instance."""
+def test_expand_type_name_extern_ok2():
+    """Test a valid example of creating an TypeAsIs instance with Dezyne version older than 2.17.0."""
+    r = expand_type_name(name=ScopeName(ns_ids_t('PResultInfo')),
+                         parent_fqn=ns_ids_t('My.Project'),
+                         fct=fc2(),
+                         dzn_version=DznVersion('2.16.5'))
+    assert str(r) == 'std::shared_ptr<ResultInfo>'
+
+
+def test_expand_type_name_int_ok1():
+    """Test a valid example of creating an TypeAsIs instance with Dezyne version 2.17.0."""
     r = expand_type_name(name=ScopeName(ns_ids_t('MediumInt')),
                          parent_fqn=ns_ids_t('My.Project'),
-                         fct=fc2())
+                         fct=fc2(),
+                         dzn_version=DznVersion('2.17.0'))
+    assert str(r) == 'int'
+
+
+def test_expand_type_name_int_ok2():
+    """Test a valid example of creating an TypeAsIs instance with Dezyne version older than 2.17.0."""
+    r = expand_type_name(name=ScopeName(ns_ids_t('MediumInt')),
+                         parent_fqn=ns_ids_t('My.Project'),
+                         fct=fc2(),
+                         dzn_version=DznVersion('2.16.5'))
     assert str(r) == 'int'
 
 
@@ -77,7 +106,8 @@ def test_expand_type_name_pass_through():
     through a name that could not be resolved."""
     r = expand_type_name(name=ScopeName(ns_ids_t('Bogus')),
                          parent_fqn=ns_ids_t(''),
-                         fct=fc2())
+                         fct=fc2(),
+                         dzn_version=DznVersion('2.17.0'))
     assert str(r) == 'Bogus'
 
 
@@ -91,7 +121,7 @@ def test_expand_event_ok():
                         formals=[FormalExpanded(type=TypeAsIs(value='size_t'),
                                                 direction=FormalDirection.IN,
                                                 name='waitingTimeMs')])
-    assert exp == expand_event(evt, itf, fc)
+    assert exp == expand_event(evt, itf, fc, DznVersion('2.17.0'))
 
 
 def test_get_formals_ok():
