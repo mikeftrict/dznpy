@@ -9,12 +9,13 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 # dznpy modules
-from dznpy.ast import Event, Interface, FileContents, FormalDirection, ScopeName, SubInt, Enum, \
+from .ast import Event, Interface, FileContents, FormalDirection, ScopeName, SubInt, Enum, \
     Extern
-from dznpy.ast_view import find_fqn
-from dznpy.cpp_gen import Function, Struct, Class, Param, Fqn, TypeAsIs
-from dznpy.misc_utils import assert_t, assert_union_t_optional
-from dznpy.scoping import NamespaceIds
+from .ast_view import find_fqn
+from .cpp_gen import Function, Struct, Class, Param, Fqn, TypeAsIs
+from .misc_utils import assert_t, assert_union_t_optional
+from .scoping import NamespaceIds
+from .versioning import DznVersion
 
 
 @dataclass(frozen=True)
@@ -33,7 +34,8 @@ class EventExpanded:
     formals: List[FormalExpanded]
 
 
-def expand_type_name(name: ScopeName, parent_fqn: NamespaceIds, fct: FileContents) -> TypeAsIs:
+def expand_type_name(name: ScopeName, parent_fqn: NamespaceIds, fct: FileContents,
+                     dzn_version: DznVersion) -> TypeAsIs:
     """Helper function to expand a type (specified by its Scopename) and resolve its
     fully qualified namespace identifiers, immediately as C++."""
     assert_t(name, ScopeName)
@@ -47,7 +49,9 @@ def expand_type_name(name: ScopeName, parent_fqn: NamespaceIds, fct: FileContent
         if isinstance(inst, SubInt):
             return TypeAsIs('int')
         if isinstance(inst, Enum):
-            return TypeAsIs(str(Fqn(inst.fqn, True)))
+            if dzn_version >= DznVersion("2.17.0"):
+                return TypeAsIs(str(Fqn(inst.fqn, True)))
+            return TypeAsIs(f'{Fqn(inst.fqn, True)}::type')
         if isinstance(inst, Extern):
             return TypeAsIs(inst.value.value)
         return TypeAsIs('UNRECOGNISED TYPE')
@@ -55,7 +59,8 @@ def expand_type_name(name: ScopeName, parent_fqn: NamespaceIds, fct: FileContent
     return TypeAsIs(str(Fqn(name.value)))  # just pass-through
 
 
-def expand_event(evt: Event, itf: Interface, fct: FileContents) -> EventExpanded:
+def expand_event(evt: Event, itf: Interface, fct: FileContents,
+                 dzn_version: DznVersion) -> EventExpanded:
     """Helper function to expand a Dezyne Event as part of an interface and resolve its
     fully qualified namespace identifiers, immediately as C++."""
     assert_t(evt, Event)
@@ -65,13 +70,14 @@ def expand_event(evt: Event, itf: Interface, fct: FileContents) -> EventExpanded
     # expand all formals
     formals: List[FormalExpanded] = []
     for formal in evt.signature.formals.elements:
-        formals.append(FormalExpanded(expand_type_name(formal.type_name, itf.fqn, fct),
+        formals.append(FormalExpanded(expand_type_name(formal.type_name, itf.fqn, fct, dzn_version),
                                       formal.direction,
                                       formal.name))
 
-    return EventExpanded(return_type=expand_type_name(evt.signature.type_name, itf.fqn, fct),
-                         name=evt.name,
-                         formals=formals)
+    return EventExpanded(
+        return_type=expand_type_name(evt.signature.type_name, itf.fqn, fct, dzn_version),
+        name=evt.name,
+        formals=formals)
 
 
 def get_formals(evt: EventExpanded) -> tuple[str, str]:
