@@ -4,6 +4,9 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0051](https://github.com/mikeftrict/dznpy/issues/68): Add `flatten_to_alphanum()` to module `misc_utils`, in
+  order to convert any string(able) value to a final string that only contains alpha numeric characters. Non alpha
+  numeric characters are casted to an underscore. Multiple underscores are reduced to a single underscore.
 - [DZNPY-0050](https://github.com/mikeftrict/dznpy/issues/67): In ast_cpp_view, make expand_type_name and expand_event
   dzn version sensitive. Mainly with `ast_cpp_view.expand_type_name()`, the final `TypeAsIs` of enums must differ for
   Dezyne versions until 2.17.x, versus, as of 2.17.x. To be exact, before 2.17.x plain old enums where generated in c++
