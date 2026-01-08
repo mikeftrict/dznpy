@@ -7,6 +7,7 @@ This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 
 # system modules
 import os
+import re
 import subprocess
 import sys
 import time
@@ -89,6 +90,17 @@ def flatten_to_strlist(value: Any, skip_empty_strings: bool = True) -> List[str]
             result.append(str(value))
 
     return result
+
+
+def flatten_to_alphanum(input: any) -> str:
+    """Flatten the stringizable input to an alphanumeric string where the other types of characters
+    are replaced with an underscore. Adjacent underscores are reduced to a single underscore."""
+    if not input:
+        return ''
+    result = str(input)
+    result = re.sub(r'[^a-zA-Z0-9]', '_', result)
+    result = re.sub(r'_+', '_', result)
+    return result.strip('_') or '_'
 
 
 def get_basename(filename: str) -> str:

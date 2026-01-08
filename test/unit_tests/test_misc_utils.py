@@ -48,6 +48,47 @@ def test_flatten_to_strlist():
     assert flatten_to_strlist([{123: '', 456: None}, ['Y']], skip_empty_strings=False) == ['', 'Y']
 
 
+def test_flatten_to_alphanum_input_becoming_empty_string():
+    assert flatten_to_alphanum('') == ''
+    assert flatten_to_alphanum(None) == ''
+
+
+def test_flatten_to_alphanum_keeps_alphanumeric_characters_unchanged():
+    assert flatten_to_alphanum("abcXYZ123") == "abcXYZ123"
+
+
+def test_flatten_to_alphanum_replaces_non_alphanumeric_with_underscore():
+    assert flatten_to_alphanum("a/b.c:d") == "a_b_c_d"
+    assert flatten_to_alphanum("a---b___c") == "a_b_c"
+    assert flatten_to_alphanum("__a__b__") == "a_b"
+    assert flatten_to_alphanum("__a__") == "a"
+
+
+def test_flatten_to_alphanum_all_invalid_characters_result_in_single_underscore():
+    assert flatten_to_alphanum("!!!") == "_"
+
+
+def test_flatten_to_alphanum_strange_characters_are_replaced():
+    assert flatten_to_alphanum("héllo") == "h_llo"
+    assert flatten_to_alphanum("a b\tc") == "a_b_c"
+    assert flatten_to_alphanum("π=3.14") == "3_14"
+
+
+def test_flatten_to_alphanum_is_idempotent():
+    s = "a--b__c!!"
+    assert flatten_to_alphanum(flatten_to_alphanum(s)) == flatten_to_alphanum(s)
+
+
+def test_flatten_to_alphanum_result_contains_only_alphanumeric_and_underscore():
+    result = flatten_to_alphanum("a/b.c:d€")
+    assert all(c.isalnum() or c == "_" for c in result)
+
+
+def test_flatten_to_alphanum_input_is_converted_to_string():
+    assert flatten_to_alphanum(12345) == "12345"
+    assert flatten_to_alphanum([1, 2, 3, 4, 5]) == "1_2_3_4_5"
+
+
 def test_newlined_list_items():
     """Test the expected behaviour of composing a new-line-delimited string from a list"""
     assert newlined_list_items([1, 2, 3]) == '1\n2\n3'
