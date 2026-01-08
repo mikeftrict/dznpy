@@ -4,6 +4,8 @@
 
 ### Noteworthy additions and changes
 
+- [DZNPY-0052](https://github.com/mikeftrict/dznpy/issues/69): Add the option 'imf', like with cpp_gen.Function, to
+  generate 'definition code' for a constructor that can be inlined immediately as part of a headerfile.
 - [DZNPY-0051](https://github.com/mikeftrict/dznpy/issues/68): Add `flatten_to_alphanum()` to module `misc_utils`, in
   order to convert any string(able) value to a final string that only contains alpha numeric characters. Non alpha
   numeric characters are casted to an underscore. Multiple underscores are reduced to a single underscore.

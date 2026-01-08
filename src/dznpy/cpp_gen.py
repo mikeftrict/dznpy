@@ -661,8 +661,10 @@ class Constructor(ParentAndContents):
         full_signature = f'{explicit}{self.parent.name}({params}){self.initialization.value};'
         return TB(full_signature)
 
-    def as_def(self) -> TextBlock:
-        """Return the constructor definition as a multiline string."""
+    def as_def(self, imf=False) -> TextBlock:
+        """Return the constructor definition as a multiline string. The optional argument
+        'imf' (inline member function) can be set to True to omit specifying the scope name of
+        the class/struct."""
         if self.initialization != FunctionInitialization.NONE:
             return TextBlock()  # no definition is generated when declared with initialization
 
@@ -670,7 +672,7 @@ class Constructor(ParentAndContents):
         member_initlist = TB([': ' + '\n, '.join(self.member_initlist)]).indent() \
             if self.member_initlist else None
         content = TB(self.contents).indent() if self.contents else None
-        full_signature = f'{self.parent.name}::{self.parent.name}({params})'
+        full_signature = f'{self.parent.name}({params})' if imf else f'{self.parent.name}::{self.parent.name}({params})'
 
         if member_initlist is None and not content:
             return TB(f'{full_signature} {{}}')
@@ -757,14 +759,13 @@ class Function(ParentAndContents):  # pylint: disable=too-many-instance-attribut
     def as_def(self, imf=False) -> TextBlock:
         """Return the function definition as a multiline TextBlock. The optional argument
         'imf' (inline member function) can be set to True to omit specifying the scope name of
-        the class/struct.
-        ."""
+        the class/struct."""
         if self.initialization != FunctionInitialization.NONE:
             return TextBlock()  # no definition is generated when declared with initialization
 
         return_type = f'{self.return_type} ' if self.return_type else ''
         parent = f'{self.parent.name}::' if self.parent is not None else ''
-        parent = '' if imf else parent  # override in case a 'inline member function'
+        parent = '' if imf else parent  # override in case an 'inline member function'
         name = self.name
         params = ', '.join([p.as_def() for p in self.params])
         cav = f' {self.cav}' if self.cav != '' else ''

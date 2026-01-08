@@ -454,6 +454,7 @@ def test_constructor_ok():
     struct_sut = Constructor(parent=Struct('MyToaster'))
     assert_str_eq(struct_sut.as_decl(), CONSTRUCTOR_DECL_MINIMAL)
     assert_str_eq(struct_sut.as_def(), CONSTRUCTOR_DEF_MINIMAL)
+    assert_str_eq(struct_sut.as_def(imf=True), CONSTRUCTOR_DEF_IMF_MINIMAL)
 
 
 def test_constructor_params_and_content_ok():
