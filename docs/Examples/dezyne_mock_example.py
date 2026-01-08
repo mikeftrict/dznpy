@@ -95,12 +95,13 @@ from dznpy.json_ast import DznJsonAst
 from dznpy.ast_view import find_fqn, get_in_events, get_out_events, get_itf_name
 from dznpy.scoping import ns_ids_t
 from dznpy.text_gen import TextBlock, TB, EOL
-
+from dznpy.versioning import DznVersion
 
 def main():
     """Convergence point of executing all example code for the cpp_gen module."""
 
     json_file_name = '../../test/dezyne_models/generated/IPowerCord.json'
+    dzn_version = DznVersion('2.17.0')
 
     # 1. Read in the Dezyne interface model (file IPowerCord.dzn)
     dzn_json_ast = DznJsonAst(verbose=True)
@@ -141,7 +142,7 @@ def main():
     setup_peer_port_def = TB(['m_peerPort = port;'], chunk_spacing=EOL)
 
     for evt in in_events:
-        evt_exp = expand_event(evt, itf, file_contents)
+        evt_exp = expand_event(evt, itf, file_contents, dzn_version)
         (formals_names, formals_expanded) = get_formals(evt_exp)
         snippet = TB([f'port.in.{evt.name} = [this]({formals_expanded}) {{',
                       f'    return {evt.name}({formals_names});',
@@ -156,7 +157,7 @@ def main():
     trigger_function_defs = TB(chunk_spacing=EOL)
 
     for evt in out_events:
-        evt_exp = expand_event(evt, itf, file_contents)
+        evt_exp = expand_event(evt, itf, file_contents, dzn_version)
         (formals_names, _) = get_formals(evt_exp)
 
         trigger_fn = create_member_function(evt_exp, 'Trigger', mock_class)
@@ -173,7 +174,7 @@ def main():
     # 6.c. Generate the MOCK_METHOD GoogleMock statements with an equivalent for each in-event
     mock_methods_block = TB(Comment('Method mocks, expectations programmable by test'))
     for evt in in_events:
-        evt_exp = expand_event(evt, itf, file_contents)
+        evt_exp = expand_event(evt, itf, file_contents, dzn_version)
         (formals_names, formals_expanded) = get_formals(evt_exp)
         snippet = f'MOCK_METHOD({evt_exp.return_type}, {evt.name}, ({formals_expanded}));'
         mock_methods_block += snippet

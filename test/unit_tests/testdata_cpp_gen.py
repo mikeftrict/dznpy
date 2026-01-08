@@ -176,6 +176,10 @@ CONSTRUCTOR_DEF_MINIMAL = '''\
 MyToaster::MyToaster() {}
 '''
 
+CONSTRUCTOR_DEF_IMF_MINIMAL = '''\
+MyToaster() {}
+'''
+
 CONSTRUCTOR_PARAMS_DECL = '''\
 MyToaster(int x, size_t y = 123u);
 '''
