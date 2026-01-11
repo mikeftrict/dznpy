@@ -17,7 +17,7 @@ from testdata_dzn_exe import *
 
 def test_dznpy_version():
     """Test the current version of dznpy."""
-    assert str(DZNPY_VERSION) == '1.3.DEV'
+    assert str(DZNPY_VERSION) == '1.3.260111'
 
 
 def test_copyright():

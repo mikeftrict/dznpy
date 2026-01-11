@@ -45,18 +45,18 @@ example output will look like:
     python -m pytest
 
     ==================== test session starts ====================
-    platform win32 -- Python 3.8.1, pytest-8.1.1, pluggy-1.4.0
+    platform win32 -- Python 3.10.11, pytest-8.3.5, pluggy-1.5.0
     rootdir: C:\SB\dznpy\test
     configfile: pytest.ini
-    collected 234 items
+    plugins: cov-6.1.1
+    collected 641 items
     
-    unit_tests\test_adv_shell.py ......................... [ 10%]
-    unit_tests\test_ast_view.py .......................... [ 17%]
-    unit_tests\test_cpp_gen.py ........................... [ 29%]
-    unit_tests\test_json_ast.py .......................... [ 58%]
-    unit_tests\test_misc_utils.py ........................ [100%]
+    unit_tests\adv_shell\test_builder.py ................. [  1%]
+    ...
+    ...
+    unit_tests\test_versioning.py ........................ [100%] 
     
-    ==================== 234 passed in 0.34s ====================
+    ==================== 641 passed in 4.51s ====================
 
 To measure code coverage during unit testing, issue the command shown below. Besides the standard py.test output
 it will also print code coverage percentages per source file.
@@ -64,7 +64,7 @@ it will also print code coverage percentages per source file.
     cd C:\SB\dznpy\test\
     python -m pytest --cov=dznpy
 
-    ________________ coverage: platform win32, python 3.10.0-final-0 _________________
+    ________________ coverage: platform win32, python 3.10.11-final-0 ________________
     
     Name                                                           Stmts   Miss  Cover
     ----------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ it will also print code coverage percentages per source file.
     C:\SB\dznpy\src\dznpy\ ...etc...
            ...etc...       ...etc...
     ----------------------------------------------------------------------------------
-    TOTAL                                                           2250     42    98%
+    TOTAL                                                           2569     25    99%
 
 To explore the source files and to discover the missed statements, generate a HTML report like following:
 

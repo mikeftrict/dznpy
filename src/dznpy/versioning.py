@@ -14,7 +14,7 @@ Copyright (c) 2023-2026 Michael van de Ven <michael@ftr-ict.com>
 This is free software, released under the MIT License. Refer to dznpy/LICENSE.
 '''
 
-DZNPY_VERSION = '1.3.DEV'
+DZNPY_VERSION = '1.3.260111'
 
 
 ###############################################################################
